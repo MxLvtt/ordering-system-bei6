@@ -1,6 +1,6 @@
-# Ordering System BEI5
+# Ordering System BEI6
 
-Group project for the fifth semester of the BEI course of studies.
+Group project for the sixth semester of the BEI course of studies.
 
 # Specifications
 
