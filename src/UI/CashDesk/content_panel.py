@@ -1,27 +1,19 @@
-from tkinter import *
-
+from tkinter import Frame
 
 class ContentPanel(Frame):
-    def __init__(self, parent, width, height, padding=0, background="#696969"):
+    def __init__(self, parent, width=0, height=0, background="#EFEFEF"):
         super().__init__(
             master=parent,
             cnf={},
-            width=width-padding*2,
-            height=height-padding*2,
+            width=width,
+            height=height,
             background=background
         )
 
-        self.is_hidden = False
+        self.add_order_visible: bool = True # TEMPORARY
 
-        self.grid(padx=padding, pady=padding)
-        self.grid_propagate(0)
+    def is_add_order_visible(self) -> bool:
+        return self.add_order_visible
 
-    def hide_frame(self):
-        if not self.is_hidden:
-            self.grid_remove() # or: self.lower()
-            self.is_hidden = True
-
-    def unhide_frame(self):
-        if self.is_hidden:
-            self.grid() # or: self.lift()
-            self.is_hidden = False
+    def set_add_order_visibilty(self, visible: bool):
+        self.add_order_visible = visible

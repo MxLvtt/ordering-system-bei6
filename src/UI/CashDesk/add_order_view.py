@@ -1,18 +1,24 @@
 from tkinter import *
-from content_panel import ContentPanel
 
-class AddOrderView(ContentPanel):
-    def __init__(self, parent, width, height, padding=0, background="#696969"):
+class AddOrderView(Frame):
+    def __init__(self, parent, width=0, height=0, background="#FF00FF"):
         super().__init__(
-            parent=parent,
+            master=parent,
+            cnf={},
             width=width,
             height=height,
-            padding=padding,
             background=background
         )
 
         self.is_hidden = False
 
-        self.grid(padx=padding, pady=padding)
-        self.grid_propagate(0)
+    def hide_frame(self):
+        if not self.is_hidden:
+            self.lower()
+            self.is_hidden = True
+
+    def unhide_frame(self):
+        if self.is_hidden:
+            self.lift()
+            self.is_hidden = False
 

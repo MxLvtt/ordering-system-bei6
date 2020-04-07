@@ -1,74 +1,54 @@
 from tkinter import *
+from tkinter import font as tkFont
 from add_order_view import AddOrderView
+from content_panel import ContentPanel
 
 class CashDeskGUI():
     def __init__(self):
         root = Tk()
         root.attributes('-fullscreen', True)
         root.wm_title("GUI Kasse")
-        root.config(background="#FFFFFF")
+        root.config(background="#696969")
 
         root.update()
 
         rootHeight = root.winfo_height()
         rootWidth = root.winfo_width()
 
-        headerHeight = 60
-        footerHeight = 60
-        bodyHeight = rootHeight-headerHeight-footerHeight
+        helv36 = tkFont.Font(family='Helvetica', size=26, weight=tkFont.BOLD)
 
-        header = Frame(root, width=rootWidth-10, height=footerHeight-10, background="#696969")
-        header.grid(row=0, column=0, padx=5, pady=5)
-        header.grid_propagate(0)
+        ## HEADER STUFF ##
 
-        body = AddOrderView(root, rootWidth, bodyHeight, 5)
-        body.grid(row=1, column=0)
-        body.unhide_frame()
+        header = Frame(root, height=100, background="#EFEFEF")
+        header.pack(side=TOP, expand=True, fill='x', padx=5, pady=5)
 
-        body2 = AddOrderView(root, rootWidth, bodyHeight, 5, "#FF0000")
-        body2.grid(row=1, column=0)
-        body2.hide_frame()
-
-        footer = Frame(root, width=rootWidth-10, height=footerHeight-10, background="#696969")
-        footer.grid(row=2, column=0, padx=5, pady=5)
-        footer.grid_propagate(0)
-
-        self.state = True
-
-        def switch_content():
-            if self.state:
-                body2.unhide_frame()
-                body.hide_frame()
-                button1.config(text="<")
-                self.state = False
+        def click_add_order_button():
+            if body.is_add_order_visible():
+                add_order_button.config(text="<")
+                body.set_add_order_visibilty(False)
             else:
-                body.unhide_frame()
-                body2.hide_frame()
-                button1.config(text="+")
-                self.state = True
+                add_order_button.config(text="+")
+                body.set_add_order_visibilty(True)
 
-        pixelVirtual = PhotoImage(width=1, height=1)
+        add_order_button = Button(header, command=click_add_order_button, width=3, height=1, text="+",fg="black",bg="white",font=helv36)
+        add_order_button.grid(row=0,column=0)
 
-        button1 = Button(header, text ="+", command = switch_content, image=pixelVirtual, width=43, height=43, compound="c")
-        button1.grid(row=0, column=0)
+        ## FOOTER STUFF ##
 
-        button2 = Button(header, text ="x", command = exit, image=pixelVirtual, width=43, height=43, compound="c")
-        button2.grid(row=0, column=1)
+        footer = Frame(root, height=100, background="#EFEFEF")
+        footer.pack(side=BOTTOM, expand=True, fill='x', padx=5, pady=5)
 
-        # leftFrame = Frame(root, width=lF_width-10, height=rootHeight-10, background="darkgray")
-        # leftFrame.grid(row=0, column=0, padx=5, pady=5)
-        # leftFrame.grid_propagate(0) # Ensures that the frame doesn't resize when widgets are added
+        exit_button = Button(footer, command=exit, width=3, height=1, text="x",fg="white",bg="darkred",font=helv36)
+        exit_button.grid(row=0,column=0)
 
-        # leftLabel1 = Label(leftFrame, text="Platzhalter Text")
-        # leftLabel1.grid(row=0, column=0, padx=10, pady=3)
-        # leftLabel2 = Label(leftFrame, text="Dies ist ein Text\nmit mehreren Zeilen.")
-        # leftLabel2.grid(row=0, column=1, columnspan=2, padx=10, pady=3)
+        ## BODY STUFF ##
 
-        # leftLabel1 = Label(leftFrame, text="Platzhalter Text 2")
-        # leftLabel1.grid(row=1, column=0, padx=10, pady=3)
-        # leftLabel2 = Label(leftFrame, text="Dies ist ein Text 2")
-        # leftLabel2.grid(row=1, column=1, padx=10, pady=3)
-        # leftLabel2 = Label(leftFrame, text="Dies ist ein Text 3")
-        # leftLabel2.grid(row=1, column=2, padx=10, pady=3)
+        body = ContentPanel(root, height=rootHeight)
+        body.pack(side=TOP, expand=True, fill='both', padx=5)
+
+        # TODO:
+        # The content panel should contain all the different views (= classes that inherit from Frame)
+        # and the corresponding methods to show / hide each of them.
+        # For this, the content panel has to have a grid inside.
 
         mainloop()
