@@ -10,7 +10,7 @@ class ContentPanel(Frame):
             background=background
         )
 
-        self.add_order_visible: bool = True # TEMPORARY
+        self.add_order_visible: bool = False # TEMPORARY
 
     def is_add_order_visible(self) -> bool:
         return self.add_order_visible
