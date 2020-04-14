@@ -1,3 +1,4 @@
+import pyautogui
 from threading import Timer
 from tkinter import *
 from tkinter import font as tkFont
@@ -5,8 +6,8 @@ from Templates.cbutton import CButton
 from Templates.images import IMAGES
 
 class Toast():
-    WIDTH=420
-    HEIGHT=200
+    WIDTH=500
+    HEIGHT=220
     TIME_TILL_FADEOUT=10
 
     BACKGROUND="#E3E1DD"
@@ -17,11 +18,13 @@ class Toast():
 
     def __init__(
         self,
-        parent,
         title,
-        summary,
-        pos=(0,0)
+        summary
     ):
+        screen_width, screen_height = pyautogui.size()
+
+        self._pos=(25, screen_height-self.HEIGHT-110)
+
         helv22b = tkFont.Font(family='Helvetica', size=22, weight=tkFont.BOLD)
         helv18 = tkFont.Font(family='Helvetica', size=18)
 
@@ -34,10 +37,10 @@ class Toast():
         self._title = f"{title} {self._id}"
         self._summary = summary
 
-        self._dest_x = pos[0]
-        self._dest_y = pos[1]
+        self._dest_x = self._pos[0]
+        self._dest_y = self._pos[1]
 
-        window = Toplevel(parent)
+        window = Toplevel()
         window.geometry(f"{self.WIDTH}x{self.HEIGHT}+{self._dest_x}+{self._dest_y - self._id * (self.HEIGHT + 15)}")
         window.overrideredirect(1)
         window.attributes('-topmost', 1)
@@ -105,7 +108,6 @@ class Toast():
         self.TOASTS.append(self)
 
         self._timeout_timer = Timer(self.TIME_TILL_FADEOUT, self._fade_out)
-        self._timeout_timer.start()
     
         self._check_toast_count()
 
@@ -145,21 +147,24 @@ class Toast():
         if self._id >= 3:
             self._window.withdraw()
             self._visible = False
-        elif not self._visible:
-            self._window.update()
-            self._window.deiconify()
-            self._visible = True
+        else:
+            if not self._visible:
+                self._window.update()
+                self._window.deiconify()
+                self._visible = True
+            if not self._timeout_timer.is_alive() and not self._stop_checking:
+                self._timeout_timer.start()
 
         if not self._stop_checking:
             self._window.after(100, self._check_toast_count)
 
     def _remove_toast(self, remove_all: bool = False):
+        self._stop_checking = True
         if self._timeout_timer.is_alive():
             self._timeout_timer.cancel()
         Toast.COUNT_TOASTS -= 1
         if Toast.COUNT_TOASTS < 0:
             Toast.COUNT_TOASTS = 0
-        self._stop_checking = True
         if not remove_all:
             self.TOASTS.remove(self)
         self._window.destroy()
