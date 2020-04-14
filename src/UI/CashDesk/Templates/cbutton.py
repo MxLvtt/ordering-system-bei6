@@ -1,36 +1,56 @@
-from tkinter import Button
-from tkinter import font as tkFont
+from tkinter import Button, LEFT
 
 class CButton(Button):
+    SIZE = 72
+
+    WHITE = "#FFFFFF"
+    LIGHT = "#DDDFE3"
+    DARK = "#535B5D"
+    GREEN = "#7DAB55"
+    YELLOW = "#E9C545"
+    DARK_RED = "#A62921"
+
     def __init__(
         self,
         parent,
-        text,
+        image,
         command,
-        width=3,
-        height=1,
-        fg="black",
-        bg="white",
+        width=2.0,
+        height=1.0,
+        fg=DARK,
+        bg=WHITE,
         row=0,
-        column=0
+        column=0,
+        spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
+        spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
         super().__init__(
             master=parent,
-            text=text,
             command=command,
-            width=width,
-            height=height,
+            image=image,
+            width=width*self.SIZE,
+            height=height*self.SIZE,
             fg=fg,
             bg=bg
         )
 
-        helv36 = tkFont.Font(family='Helvetica', size=26, weight=tkFont.BOLD)
-
-        self.config(font=helv36)
+        # helv36 = tkFont.Font(family='Helvetica', size=26, weight=tkFont.BOLD)
+        # self.config(font=helv36)
 
         self.grid(row=row, column=column)
 
+        sY = (self.SIZE*spaceY[0], self.SIZE*spaceY[1])
+        sX = (self.SIZE*spaceX[0], self.SIZE*spaceX[1])
+
+        self.grid(padx=sX, pady=sY)
+
         self.is_shown = True
+
+    def _enable(self):
+        self.config(state="normal")
+
+    def _disable(self):
+        self.config(state="disabled")
 
     def _show(self) -> Button:
         if not self.is_shown:
