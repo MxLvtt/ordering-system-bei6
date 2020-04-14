@@ -13,6 +13,7 @@ class Toast():
     BACKGROUND="#E3E1DD"
     
     # STATIC VARIABLES
+    MAX_NUMBER_OF_DISPLAYED_TOASTS=3
     COUNT_TOASTS=0
     TOASTS=[]
 
@@ -108,6 +109,9 @@ class Toast():
         self.TOASTS.append(self)
 
         self._timeout_timer = Timer(self.TIME_TILL_FADEOUT, self._fade_out)
+
+        if self._id < self.MAX_NUMBER_OF_DISPLAYED_TOASTS:
+            self._timeout_timer.start()
     
         self._check_toast_count()
 
@@ -144,19 +148,17 @@ class Toast():
                 f"{self.WIDTH}x{self.HEIGHT}+{self._dest_x}+{self._dest_y - self._id * (self.HEIGHT + 15)}"
             )
 
-        if self._id >= 3:
+        if self._id >= self.MAX_NUMBER_OF_DISPLAYED_TOASTS:
             self._window.withdraw()
             self._visible = False
-        else:
-            if not self._visible:
-                self._window.update()
-                self._window.deiconify()
-                self._visible = True
-            if not self._timeout_timer.is_alive() and not self._stop_checking:
-                self._timeout_timer.start()
+        elif not self._visible:
+            self._window.update()
+            self._window.deiconify()
+            self._visible = True
+            self._timeout_timer.start()
 
         if not self._stop_checking:
-            self._window.after(100, self._check_toast_count)
+            self._window.after(300, self._check_toast_count)
 
     def _remove_toast(self, remove_all: bool = False):
         self._stop_checking = True

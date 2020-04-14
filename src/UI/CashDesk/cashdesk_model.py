@@ -7,12 +7,16 @@ from Templates.images import IMAGES
 from Templates.toast import Toast
  
 class CashDeskModel():
+    # PUBLIC STATIC VARIABLES
     INTERVAL=0.2
 
     def __init__(self):
+        # Timer to trigger the main periodical thread
         self._main_cycle_timer: Timer
+        # Event that is triggered on every execution of the main cycle
         self._on_cycle_event: Event = Event()
 
+        # Image objects for the buttons
         self._checkmark_img = PhotoImage(file=IMAGES.CHECK_MARK)
         self._exit_img = PhotoImage(file=IMAGES.EXIT)
         self._history_img = PhotoImage(file=IMAGES.HISTORY)
@@ -20,10 +24,15 @@ class CashDeskModel():
         self._settings_img = PhotoImage(file=IMAGES.SETTINGS)
         self._trashcan_img = PhotoImage(file=IMAGES.TRASH_CAN)
 
+        # Holds the value of the currently displayed time
         self._current_time = "<TIME>"
 
     def initialize(self):
+        """ Has to be called, when the GUI is finished with initialization.
+        """
         self._main_cycle_thread()
+
+    ### ------------------- PROPERTIES ------------------- ###
 
     @property
     def on_cycle_event(self):
@@ -57,9 +66,7 @@ class CashDeskModel():
     def trashcan_img(self):
         return self._trashcan_img
 
-    def call_after_delay(self, function, delay: float):
-        if delay > 0:
-            Timer(delay, function).start()
+    ### ------------------- MAIN METHODS ------------------- ###
 
     def clear_form(self):
         """ Resets all widgets in the AddOrderView to their default values.
@@ -73,24 +80,39 @@ class CashDeskModel():
             
         self._show_toast()
 
+    ### ------------------- HELPER METHODS ------------------- ###
+
+    def call_after_delay(self, function, delay: float):
+        """ Helper method to call a given function after the specified delay.
+        """
+        if delay > 0:
+            Timer(delay, function).start()
+
+    ### ------------------- PRIVATE METHODS ------------------- ###
+
     def _cancel_timer(self):
+        """ Private function to stop the main cyclic thread.
+        """
         self._main_cycle_timer.cancel()
 
     def _main_cycle_thread(self, curtime='', *args, **kwargs):
-            # UPDATE CLOCK
-            newtime = time.strftime("%a, %d-%m-%Y\n%H:%M:%S")
-            if newtime != curtime:
-                curtime = newtime
-                self._current_time = curtime
+        """ Private function that is called periodically on a separate thread.
+        """
+        # UPDATE CLOCK
+        newtime = time.strftime("%a, %d-%m-%Y\n%H:%M:%S")
+        if newtime != curtime:
+            curtime = newtime
+            self._current_time = curtime
 
-            # EVENT TRIGGER
-            self.on_cycle_event()
+        # EVENT TRIGGER
+        self.on_cycle_event()
 
-            # REPEAT
-            self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
-            self._main_cycle_timer.start()
+        # REPEAT
+        self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
+        self._main_cycle_timer.start()
 
     def _show_toast(self):
+        """ TEMP """
         Toast(
             title="Notification Toast",
             summary="This is a short summary\nof the notification."
