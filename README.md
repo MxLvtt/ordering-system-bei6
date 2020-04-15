@@ -2,6 +2,9 @@
 
 Group project for the sixth semester of the BEI course of studies.
 
+# Dependencies
+* pyautogui [pip install pyautogui]
+
 # Specifications
 
 ## Group Members
