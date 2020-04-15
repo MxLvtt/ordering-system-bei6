@@ -8,9 +8,9 @@ from Templates.images import IMAGES
 class Toast():
     WIDTH=500
     HEIGHT=220
-    TIME_TILL_FADEOUT=10
+    TIME_TILL_FADEOUT=7
 
-    BACKGROUND="#E3E1DD"
+    BACKGROUND="#A5A5AF"
     
     # STATIC VARIABLES
     MAX_NUMBER_OF_DISPLAYED_TOASTS=3
@@ -35,7 +35,7 @@ class Toast():
         self._stop_checking = False
 
         self._id = Toast.COUNT_TOASTS
-        self._title = f"{title} {self._id}"
+        self._title = title
         self._summary = summary
 
         self._dest_x = self._pos[0]
@@ -112,7 +112,7 @@ class Toast():
 
         if self._id < self.MAX_NUMBER_OF_DISPLAYED_TOASTS:
             self._timeout_timer.start()
-    
+
         self._check_toast_count()
 
     @property

@@ -48,5 +48,5 @@ class ContentTemplate(Frame):
         """ Shows this view (again).
         """
         if self._is_hidden:
-            self.pack(side=TOP,expand=1,fill='both',padx=5,pady=5)
+            self.pack(side=TOP,expand=1,fill='both')#,padx=5,pady=5)
             self._is_hidden = False

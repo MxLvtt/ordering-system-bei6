@@ -2,6 +2,7 @@ from tkinter import *
 from ContentControl.content_template import ContentTemplate
 from ContentControl.add_order_view import AddOrderView
 from ContentControl.active_orders_view import ActiveOrdersView
+from Templates.cbutton import CButton
 
 class ContentPanel(Frame):
     """ Represents the main view of the cash desk UI. Holds and manages the different views of the UI
@@ -26,7 +27,7 @@ class ContentPanel(Frame):
 
         self.add_order_content: AddOrderView = AddOrderView(
             parent=self,
-            background="gray",
+            background=CButton.LIGHT,
             shown=True # Set this view to be shown at the beginning
         )
         # Add the view to the list
@@ -39,7 +40,7 @@ class ContentPanel(Frame):
 
         self.active_orders_content: ActiveOrdersView = ActiveOrdersView(
             parent=self,
-            background="yellow"
+            background=CButton.YELLOW
         )
         # Add the view to the list
         self.VIEWS.append(self.active_orders_content)

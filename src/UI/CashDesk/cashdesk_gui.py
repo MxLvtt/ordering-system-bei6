@@ -24,8 +24,8 @@ class CashDeskGUI():
         ## -------- HEADER STUFF -------- ##
 
         # The frame at the top of the window
-        header = Frame(root, height=100, background="#EFEFEF")
-        header.pack(side=TOP, expand=True, fill='x', padx=5, pady=5)
+        header = Frame(root, background="#EFEFEF")
+        header.pack(side=TOP, fill='x', padx=5, pady=5)
 
         # The add-order button to add a new order
         self._add_order_button = CButton(
@@ -48,8 +48,8 @@ class CashDeskGUI():
         ## -------- FOOTER STUFF -------- ##
 
         # The frame at the bottom of the window that acts as a container for all the elements
-        footerContainer = Frame(root, height=100, background="#EFEFEF")
-        footerContainer.pack(side=BOTTOM, expand=True, fill='x', padx=5, pady=5)
+        footerContainer = Frame(root, background="#EFEFEF")
+        footerContainer.pack(side=BOTTOM, fill='x', padx=5, pady=5)
 
         # The frame within the container holding all the buttons
         footer = Frame(footerContainer, height=100, background="#EFEFEF")
@@ -116,7 +116,7 @@ class CashDeskGUI():
         ## -------- BODY STUFF -------- ##
 
         # The content panel (container) in the middle of the window
-        self.body = ContentPanel(root, height=100000)
+        self.body = ContentPanel(root)
         self.body.pack(side=TOP, expand=1, fill='both', padx=5)
         # Lowered to the minimum z-Layer, so that the notification toasts are visible
         self.body.lower()

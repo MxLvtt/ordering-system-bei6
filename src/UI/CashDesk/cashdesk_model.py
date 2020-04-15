@@ -1,10 +1,11 @@
 import time
+from random import random
 from tkinter import PhotoImage
 from threading import Timer
 from EventHandler.Event import Event
+from Notification.toast import Toast
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
-from Templates.toast import Toast
  
 class CashDeskModel():
     # PUBLIC STATIC VARIABLES
@@ -71,6 +72,7 @@ class CashDeskModel():
     def clear_form(self):
         """ Resets all widgets in the AddOrderView to their default values.
         """
+        self._show_toast("Cleared form")
         pass
 
     def add_order(self):
@@ -78,7 +80,7 @@ class CashDeskModel():
         """
         # TODO: Save order details
             
-        self._show_toast()
+        self._show_toast("Added new order")
 
     ### ------------------- HELPER METHODS ------------------- ###
 
@@ -98,6 +100,11 @@ class CashDeskModel():
     def _main_cycle_thread(self, curtime='', *args, **kwargs):
         """ Private function that is called periodically on a separate thread.
         """
+        res: float = random()
+
+        if res < 0.01:
+            self._show_toast("Order updated")
+
         # UPDATE CLOCK
         newtime = time.strftime("%a, %d-%m-%Y\n%H:%M:%S")
         if newtime != curtime:
@@ -111,10 +118,10 @@ class CashDeskModel():
         self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
         self._main_cycle_timer.start()
 
-    def _show_toast(self):
+    def _show_toast(self, text="Notification Toast"):
         """ TEMP """
         Toast(
-            title="Notification Toast",
+            title=text,
             summary="This is a short summary\nof the notification."
         )
         pass

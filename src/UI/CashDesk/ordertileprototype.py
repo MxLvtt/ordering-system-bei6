@@ -53,7 +53,6 @@ class OrderTileGUI(Frame):
         self._order_status_label: Label = Label(master=self._footer_frame, text="O", font=helv18)
         self._order_status_label.pack(side=RIGHT)
 
-
 root = Tk()
 
 OrderTileGUI(parent=root, row=0, column=0, padx=10, pady=10)
