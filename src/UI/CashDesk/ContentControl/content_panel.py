@@ -27,7 +27,7 @@ class ContentPanel(Frame):
 
         self.add_order_content: AddOrderView = AddOrderView(
             parent=self,
-            background=CButton.LIGHT,
+            background=CButton.WHITE,
             shown=True # Set this view to be shown at the beginning
         )
         # Add the view to the list
