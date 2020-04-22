@@ -29,7 +29,7 @@ class OrderTileGUI(Frame):
 
         helv18 = tkFont.Font(family='Helvetica', size=18)
 
-        self.grid(row=row,column=column,padx=padx,pady=pady)
+        self.grid(row=row,column=column,padx=padx,pady=pady,sticky='N')
         self.pack_propagate(0)
 
         self._header_frame: Frame = Frame(master=self, bg="green")
@@ -56,8 +56,8 @@ class OrderTileGUI(Frame):
     def test_func(self) -> (int, str):
         return (0, "123")
 
-root = Tk()
+# root = Tk()
 
-OrderTileGUI(parent=root, row=0, column=0, padx=10, pady=10)
+# OrderTileGUI(parent=root, row=0, column=0, padx=10, pady=10)
 
-mainloop()
+# mainloop()

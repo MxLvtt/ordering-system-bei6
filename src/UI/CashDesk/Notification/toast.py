@@ -10,6 +10,8 @@ class Toast():
     HEIGHT=220
     TIME_TILL_FADEOUT=7
 
+    INITIAL_ALPHA = 0.7
+
     BACKGROUND=CButton.LIGHT
     
     # STATIC VARIABLES
@@ -46,6 +48,7 @@ class Toast():
         window.overrideredirect(1)
         window.attributes('-topmost', 1)
         window.config(background=self.BACKGROUND)
+        window.attributes("-alpha", self.INITIAL_ALPHA)
 
         window.update()
 

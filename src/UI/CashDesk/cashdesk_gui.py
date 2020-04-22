@@ -178,6 +178,7 @@ class CashDeskGUI():
     def show_history(self):
         """ Show the history view in the body. If already shown, then this will return to the default view.
         """
+        self.body.active_view.add_order_tile()
         # if not self.body.is_history_shown():
         #     self.body.show_history_view()
         # else:
