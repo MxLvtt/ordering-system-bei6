@@ -1,6 +1,7 @@
 from tkinter import *
 from ControlPanel import ControlPanel
 from OrdersPanel import OrdersPanel
+from odertile import OrderTileGUI
 
 
 class KitchenGUI():
@@ -23,12 +24,25 @@ class KitchenGUI():
         ordersPanelHeight = rootHeight - controlPanelHeight 
         ordersPanelWidth  =  rootWidth
 
-        ordersPanel = OrdersPanel(root, ordersPanelWidth, ordersPanelHeight, 'white')
-        ordersPanel.grid(row=0, column=0, padx=5 , pady= 5)
+        self.ordersPanel = OrdersPanel(root, 'white')
+        self.ordersPanel.pack(side=TOP,fill='both',expand=1)
+        # self.ordersPanel.grid(row=0, column=0, padx=5 , pady= 5)
 
-        controlPanel = ControlPanel(root, controlPanelWidth, controlPanelHeight ,'black')
-        controlPanel.grid(row=1, column=0)
-        controlPanel.grid_propagate(0)
+        self.controlPanel = ControlPanel(root,controlPanelHeight,'black')
+        self.controlPanel.pack(side=BOTTOM,fill='x')
+        # controlPanel.grid(row=1, column=0)
+        # self.controlPanel.grid_propagate(0)
+        
+
+        mainloop()
+
+        
+    def add_order_to_ui(self):
+        #todo: generate row and column indices dinamicaly
+        # OrderTileGUI(parent=self.ordersPanel, row=0, column=0)
+        self.ordersPanel.add_order_tile()
+    
 
 
-        root.mainloop()
+
+  
