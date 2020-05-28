@@ -40,7 +40,7 @@ class ContentPanel(Frame):
 
         self.active_orders_content: ActiveOrdersView = ActiveOrdersView(
             parent=self,
-            background=CButton.YELLOW
+            background=CButton.WHITE
         )
         # Add the view to the list
         self.VIEWS.append(self.active_orders_content)

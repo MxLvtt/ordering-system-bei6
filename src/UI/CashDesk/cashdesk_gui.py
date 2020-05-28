@@ -15,6 +15,8 @@ class CashDeskGUI():
         root.config(background="#696969")
         root.update()
 
+        self._root = root
+
         # The default font for the labels
         helv18 = tkFont.Font(family='Helvetica', size=18)
 
@@ -212,4 +214,4 @@ class CashDeskGUI():
         """ Exits the program properly.
         """
         self.model._cancel_timer()
-        exit()
+        self._root.destroy()

@@ -17,7 +17,7 @@ class ActiveOrdersView(ContentTemplate):
 
     def add_order_tile(self):
         print("Adding order tile")
-        rh = random() * 500 + 200
+        rh = random() * 200 + 500
         OrderTileGUI(parent=self, row=self._idxr, column=self._idx, height=rh)
         self._idx = self._idx + 1
         if self._idx == 4:

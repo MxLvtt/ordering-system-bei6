@@ -2,6 +2,7 @@ import time
 from random import random
 from tkinter import PhotoImage
 from threading import Timer
+from Handlers.meals_handler import MealsHandler
 from EventHandler.Event import Event
 from Notification.toast import Toast
 from Templates.cbutton import CButton
@@ -32,6 +33,8 @@ class CashDeskModel():
         """ Has to be called, when the GUI is finished with initialization.
         """
         self._main_cycle_thread()
+
+        self._meals_handler = MealsHandler()
 
     ### ------------------- PROPERTIES ------------------- ###
 
