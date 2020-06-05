@@ -51,6 +51,10 @@ class ContentPanel(Frame):
     def active_view(self):
         return self._active_view
 
+    @property
+    def add_order_view(self):
+        return self.add_order_content
+
     ### ------------------- MAIN METHODS ------------------- ###
 
     def show_add_order_view(self):

@@ -86,33 +86,42 @@ class CashDeskGUI():
             row=0, column=0
         )
 
-        # The button to bring up or close the active orders view (toggles)
+        # The button to bring up the add order view
+        self._add_order_view_button = CButton(
+            parent=footer,
+            image=self.model.add_img,
+            command=self.show_add_order,
+            fg=CButton.DARK, bg=CButton.GREEN,
+            row=0, column=1
+        )
+
+        # The button to bring up the active orders view
         self._active_orders_button = CButton(
             parent=footer,
             image=self.model.in_progress_img,
             command=self.show_active_orders,
             fg=CButton.DARK, bg=CButton.YELLOW,
-            row=0, column=1
+            row=0, column=2
         )
 
-        # The button to bring up or close the history view (toggles)
+        # The button to bring up the history view
         self._history_button = CButton(
             parent=footer,
             image=self.model.history_img,
             spaceX=(0.0,1.0),
             command=self.show_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=2
+            row=0, column=3
         )
 
-        # The button to bring up or close the settings view (toggles)
+        # The button to bring up the settings view
         self._settings_button = CButton(
             parent=footer,
             image=self.model.settings_img,
             spaceX=(0.0,1.0),
             command=self.show_settings,
             fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=3
+            row=0, column=4
         )
 
         ## -------- BODY STUFF -------- ##
@@ -125,6 +134,7 @@ class CashDeskGUI():
 
         ## -------- ADDITIONAL STUFF -------- ##
 
+        self.model.meals_db_connection_ready_event.add(self.body.add_order_view.initialize)
         # Initializing the model after the GUI has finished the init process
         self.model.initialize()
         # Adding the GUI's callback function to the main periodic thread event of the model
@@ -169,16 +179,18 @@ class CashDeskGUI():
         
         self.model.add_order()
 
-    def show_active_orders(self):
-        """ Show the active orders view in the body. If already shown, then this will return to the default view.
+    def show_add_order(self):
+        """ Show the add order view in the body.
         """
-        if not self.body.is_active_orders_shown():
-            self.body.show_active_orders_view()
-        else:
-            self.body.show_add_order_view()
+        self.body.show_add_order_view()
+
+    def show_active_orders(self):
+        """ Show the active orders view in the body.
+        """
+        self.body.show_active_orders_view()
 
     def show_history(self):
-        """ Show the history view in the body. If already shown, then this will return to the default view.
+        """ Show the history view in the body.
         """
         self.body.active_view.add_order_tile()
         # if not self.body.is_history_shown():
@@ -188,7 +200,7 @@ class CashDeskGUI():
         pass
 
     def show_settings(self):
-        """ Show the settings view in the body. If already shown, then this will return to the default view.
+        """ Show the settings view in the body.
         """
         # if not self.body.is_settings_shown():
         #     self.body.show_settings_view()

@@ -5,6 +5,7 @@ class IMAGES():
 
     CHECK_MARK = f"{BASE_PATH}checkmark.png"
     EXIT = f"{BASE_PATH}exit.png"
+    ADD = f"{BASE_PATH}add.png"
     HISTORY = f"{BASE_PATH}history.png"
     IN_PROGRESS = f"{BASE_PATH}in_progress.png"
     SETTINGS = f"{BASE_PATH}settings.png"

@@ -18,9 +18,13 @@ class CashDeskModel():
         # Event that is triggered on every execution of the main cycle
         self._on_cycle_event: Event = Event()
 
+        # Event that is triggered, when the MealsHandler established the connection to the database
+        self._meals_db_connection_ready_event: Event = Event()
+
         # Image objects for the buttons
         self._checkmark_img = PhotoImage(file=IMAGES.CHECK_MARK)
         self._exit_img = PhotoImage(file=IMAGES.EXIT)
+        self._add_img = PhotoImage(file=IMAGES.ADD)
         self._history_img = PhotoImage(file=IMAGES.HISTORY)
         self._in_progress_img = PhotoImage(file=IMAGES.IN_PROGRESS)
         self._settings_img = PhotoImage(file=IMAGES.SETTINGS)
@@ -34,13 +38,17 @@ class CashDeskModel():
         """
         self._main_cycle_thread()
 
-        self._meals_handler = MealsHandler()
+        self._meals_handler = MealsHandler(self._meals_db_connection_ready_event)
 
     ### ------------------- PROPERTIES ------------------- ###
 
     @property
     def on_cycle_event(self):
         return self._on_cycle_event
+
+    @property
+    def meals_db_connection_ready_event(self):
+        return self._meals_db_connection_ready_event
 
     @property
     def current_time(self) -> str:
@@ -53,6 +61,10 @@ class CashDeskModel():
     @property
     def exit_img(self):
         return self._exit_img
+
+    @property
+    def add_img(self):
+        return self._add_img
 
     @property
     def history_img(self):
@@ -122,7 +134,7 @@ class CashDeskModel():
         self._main_cycle_timer.start()
 
     def _show_toast(self, text="Notification Toast"):
-        """ TEMP """
+        """ TODO: TEMP """
         Toast(
             title=text,
             summary="This is a short summary\nof the notification."
