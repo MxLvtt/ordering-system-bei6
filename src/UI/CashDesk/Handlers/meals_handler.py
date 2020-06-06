@@ -1,10 +1,14 @@
 import mysql.connector as MySQL
 import Templates.references as REFS
-from Templates.category import Category
+from Templates.meals import Category,Meal
 from tkinter import messagebox
 from EventHandler.Event import Event
 
 class MealsHandler:
+    NO_SPLIT = 0    # Does not split the meals into their categories at all
+    SPLIT_MAIN = 1  # Splits the meals only within the first layer of categories
+    SPLIT_ALL = 2   # Splits the meals among all listed categories 
+
     CONNECTION_READY = False
     CURSOR = None
 
@@ -54,11 +58,14 @@ class MealsHandler:
     def _initialize(self, cursor):
         print(f"Getting information for table '{REFS.MEALS_TABLE_NAME}'")
 
+        # Dummy-command to get table information
         cursor.execute(f"SELECT * FROM {REFS.MEALS_TABLE_NAME} WHERE id = 0")
 
-        self.NUM_COLUMNS = len(cursor.description)
-        self.COLUMN_NAMES = [i[0] for i in cursor.description]
+        # Extract table information from dummy-command
+        MealsHandler.NUM_COLUMNS = len(cursor.description)
+        MealsHandler.COLUMN_NAMES = [i[0] for i in cursor.description]
 
+        # Drop fetched information
         cursor.fetchall()
 
     @property
@@ -78,15 +85,16 @@ class MealsHandler:
         """ Returns an array of all meals in the database in their raw form.
         """
         if MealsHandler.CONNECTION_READY:
-            MealsHandler.CURSOR.execute(f"SELECT * FROM {REFS.MEALS_TABLE_NAME}")
-            return MealsHandler.CURSOR.fetchall()
+            return MealsHandler.send_sql_command(f"SELECT * FROM {REFS.MEALS_TABLE_NAME}")
         else:
             return []
 
     @staticmethod
-    def split_meals_by_categories(meals) -> Category:
+    def split_meals_by_categories(meals, splitmode: int) -> Category:
         """ Splits the given list of meals (in raw format) up into their categories
-        and return the root category
+        and return the root category.
+
+        splitmode: NO_SPLIT, SPLIT_MAIN, SPLIT_ALL
         """
         root: Category = Category("root")
         
@@ -95,18 +103,20 @@ class MealsHandler:
             category_value = meal[1]
             name_value = meal[2]
 
-            # TODO: CHECK IF THE CATEGORIES CONTENT IS VALID AND NOT NULL!
-            # TODO: IF NULL, THEN THE FOR-LOOP IN THE MIDDLE SHOULD BE SKIPPED! -> only add meal-cat and meal-object
-
             # Extract subcategories and split up into a separate array -> ['Getraenke', 'Kalt', 'Alkoholfrei']
-            subcats_arr = category_value.split('/')
             prev_cat = root
 
-            # For every category in subcategories
-            for subcat in subcats_arr:
-                # Add the subcategory to the previous category (ignore if existant)
-                # And set the previous category to the current subcategory
-                prev_cat = prev_cat.add(subcat)
+            # Create subcategory tree if needed/wanted
+            if category_value != "NULL" and splitmode != MealsHandler.NO_SPLIT:
+                subcats_arr = category_value.split('/')
+                
+                # For every category in subcategories
+                for index, subcat in enumerate(subcats_arr):
+                    # Skip all deeper categories if in "SPLIT_MAIN" mode
+                    if index < 1 or splitmode != MealsHandler.SPLIT_MAIN:
+                        # Add the subcategory to the previous category (ignore if existant)
+                        # And set the previous category to the current subcategory
+                        prev_cat = prev_cat.add(subcat)
             
             # Create object of class Meal with the data given from the database (-> 'meal')
             meal_object: Meal = Meal(meal)
@@ -117,25 +127,24 @@ class MealsHandler:
         
         return root
 
+    @staticmethod
+    def send_sql_command(command: str):
+        try:
+            if MealsHandler.CONNECTION_READY:
+                MealsHandler.CURSOR.execute(command)
+                return MealsHandler.CURSOR.fetchall()
+            
+            return []
+        except MySQL.Error as err:
+            print("")
+            if err.errno == MySQL.errorcode.ER_ACCESS_DENIED_ERROR:
+                print("Something is wrong with your user name or password")
+            elif err.errno == MySQL.errorcode.ER_BAD_DB_ERROR:
+                print("Database does not exist")
+            else:
+                print(err)
 
-class Meal(object):
-    def __init__(self, database_content):
-        # TODO: generate object of class meal from the given meal database-data
-        pass
+            messagebox.showerror("Database Connection Error", str(err))
+        
+        return []
 
-# connection = MySQL.connect(
-#     host="192.168.2.116",
-#     port="8457",
-#     user="marcel",
-#     passwd="3482657ml",
-#     database="meals"
-# )
-
-# cursor = connection.cursor()
-
-# cursor.execute("SELECT * FROM mains")
-
-# result = cursor.fetchall()
-
-# for line in result:
-#     print(line)

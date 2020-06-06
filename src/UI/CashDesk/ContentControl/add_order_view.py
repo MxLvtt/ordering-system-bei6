@@ -1,6 +1,9 @@
 from tkinter import *
+from tkinter import font as tkFont
+from functools import partial
 from ContentControl.content_template import ContentTemplate
-from Handlers.meals_handler import MealsHandler,Meal
+from Handlers.meals_handler import MealsHandler, Meal
+from ContentControl.AddOrderView.meal_details_view import MealDetailsView
 
 class AddOrderView(ContentTemplate):
     COLUMNS = 3
@@ -15,40 +18,106 @@ class AddOrderView(ContentTemplate):
         )
 
         self._background = background
+        self._root_category = None
+        self._current_category = None
+        self._meal_details_view = MealDetailsView(self, background, False)
+
+    def root_category(self):
+        return self._root_category
+
+    def current_category(self):
+        return self._current_category
 
     def initialize(self):
         meals_db = MealsHandler.get_raw_meals()
 
-        # TODO: ALl categories of the meals have to be retrieved. Should they be split in groups in MealsHandler?
-        # TODO: USE THE CATEGORIES TO BUILD UP THE TILES!!!!
-        self._meals_by_cats = MealsHandler.split_meals_by_categories(meals_db)
+        print("\nNo split:")
+        self._root_category = MealsHandler.split_meals_by_categories(meals_db, MealsHandler.NO_SPLIT)
 
-        self._meals = meals_db
+        # Print a tree of all categories
+        self._root_category.printc()
 
-        # Note: The __init__ is only called once, not everytime the view is changed
+        print("\nSplit main categories:")
+        self._root_category = MealsHandler.split_meals_by_categories(meals_db, MealsHandler.SPLIT_MAIN)
 
+        # Print a tree of all categories
+        self._root_category.printc()
+        
+        print("\nSplit all:")
+        self._root_category = MealsHandler.split_meals_by_categories(meals_db, MealsHandler.SPLIT_ALL)
+
+        # Print a tree of all categories
+        self._root_category.printc()
+
+        # Update the tiles on the view to match the category
+        self._update_tiles(self._root_category)
+
+    def go_back(self):
+        if self._current_category != self._root_category:
+            prev_category = self._current_category.parent
+
+            if self._meal_details_view.is_shown:
+                prev_category = self._current_category
+
+            self._update_tiles(prev_category)
+
+    def reset(self):
+        if self._current_category != self._root_category:
+            self._update_tiles(self._root_category)
+
+    def _open_meal_details(self, meal: Meal):
+        self._meal_details_view.update_content(meal, MealsHandler.COLUMN_NAMES, True)
+
+        self._clear_frame()
+        self._meal_details_view.show_view()
+
+    def _update_tiles(self, root_category):
+        self._clear_frame()
+        self._meal_details_view.hide_view()
+
+        self._current_category = root_category
         self._meal_tiles = []
 
-        for idx, meal in enumerate(self._meals):
+        for idx, subcat in enumerate(root_category.subcategories):
             x = idx % AddOrderView.COLUMNS
             y = int(idx / AddOrderView.COLUMNS)
 
             if x == 0:
                 self.row_container = Frame(self, background=self._background)
 
-                paddingy = (0,5)
+                paddingy = (0, 5)
                 if y == 0:
-                    paddingy = (10,5)
-                    
-                self.row_container.pack(padx=5, pady=paddingy, side=TOP, fill="both", expand=1)
+                    paddingy = (10, 5)
 
-            meal_tile = Frame(self.row_container, background="#323232", borderwidth=2)
-            meal_tile.pack(padx=5, pady=(0,5), side=LEFT, fill="both", expand=1)
+                self.row_container.pack(
+                    padx=5, pady=paddingy, side=TOP, fill="both", expand=1)
+
+            meal_tile = Frame(self.row_container,
+                              background=self.TILE_BGD, borderwidth=2)
+            meal_tile.pack(padx=5, pady=(0, 5), side=LEFT,
+                           fill="both", expand=1)
             meal_tile.pack_propagate(0)
             meal_tile.grid_propagate(0)
             meal_tile.update()
 
-            meal_tile_label = Label(meal_tile, text=meal[1], background=self.TILE_BGD)
+            largefont = tkFont.Font(family="Helvetica", size=42, weight='bold')
+            buttoncmd = partial(self._update_tiles, subcat)
+
+            if subcat.has_meal():
+                # TODO: Temporary action on button press of actual meal, no category
+                buttoncmd = partial(self._open_meal_details, subcat.meal)
+
+            meal_tile_label = Button(meal_tile,
+                                     text=subcat.name,
+                                     background=self.TILE_BGD,
+                                     command=buttoncmd,
+                                     font=largefont
+                                     )
             meal_tile_label.pack(fill="both", expand=1)
 
             self._meal_tiles.append(meal_tile)
+
+    def _clear_frame(self):
+        for child in self.winfo_children():
+            if child != self._meal_details_view:
+                child.destroy()

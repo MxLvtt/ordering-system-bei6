@@ -42,9 +42,18 @@ class CashDeskGUI():
         self._clear_button = CButton(
             parent=header,
             image=self.model.trashcan_img,
-            command=self.model.clear_form,
+            command=self.clear_addorderview,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=1
+        )
+
+        # Back button to go to the previous category (add order view)
+        self._back_button = CButton(
+            parent=header,
+            image=self.model.trashcan_img,
+            command=self.go_back_add_order_view,
+            fg=CButton.DARK, bg=CButton.DARK_RED,
+            row=0, column=2
         )
 
         ## -------- FOOTER STUFF -------- ##
@@ -178,6 +187,18 @@ class CashDeskGUI():
         self.model.call_after_delay(self.add_order_button._enable, 1.0)
         
         self.model.add_order()
+
+    def clear_addorderview(self):
+        """ Resets the add order view
+        """
+        self.body.add_order_view.reset()
+        self.model.clear_form()
+
+    def go_back_add_order_view(self):
+        """ Go back a category
+        """
+        if self.body.is_add_order_shown():
+            self.body.add_order_view.go_back()
 
     def show_add_order(self):
         """ Show the add order view in the body.
