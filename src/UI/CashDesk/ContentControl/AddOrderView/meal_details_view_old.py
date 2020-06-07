@@ -12,15 +12,8 @@ class MealDetailsView(Frame):
     BUTTON_ADON_BACKGROUND = '#BBFF9E'
     BUTTON_SIZE_BACKGROUND = '#B7EDFF'
     BUTTON_INACTIVE_FOREGROUND = '#606060'
-    BUTTON_FONT_SIZE = '20'
 
     SEPARATOR_WIDTH = 10
-    SEPARATOR_COLOR = '#696969'#'#525252'
-    SIZES_FRAME_WIDTH = 250
-
-    INGREDIENTS_LABEL = 'Zutaten'
-    ADDONS_LABEL = 'Extras'
-    SIZES_LABEL = 'Größen'
 
     def __init__(self, parent, background, shown: bool = False):
         super().__init__(
@@ -43,98 +36,51 @@ class MealDetailsView(Frame):
         else:
             self.show_view()
 
-        largefont = ('Helvetica', '40', 'bold')
-        bigfont = ('Helvetica', '26', 'bold italic')
+        largefont = tkFont.Font(family="Helvetica", size=42, weight='bold')
 
-        # TITLE LABEL
         self._title = Label(
             master=self,
             text="<title>",
             font=largefont,
             background=background
         )
-        self._title.grid(row=0, columnspan=3, sticky='nsew', pady=(10,10))
+        self._title.pack(side=TOP, padx=5, pady=(5, 0), fill='x')
 
-        # HORIZONTAL SEPARATOR
-        Frame(
-            master=self,
-            background=MealDetailsView.SEPARATOR_COLOR,
-            height=MealDetailsView.SEPARATOR_WIDTH
-        ).grid(row=1, column=0, columnspan=5, sticky='nsew')
-
-        # ZUTATEN LABEL
-        self._ingredients_label = Label(
-            master=self,
-            text=MealDetailsView.INGREDIENTS_LABEL,
-            font=bigfont,
-            background=background
-        )
-        self._ingredients_label.grid(row=2, column=0, sticky='nsew', pady=(10,0))
-
-        # EXTRAS LABEL
-        self._extras_label = Label(
-            master=self,
-            text=MealDetailsView.ADDONS_LABEL,
-            font=bigfont,
-            background=background
-        )
-        self._extras_label.grid(row=2, column=2, sticky='nsew', pady=(10,0))
-
-        # SIZES LABEL
-        self._sizes_label = Label(
-            master=self,
-            text=MealDetailsView.SIZES_LABEL,
-            font=bigfont,
-            background=background
-        )
-        self._sizes_label.grid(row=2, column=4, sticky='nsew', pady=(10,0))
-
-        # ZUTATEN BUTTONS FRAME
         self._frame_ingredients = Frame(
             master=self,
-            background=background
+            background=background,
         )
-        self._frame_ingredients.grid(row=3, column=0, sticky='nsew')
+        self._frame_ingredients.pack(
+            side=LEFT, padx=5, pady=5, fill='both', expand=1)
 
-        # VERTICAL LEFT SEPARATOR
+        # SEPARATOR
         Frame(
             master=self,
-            background=MealDetailsView.SEPARATOR_COLOR,
+            background='#323232',
             width=MealDetailsView.SEPARATOR_WIDTH
-        ).grid(row=2, rowspan=2, column=1, sticky='nsew')
+        ).pack(side=LEFT, fill='y')
 
-        # EXTRAS BUTTONS FRAME
         self._frame_addons = Frame(
             master=self,
             background=background
         )
-        self._frame_addons.grid(row=3, column=2, sticky='nsew')
+        self._frame_addons.pack(
+            side=LEFT, padx=5, pady=5, fill='both', expand=1)
 
-        # VERTICAL RIGHT SEPARATOR
+        # SEPARATOR
         Frame(
             master=self,
-            background=MealDetailsView.SEPARATOR_COLOR,
+            background='#323232',
             width=MealDetailsView.SEPARATOR_WIDTH
-        ).grid(row=2, rowspan=2, column=3, sticky='nsew')
+        ).pack(side=LEFT, fill='y')
 
-        # GROESSEN BUTTONS FRAME
         self._frame_sizes = Frame(
             master=self,
-            background=background,
-            width=MealDetailsView.SIZES_FRAME_WIDTH
+            background='red'#,#background
+            # width=500
         )
-        self._frame_sizes.grid(row=3, column=4, sticky='nsew')
-        self._frame_sizes.pack_propagate(0)
-
-        self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(1, weight=0)
-        self.grid_rowconfigure(2, weight=0)
-        self.grid_rowconfigure(3, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=0)
-        self.grid_columnconfigure(2, weight=1)
-        self.grid_columnconfigure(3, weight=0)
-        self.grid_columnconfigure(4, weight=0)
+        self._frame_sizes.pack(side=LEFT, padx=5, pady=5,
+                               fill='both')
 
         self._ingredients_states = []
         self._addons_states = []
@@ -158,8 +104,9 @@ class MealDetailsView(Frame):
         for child in self._frame_sizes.winfo_children():
             child.destroy()
 
-        if expand_title and len(meal.category) > 0:
-            meal_last_category = meal.category[len(meal.category) - 1]
+        meal_last_category = meal.category[len(meal.category) - 1]
+
+        if expand_title:
             self._title.config(text=f"{meal_last_category} > {meal.name}")
         else:
             self._title.config(text=meal.name)
@@ -188,7 +135,7 @@ class MealDetailsView(Frame):
         self._fill_frame(self._frame_sizes,
                          meal.sizes,
                          self._clicked_size_button,
-                        #  MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
+                         MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                          cols=1
                          )
         self._update_size_buttons()
@@ -198,7 +145,7 @@ class MealDetailsView(Frame):
                     button_contents: [],
                     buttonCommand,
                     default_button_foreground: str = '#000000',
-                    cols=3, rows=3):
+                    cols=3, rows=3, no_propagate: bool = True):
         NUM_COLUMNS = cols  # Minimum number of columns
         NUM_ROWS = rows    # Minimum number of rows
 
@@ -225,13 +172,12 @@ class MealDetailsView(Frame):
             container_tile.update()
 
             foreground = default_button_foreground
-            largefont = ("Helvetica", MealDetailsView.BUTTON_FONT_SIZE, "bold")
+            largefont = ("Helvetica", "21", "bold")
 
             tile_button = Button(container_tile,
                                  text=content,
                                  foreground=foreground,
-                                 font=largefont,
-                                 wraplength=220
+                                 font=largefont
                                  )
             tile_button.pack(fill="both", expand=1)
             tile_button.config(command=partial(buttonCommand,
@@ -316,7 +262,7 @@ class MealDetailsView(Frame):
                             child.config(foreground='#000000',
                                          background=MealDetailsView.BUTTON_SIZE_BACKGROUND)
                         elif self._sizes_states[idx] == 0:
-                            child.config(foreground='#000000',
+                            child.config(foreground=MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                                          background=MealDetailsView.BUTTON_DEFAULT_BACKGROUND)
 
     def hide_view(self):

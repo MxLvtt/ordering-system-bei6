@@ -25,17 +25,48 @@ class CashDeskGUI():
 
         ## -------- HEADER STUFF -------- ##
 
+        headercontainer = Frame(root, background="red")
+        headercontainer.pack(side=TOP, fill='x', padx=5, pady=5)
+
+        # TODO: Move all of this into the add order view and finish the 
+        # TODO: generic toolbar system (where the toolbar is chosen form the active view)
+
         # The frame at the top of the window
-        header = Frame(root, background="#EFEFEF")
-        header.pack(side=TOP, fill='x', padx=5, pady=5)
+        header = Frame(headercontainer, background="#EFEFEF")
+        # header.pack(side=TOP, fill='x', padx=5, pady=5)
+        header.grid(row=0, column=0, sticky='nsew')
+
+        current_order_button_container = Frame(headercontainer, background="#EFEFEF")
+        current_order_button_container.grid(row=0, column=1, sticky='nsew')
+
+        self._current_order_button = CButton(
+            parent=current_order_button_container,
+            image=self.model.order_img,
+            command=exit, # TODO
+            fg=CButton.WHITE, bg=CButton.LIGHT,
+            row=0, column=0
+        )
+        
+        headercontainer.grid_rowconfigure(0, weight=1)
+        headercontainer.grid_columnconfigure(0, weight=1)
+        headercontainer.grid_columnconfigure(1, weight=0)
 
         # The add-order button to add a new order
         self._add_order_button = CButton(
             parent=header,
-            image=self.model.checkmark_img,
+            image=self.model.add_img,
             command=self.add_order,
             fg=CButton.WHITE, bg=CButton.GREEN,
             row=0, column=0
+        )
+
+        # Back button to go to the previous category (add order view)
+        self._back_button = CButton(
+            parent=header,
+            image=self.model.back_img,
+            command=self.go_back_add_order_view,
+            fg=CButton.DARK, bg=CButton.LIGHT,
+            row=0, column=1
         )
 
         # The clear button to reset the widgets in the add-order-view to their default values
@@ -44,15 +75,6 @@ class CashDeskGUI():
             image=self.model.trashcan_img,
             command=self.clear_addorderview,
             fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=1
-        )
-
-        # Back button to go to the previous category (add order view)
-        self._back_button = CButton(
-            parent=header,
-            image=self.model.trashcan_img,
-            command=self.go_back_add_order_view,
-            fg=CButton.DARK, bg=CButton.DARK_RED,
             row=0, column=2
         )
 
@@ -98,9 +120,9 @@ class CashDeskGUI():
         # The button to bring up the add order view
         self._add_order_view_button = CButton(
             parent=footer,
-            image=self.model.add_img,
+            image=self.model.add_order_view_img,
             command=self.show_add_order,
-            fg=CButton.DARK, bg=CButton.GREEN,
+            fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=1
         )
 
@@ -109,7 +131,7 @@ class CashDeskGUI():
             parent=footer,
             image=self.model.in_progress_img,
             command=self.show_active_orders,
-            fg=CButton.DARK, bg=CButton.YELLOW,
+            fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=2
         )
 

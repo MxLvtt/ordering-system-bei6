@@ -6,6 +6,8 @@ from Templates.cbutton import CButton
 from Templates.images import IMAGES
 
 class Toast():
+    GLOBAL_DEACTIVATION=True
+
     WIDTH=500
     HEIGHT=220
     TIME_TILL_FADEOUT=7
@@ -24,6 +26,9 @@ class Toast():
         title,
         summary
     ):
+        if Toast.GLOBAL_DEACTIVATION:
+            return
+
         screen_width, screen_height = pyautogui.size()
 
         self._pos=(25, screen_height-self.HEIGHT-110)

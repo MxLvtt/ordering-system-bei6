@@ -24,11 +24,14 @@ class CashDeskModel():
         # Image objects for the buttons
         self._checkmark_img = PhotoImage(file=IMAGES.CHECK_MARK)
         self._exit_img = PhotoImage(file=IMAGES.EXIT)
-        self._add_img = PhotoImage(file=IMAGES.ADD)
+        self._add_img = PhotoImage(file=IMAGES.ADD) 
+        self._back_img = PhotoImage(file=IMAGES.BACK) 
+        self._add_order_view_img = PhotoImage(file=IMAGES.BURGER_DARK) 
         self._history_img = PhotoImage(file=IMAGES.HISTORY)
         self._in_progress_img = PhotoImage(file=IMAGES.IN_PROGRESS)
         self._settings_img = PhotoImage(file=IMAGES.SETTINGS)
         self._trashcan_img = PhotoImage(file=IMAGES.TRASH_CAN)
+        self._order = PhotoImage(file=IMAGES.ORDER)
 
         # Holds the value of the currently displayed time
         self._current_time = "<TIME>"
@@ -67,6 +70,14 @@ class CashDeskModel():
         return self._add_img
 
     @property
+    def back_img(self):
+        return self._back_img
+
+    @property
+    def add_order_view_img(self):
+        return self._add_order_view_img
+
+    @property
     def history_img(self):
         return self._history_img
 
@@ -81,6 +92,10 @@ class CashDeskModel():
     @property
     def trashcan_img(self):
         return self._trashcan_img
+
+    @property
+    def order_img(self):
+        return self._order
 
     ### ------------------- MAIN METHODS ------------------- ###
 

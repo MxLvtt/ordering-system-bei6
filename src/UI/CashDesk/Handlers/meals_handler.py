@@ -96,7 +96,7 @@ class MealsHandler:
 
         splitmode: NO_SPLIT, SPLIT_MAIN, SPLIT_ALL
         """
-        root: Category = Category("root")
+        root: Category = Category("root", splitmode)
         
         # Create Category-Tree by adding subcategories to root and so on
         for meal in meals:
@@ -107,7 +107,7 @@ class MealsHandler:
             prev_cat = root
 
             # Create subcategory tree if needed/wanted
-            if category_value != "NULL" and splitmode != MealsHandler.NO_SPLIT:
+            if category_value != None and splitmode != MealsHandler.NO_SPLIT:
                 subcats_arr = category_value.split('/')
                 
                 # For every category in subcategories
@@ -119,7 +119,7 @@ class MealsHandler:
                         prev_cat = prev_cat.add(subcat)
             
             # Create object of class Meal with the data given from the database (-> 'meal')
-            meal_object: Meal = Meal(meal)
+            meal_object: Meal = Meal(meal, MealsHandler.COLUMN_NAMES)
 
             # Create on last subcategory named like the meal itself
             # And add the meal object to this new subcategory
