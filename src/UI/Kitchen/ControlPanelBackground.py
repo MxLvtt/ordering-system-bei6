@@ -21,7 +21,5 @@ def cancel_order():
 
 
 def open_summary():
-    neu_list =handler.refrech_list()
-    # open_summerypannel(neu_list)
-
+    
     return

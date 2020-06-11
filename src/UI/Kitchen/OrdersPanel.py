@@ -1,6 +1,7 @@
 from tkinter import *
 from odertile import OrderTileGUI
 from random import *
+from tkinter import ttk
 import tkinter.messagebox
 from tkinter import messagebox
 
@@ -8,7 +9,7 @@ from tkinter import messagebox
 
 
 class OrdersPanel(Frame):
-     def  __init__(self, parent, panelbackground,list):
+     def  __init__(self, parent, panelbackground):
           super().__init__(
                 master=parent,
                 cnf={},
@@ -23,8 +24,30 @@ class OrdersPanel(Frame):
         
 
 
-          addbutton = Button(self, text="+" , height = 5 , width=5,  background="blue", command=self.add_order_tile, text = list)
+          addbutton = Button(self, text="+" , height = 5 , width=5,  background="blue", command=self.add_order_tile)
           addbutton.grid(sticky=N+W,row=0,column=0)
+
+
+        #   canvas = Canvas(self)
+        #   scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        #   self.scrollable_frame = ttk.Frame(canvas)
+
+        #   self.scrollable_frame.bind(
+        #       "<Configure>",
+        #       lambda e: canvas.configure(
+        #           scrollregion=canvas.bbox("all")
+        #       )
+        #   )
+
+        #   canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        #   canvas.configure(yscrollcommand=scrollbar.set)
+
+        #   canvas.pack(side="left", fill="both", expand=True)
+        #   scrollbar.pack(side="right", fill="y")
+
+
+
 
      def add_order_tile(self):
 

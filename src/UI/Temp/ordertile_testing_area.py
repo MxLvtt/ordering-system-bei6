@@ -30,6 +30,7 @@ root.resizable(True, True)
 # 'both' heißt er füllt es in x- und y-Richtung. Ansonsten nur fill='x' oder 'y' angeben;
 # Der 'OrderTile' soll auch die Größe verändern, wenn sich die Größe des Fensters ändert (expand=1);
 ordertile_objekt = OrderTileTest(parent=root, background='green')
+ordertile_objekt2= OrderTileTest(parent=root, background='green')
 ordertile_objekt.pack(expand=1, fill='both')
 # Alle Funktionen und Argumente kommen von der Klasse "Frame", von der die 'OrderTileTest' Klasse erbt;
 # Deswegen können wir die auch bei 'OrderTileTest' benutzen. Man kann auch einfach sagen:

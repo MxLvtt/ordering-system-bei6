@@ -16,6 +16,7 @@ class OrderTileTest(Frame):
         parent, # Gibt an, zu welchem übergeordneten tkinter-Element dieses Frame eingefügt werden soll
         background="white" # Setzt die Hintergrundfarbe des Ordertiles, default Wert ist 'white'
         # Hier könnten noch weitere Parameter hinzugefügt werden
+        ,status=status 
     ):
         # Mit super().__init__(...) rufen wir den Konstruktor von Frame (der Oberklasse) auf;
         # Dadurch wird im Hintergrund das eigentliche Frame Objekt erzeugt
@@ -24,12 +25,12 @@ class OrderTileTest(Frame):
             background=background
             # Hier könnten noch weitere Parameter von 'Frame' gesetzt werden
         )
-
+        self.status = status
         # Hier fügen wir ein Label (=Feld mit Text) zu unserem OrderTile hinzu
         # master=self: Das sagt dem Label, dass es zum OrderTile gehört
         # .grid(row=0,column=0): Das setzt das Label in das 'Grid' des OrderTiles in Zeile 0 und Spalte 0;
         #                        Wenn mehere Elemente gesetzt werden, kann man diese so an verschiedenen Stellen platzieren
-        Label(master=self, text="Das ist ein Beispiel Text").grid(row=0, column=0)
+        Label(self, text="Das ist ein Beispiel Text").grid(row=0, column=0)
 
         def funktion_wenn_button_gedrueckt():
             print("Button gedrueckt!")
