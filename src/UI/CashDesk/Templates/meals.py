@@ -2,21 +2,53 @@ import Templates.references as REFS
 
 
 class Meal(object):
+    DB_COLUMN_NAMES = None
+
     def __init__(self, database_content, db_column_names: []):
         self._db_content = database_content
 
+        if Meal.DB_COLUMN_NAMES == None or db_column_names != Meal.DB_COLUMN_NAMES:
+            Meal.DB_COLUMN_NAMES = db_column_names 
+
         self._id = database_content[db_column_names.index(
             REFS.MEALS_TABLE_ID_COLUMN)]
-        self._category = database_content[db_column_names.index(
+        self._category_raw = database_content[db_column_names.index(
             REFS.MEALS_TABLE_KATEGORIE_COLUMN)]
         self._name = database_content[db_column_names.index(
             REFS.MEALS_TABLE_NAME_COLUMN)]
-        self._ingredients = database_content[db_column_names.index(
+        self._ingredients_raw = database_content[db_column_names.index(
             REFS.MEALS_TABLE_ZUTATEN_COLUMN)]
-        self._addons = database_content[db_column_names.index(
+        self._addons_raw = database_content[db_column_names.index(
             REFS.MEALS_TABLE_ADDONS_COLUMN)]
-        self._sizes = database_content[db_column_names.index(
+        self._sizes_raw = database_content[db_column_names.index(
             REFS.MEALS_TABLE_GROESSEN_COLUMN)]
+
+        if self._category_raw == None:
+            self._category = []
+        else:
+            self._category = self._category_raw.split(REFS.CATEGORY_DELIMITER)
+
+        if self._ingredients_raw == None:
+            self._ingredients = []
+        else:
+            self._ingredients = self._ingredients_raw.split(REFS.LIST_DELIMITER)
+
+        if self._addons_raw == None:
+            self._addons = []
+        else:
+            self._addons = self._addons_raw.split(REFS.LIST_DELIMITER)
+
+        if self._sizes_raw == None:
+            self._sizes = []
+        else:
+            self._sizes = self._sizes_raw.split(REFS.LIST_DELIMITER)
+
+    @staticmethod
+    def COPY(source_meal: 'Meal') -> 'Meal':
+        return Meal(source_meal.database_content, Meal.DB_COLUMN_NAMES)
+
+    def copy(self) -> 'Meal':
+        return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
 
     @property
     def database_content(self) -> str:
@@ -24,13 +56,11 @@ class Meal(object):
 
     @property
     def category_raw(self) -> str:
-        return self._category
+        return self._category_raw
 
     @property
     def category(self) -> []:
-        if self._category == None:
-            return []
-        return self._category.split(REFS.CATEGORY_DELIMITER)
+        return self._category
 
     @property
     def name(self) -> str:
@@ -38,33 +68,27 @@ class Meal(object):
 
     @property
     def ingredients_raw(self) -> str:
-        return self._ingredients
+        return self._ingredients_raw
 
     @property
     def ingredients(self) -> []:
-        if self._ingredients == None:
-            return []
-        return self._ingredients.split(REFS.LIST_DELIMITER)
+        return self._ingredients
 
     @property
     def addons_raw(self) -> str:
-        return self._addons
+        return self._addons_raw
 
     @property
     def addons(self) -> []:
-        if self._addons == None:
-            return []
-        return self._addons.split(REFS.LIST_DELIMITER)
+        return self._addons
 
     @property
     def sizes_raw(self) -> str:
-        return self._sizes
+        return self._sizes_raw
 
     @property
     def sizes(self) -> []:
-        if self._sizes == None:
-            return []
-        return self._sizes.split(REFS.LIST_DELIMITER)
+        return self._sizes
 
 
 class Category():

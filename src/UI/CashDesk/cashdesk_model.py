@@ -21,17 +21,8 @@ class CashDeskModel():
         # Event that is triggered, when the MealsHandler established the connection to the database
         self._meals_db_connection_ready_event: Event = Event()
 
-        # Image objects for the buttons
-        self._checkmark_img = PhotoImage(file=IMAGES.CHECK_MARK)
-        self._exit_img = PhotoImage(file=IMAGES.EXIT)
-        self._add_img = PhotoImage(file=IMAGES.ADD) 
-        self._back_img = PhotoImage(file=IMAGES.BACK) 
-        self._add_order_view_img = PhotoImage(file=IMAGES.BURGER_DARK) 
-        self._history_img = PhotoImage(file=IMAGES.HISTORY)
-        self._in_progress_img = PhotoImage(file=IMAGES.IN_PROGRESS)
-        self._settings_img = PhotoImage(file=IMAGES.SETTINGS)
-        self._trashcan_img = PhotoImage(file=IMAGES.TRASH_CAN)
-        self._order = PhotoImage(file=IMAGES.ORDER)
+        # Event that is triggered, when the content of the body changes
+        self._body_content_changed_event: Event = Event()
 
         # Holds the value of the currently displayed time
         self._current_time = "<TIME>"
@@ -46,56 +37,20 @@ class CashDeskModel():
     ### ------------------- PROPERTIES ------------------- ###
 
     @property
-    def on_cycle_event(self):
+    def on_cycle_event(self) -> Event:
         return self._on_cycle_event
 
     @property
-    def meals_db_connection_ready_event(self):
+    def meals_db_connection_ready_event(self) -> Event:
         return self._meals_db_connection_ready_event
+
+    @property
+    def body_content_changed_event(self) -> Event:
+        return self._body_content_changed_event
 
     @property
     def current_time(self) -> str:
         return self._current_time
-
-    @property
-    def checkmark_img(self):
-        return self._checkmark_img
-
-    @property
-    def exit_img(self):
-        return self._exit_img
-
-    @property
-    def add_img(self):
-        return self._add_img
-
-    @property
-    def back_img(self):
-        return self._back_img
-
-    @property
-    def add_order_view_img(self):
-        return self._add_order_view_img
-
-    @property
-    def history_img(self):
-        return self._history_img
-
-    @property
-    def in_progress_img(self):
-        return self._in_progress_img
-
-    @property
-    def settings_img(self):
-        return self._settings_img
-
-    @property
-    def trashcan_img(self):
-        return self._trashcan_img
-
-    @property
-    def order_img(self):
-        return self._order
 
     ### ------------------- MAIN METHODS ------------------- ###
 
@@ -114,7 +69,8 @@ class CashDeskModel():
 
     ### ------------------- HELPER METHODS ------------------- ###
 
-    def call_after_delay(self, function, delay: float):
+    @staticmethod
+    def call_after_delay(function, delay: float):
         """ Helper method to call a given function after the specified delay.
         """
         if delay > 0:

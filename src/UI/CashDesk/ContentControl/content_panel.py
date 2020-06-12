@@ -4,11 +4,13 @@ from ContentControl.add_order_view import AddOrderView
 from ContentControl.active_orders_view import ActiveOrdersView
 from Templates.cbutton import CButton
 
+
 class ContentPanel(Frame):
     """ Represents the main view of the cash desk UI. Holds and manages the different views of the UI
     and provides useful functionality. It acts as a container for the views.
     """
-    def __init__(self, parent, width=0, height=0, background="#EFEFEF"):
+
+    def __init__(self, parent, toolbar_container: Frame, width=0, height=0, background="#EFEFEF"):
         super().__init__(
             master=parent,
             cnf={},
@@ -20,15 +22,16 @@ class ContentPanel(Frame):
         # The list of all available views
         self.VIEWS = []
 
-        # To prevent the content panel from collapsing because of the added views. 
+        # To prevent the content panel from collapsing because of the added views.
         self.pack_propagate(0)
 
         ## ------- ADD ORDER VIEW ------- ##
 
         self.add_order_content: AddOrderView = AddOrderView(
             parent=self,
+            toolbar_container=toolbar_container,
             background=CButton.WHITE,
-            shown=True # Set this view to be shown at the beginning
+            shown=True  # Set this view to be shown at the beginning
         )
         # Add the view to the list
         self.VIEWS.append(self.add_order_content)
@@ -40,6 +43,7 @@ class ContentPanel(Frame):
 
         self.active_orders_content: ActiveOrdersView = ActiveOrdersView(
             parent=self,
+            toolbar_container=toolbar_container,
             background=CButton.WHITE
         )
         # Add the view to the list

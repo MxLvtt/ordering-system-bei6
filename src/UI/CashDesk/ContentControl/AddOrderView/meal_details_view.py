@@ -15,7 +15,7 @@ class MealDetailsView(Frame):
     BUTTON_FONT_SIZE = '20'
 
     SEPARATOR_WIDTH = 10
-    SEPARATOR_COLOR = '#696969'#'#525252'
+    SEPARATOR_COLOR = '#696969'  # '#525252'
     SIZES_FRAME_WIDTH = 250
 
     INGREDIENTS_LABEL = 'Zutaten'
@@ -53,7 +53,7 @@ class MealDetailsView(Frame):
             font=largefont,
             background=background
         )
-        self._title.grid(row=0, columnspan=3, sticky='nsew', pady=(10,10))
+        self._title.grid(row=0, columnspan=3, sticky='nsew', pady=(10, 10))
 
         # HORIZONTAL SEPARATOR
         Frame(
@@ -69,7 +69,8 @@ class MealDetailsView(Frame):
             font=bigfont,
             background=background
         )
-        self._ingredients_label.grid(row=2, column=0, sticky='nsew', pady=(10,0))
+        self._ingredients_label.grid(
+            row=2, column=0, sticky='nsew', pady=(10, 0))
 
         # EXTRAS LABEL
         self._extras_label = Label(
@@ -78,7 +79,7 @@ class MealDetailsView(Frame):
             font=bigfont,
             background=background
         )
-        self._extras_label.grid(row=2, column=2, sticky='nsew', pady=(10,0))
+        self._extras_label.grid(row=2, column=2, sticky='nsew', pady=(10, 0))
 
         # SIZES LABEL
         self._sizes_label = Label(
@@ -87,7 +88,7 @@ class MealDetailsView(Frame):
             font=bigfont,
             background=background
         )
-        self._sizes_label.grid(row=2, column=4, sticky='nsew', pady=(10,0))
+        self._sizes_label.grid(row=2, column=4, sticky='nsew', pady=(10, 0))
 
         # ZUTATEN BUTTONS FRAME
         self._frame_ingredients = Frame(
@@ -136,9 +137,10 @@ class MealDetailsView(Frame):
         self.grid_columnconfigure(3, weight=0)
         self.grid_columnconfigure(4, weight=0)
 
-        self._ingredients_states = []
-        self._addons_states = []
-        self._sizes_states = []
+        self._ingredients_states = []   # state: 1 = Included, 0 = Excluded
+        self._addons_states = []        # state: 1 = Added, 0 = Left Out
+        self._sizes_states = []         # state: 1 = Selected, 0 = Not Selected
+        self._opened_meal = None
 
     @property
     def title(self) -> str:
@@ -148,7 +150,40 @@ class MealDetailsView(Frame):
     def is_shown(self) -> bool:
         return not self._is_hidden
 
+    @property
+    def opened_meal(self):
+        return self._opened_meal
+
+    def get_adapted_meal(self):
+        if self.opened_meal == None or \
+                len(self.opened_meal.ingredients) != len(self._ingredients_states) or \
+                len(self.opened_meal.addons) != len(self._addons_states) or \
+                len(self.opened_meal.sizes) != len(self._sizes_states):
+            print("Error while trying to adapt the meal in MealDetailsView!")
+            return None
+
+        meal_copy = self.opened_meal.copy()
+        meal_copy.ingredients.clear()
+        meal_copy.addons.clear()
+        meal_copy.sizes.clear()
+
+        for idx, i_state in enumerate(self._ingredients_states):
+            if i_state == 0:
+                meal_copy.ingredients.append(self._opened_meal.ingredients[idx])
+
+        for idx, a_state in enumerate(self._addons_states):
+            if a_state == 1:
+                meal_copy.addons.append(self._opened_meal.addons[idx])
+
+        for idx, s_state in enumerate(self._sizes_states):
+            if s_state == 1:
+                meal_copy.sizes.append(self._opened_meal.sizes[idx])
+
+        return meal_copy
+
     def update_content(self, meal, expand_title: bool = False):
+        self._opened_meal = meal
+
         for child in self._frame_ingredients.winfo_children():
             child.destroy()
 
@@ -188,7 +223,7 @@ class MealDetailsView(Frame):
         self._fill_frame(self._frame_sizes,
                          meal.sizes,
                          self._clicked_size_button,
-                        #  MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
+                         #  MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                          cols=1
                          )
         self._update_size_buttons()

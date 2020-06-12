@@ -9,6 +9,7 @@ class IMAGES():
     BURGER_DARK = f"{BASE_PATH}burger_dark.png"
     BURGER = f"{BASE_PATH}burger.png"
     BACK = f"{BASE_PATH}back.png"
+    NEXT = f"{BASE_PATH}next.png"
     HISTORY = f"{BASE_PATH}history.png"
     IN_PROGRESS = f"{BASE_PATH}in_progress.png"
     SETTINGS = f"{BASE_PATH}settings.png"
@@ -20,3 +21,8 @@ class IMAGES():
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def create(filename: str):
+        img = PhotoImage(file=filename)
+        return img

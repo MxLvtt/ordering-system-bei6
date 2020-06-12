@@ -4,7 +4,7 @@ class ContentTemplate(Frame):
     """ Template class from which the view-classes will inherit from. Handles the hide- and show-logic and holds #
     the 'title' property of the view.
     """
-    def __init__(self, parent, title, background="white", shown: bool = False):
+    def __init__(self, parent, title, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
             master=parent,
             cnf={},
@@ -18,6 +18,11 @@ class ContentTemplate(Frame):
         # Private members
         self._title = title
         self._is_hidden = shown
+        self._toolbar_container = toolbar_container
+
+        self._toolbar = Frame(master=toolbar_container,background=background)
+        # self._toolbar.grid(row=0, column=0, sticky='nsew')
+        self._toolbar.pack(side=TOP, fill='x')
 
         # Initialize visibility-state
         if not shown:
@@ -26,6 +31,10 @@ class ContentTemplate(Frame):
             self.show_view()
 
     ### ------------------- PROPERTIES ------------------- ###
+
+    @property
+    def toolbar(self) -> Frame:
+        return self._toolbar
 
     @property
     def title(self) -> bool:
@@ -42,6 +51,8 @@ class ContentTemplate(Frame):
         """
         if not self._is_hidden:
             self.pack_forget()
+            # self.toolbar.grid_forget()
+            self.toolbar.pack_forget()
             self._is_hidden = True
 
     def show_view(self):
@@ -49,4 +60,6 @@ class ContentTemplate(Frame):
         """
         if self._is_hidden:
             self.pack(side=TOP,expand=1,fill='both')#,padx=5,pady=5)
+            # self.toolbar.grid(row=0, column=0, sticky='nsew')
+            self._toolbar.pack(side=TOP, fill='x')
             self._is_hidden = False

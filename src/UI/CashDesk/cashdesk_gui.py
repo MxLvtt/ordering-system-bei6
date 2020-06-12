@@ -1,5 +1,4 @@
 from tkinter import *
-from tkinter import font as tkFont
 from cashdesk_model import CashDeskModel
 from ContentControl.add_order_view import AddOrderView
 from ContentControl.content_panel import ContentPanel
@@ -18,65 +17,23 @@ class CashDeskGUI():
         self._root = root
 
         # The default font for the labels
-        helv18 = tkFont.Font(family='Helvetica', size=18)
+        helv18 = ('Helvetica', '18')
 
         # Declaring the cash desk's model object
         self.model = CashDeskModel()
 
         ## -------- HEADER STUFF -------- ##
 
-        headercontainer = Frame(root, background="red")
-        headercontainer.pack(side=TOP, fill='x', padx=5, pady=5)
+        self._headercontainer = Frame(root, background="#EFEFEF")
+        self._headercontainer.pack(side=TOP, fill='x', padx=5, pady=5)
 
         # TODO: Move all of this into the add order view and finish the 
         # TODO: generic toolbar system (where the toolbar is chosen form the active view)
 
         # The frame at the top of the window
-        header = Frame(headercontainer, background="#EFEFEF")
+        # header = Frame(self._headercontainer, background="#EFEFEF")
         # header.pack(side=TOP, fill='x', padx=5, pady=5)
-        header.grid(row=0, column=0, sticky='nsew')
-
-        current_order_button_container = Frame(headercontainer, background="#EFEFEF")
-        current_order_button_container.grid(row=0, column=1, sticky='nsew')
-
-        self._current_order_button = CButton(
-            parent=current_order_button_container,
-            image=self.model.order_img,
-            command=exit, # TODO
-            fg=CButton.WHITE, bg=CButton.LIGHT,
-            row=0, column=0
-        )
-        
-        headercontainer.grid_rowconfigure(0, weight=1)
-        headercontainer.grid_columnconfigure(0, weight=1)
-        headercontainer.grid_columnconfigure(1, weight=0)
-
-        # The add-order button to add a new order
-        self._add_order_button = CButton(
-            parent=header,
-            image=self.model.add_img,
-            command=self.add_order,
-            fg=CButton.WHITE, bg=CButton.GREEN,
-            row=0, column=0
-        )
-
-        # Back button to go to the previous category (add order view)
-        self._back_button = CButton(
-            parent=header,
-            image=self.model.back_img,
-            command=self.go_back_add_order_view,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=1
-        )
-
-        # The clear button to reset the widgets in the add-order-view to their default values
-        self._clear_button = CButton(
-            parent=header,
-            image=self.model.trashcan_img,
-            command=self.clear_addorderview,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=2
-        )
+        # header.grid(row=0, column=0, sticky='nsew')
 
         ## -------- FOOTER STUFF -------- ##
 
@@ -106,10 +63,12 @@ class CashDeskGUI():
         )
         self._footer_clock.pack(side=RIGHT)
 
+        self._exit_img = IMAGES.create(IMAGES.EXIT)
+
         # The button to exit the program
         self._exit_button = CButton(
             parent=footer,
-            image=self.model.exit_img,
+            image=self._exit_img,
             width=1,
             spaceX=(0.0,1.0),
             command=self.terminate,
@@ -117,38 +76,46 @@ class CashDeskGUI():
             row=0, column=0
         )
 
+        self.add_order_view_img = IMAGES.create(IMAGES.BURGER_DARK)
+
         # The button to bring up the add order view
         self._add_order_view_button = CButton(
             parent=footer,
-            image=self.model.add_order_view_img,
+            image=self.add_order_view_img,
             command=self.show_add_order,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=1
         )
 
+        self.in_progress_img = IMAGES.create(IMAGES.IN_PROGRESS)
+
         # The button to bring up the active orders view
         self._active_orders_button = CButton(
             parent=footer,
-            image=self.model.in_progress_img,
+            image=self.in_progress_img,
             command=self.show_active_orders,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=2
         )
 
+        self.history_img = IMAGES.create(IMAGES.HISTORY)
+
         # The button to bring up the history view
         self._history_button = CButton(
             parent=footer,
-            image=self.model.history_img,
+            image=self.history_img,
             spaceX=(0.0,1.0),
             command=self.show_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=3
         )
 
+        self.settings_img = IMAGES.create(IMAGES.SETTINGS)
+
         # The button to bring up the settings view
         self._settings_button = CButton(
             parent=footer,
-            image=self.model.settings_img,
+            image=self.settings_img,
             spaceX=(0.0,1.0),
             command=self.show_settings,
             fg=CButton.DARK, bg=CButton.LIGHT,
@@ -158,7 +125,7 @@ class CashDeskGUI():
         ## -------- BODY STUFF -------- ##
 
         # The content panel (container) in the middle of the window
-        self.body = ContentPanel(root)
+        self.body = ContentPanel(root, self._headercontainer) #self.model.body_content_changed_event)
         self.body.pack(side=TOP, expand=1, fill='both', padx=5)
         # Lowered to the minimum z-Layer, so that the notification toasts are visible
         self.body.lower()
@@ -170,19 +137,12 @@ class CashDeskGUI():
         self.model.initialize()
         # Adding the GUI's callback function to the main periodic thread event of the model
         self.model.on_cycle_event.add(self.on_cycle)
+        self.model.body_content_changed_event.add(self.body_changed)
 
         # Start main loop to wait for actions
         mainloop()
 
     ### ------------------- PROPERTIES ------------------- ###
-
-    @property
-    def add_order_button(self) -> CButton:
-        return self._add_order_button
-
-    @property
-    def clear_button(self) -> CButton:
-        return self._clear_button
 
     @property
     def exit_button(self) -> CButton:
@@ -201,26 +161,6 @@ class CashDeskGUI():
         return self._settings_button
 
     ### ------------------- MAIN METHODS ------------------- ###
-
-    def add_order(self):
-        """ Adds a new order with the information given in the add-order-view.
-        """
-        self.add_order_button._disable()
-        self.model.call_after_delay(self.add_order_button._enable, 1.0)
-        
-        self.model.add_order()
-
-    def clear_addorderview(self):
-        """ Resets the add order view
-        """
-        self.body.add_order_view.reset()
-        self.model.clear_form()
-
-    def go_back_add_order_view(self):
-        """ Go back a category
-        """
-        if self.body.is_add_order_shown():
-            self.body.add_order_view.go_back()
 
     def show_add_order(self):
         """ Show the add order view in the body.
@@ -252,6 +192,13 @@ class CashDeskGUI():
         pass
 
     ### ------------------- PRIVATE METHODS ------------------- ###
+
+    def body_changed(self):
+        """ Callback function to be called, whenever the body content changes
+        """
+        for header_child in self._headercontainer.winfo_children():
+            header_child.destroy()
+            # TODO
 
     def on_cycle(self):
         """ Callback function to be called, whenever the main event of the model is triggered.
