@@ -154,6 +154,15 @@ class MealDetailsView(Frame):
     def opened_meal(self):
         return self._opened_meal
 
+    def get_meal_code(self):
+        """Returns the code for this meal (-configuration).
+
+        The code contains information on the type of meal, it's removed ingredients,
+        size and added extras, so that it can be easily stored in the database.
+        """
+        # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        pass
+
     def get_adapted_meal(self):
         if self.opened_meal == None or \
                 len(self.opened_meal.ingredients) != len(self._ingredients_states) or \

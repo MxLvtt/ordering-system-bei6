@@ -6,13 +6,17 @@ from Templates.cbutton import CButton
 from Templates.images import IMAGES
 
 class CashDeskGUI():
+    DEBUG = True
+
     def __init__(self):
         # Initializing the main window
         root = Tk()
-        root.attributes('-fullscreen', True)
+        # root.attributes('-fullscreen', True)
         root.wm_title("GUI Kasse")
-        root.config(background="#696969")
+        root.config(width=1450, height=850, background="#696969")
         root.update()
+
+        root.pack_propagate(0)
 
         self._root = root
 
@@ -132,9 +136,12 @@ class CashDeskGUI():
 
         ## -------- ADDITIONAL STUFF -------- ##
 
-        self.model.meals_db_connection_ready_event.add(self.body.add_order_view.initialize)
+        # Add callback functions that are called as soon as the database connection is established
+        self.model.db_connection_ready_event.add(self.body.add_order_view.initialize)
+
         # Initializing the model after the GUI has finished the init process
-        self.model.initialize()
+        self.model.initialize(debug=CashDeskGUI.DEBUG)
+
         # Adding the GUI's callback function to the main periodic thread event of the model
         self.model.on_cycle_event.add(self.on_cycle)
         self.model.body_content_changed_event.add(self.body_changed)
@@ -175,7 +182,7 @@ class CashDeskGUI():
     def show_history(self):
         """ Show the history view in the body.
         """
-        self.body.active_view.add_order_tile()
+        # TODO
         # if not self.body.is_history_shown():
         #     self.body.show_history_view()
         # else:
@@ -185,6 +192,7 @@ class CashDeskGUI():
     def show_settings(self):
         """ Show the settings view in the body.
         """
+        # TODO
         # if not self.body.is_settings_shown():
         #     self.body.show_settings_view()
         # else:

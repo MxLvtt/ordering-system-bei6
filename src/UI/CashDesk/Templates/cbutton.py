@@ -6,7 +6,7 @@ class CButton(Button):
     WHITE = "#FFFFFF"
     LIGHT = "#DDDFE3"
     DARK = "#535B5D"
-    GREEN = "#7DAB55"
+    GREEN = "#63B719"#7DAB55"
     YELLOW = "#E9C545"
     DARK_RED = "#A62921"
 

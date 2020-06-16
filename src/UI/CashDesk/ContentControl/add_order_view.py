@@ -1,8 +1,10 @@
+import Templates.references as REFS
 from tkinter import *
 from functools import partial
 from cashdesk_model import CashDeskModel
 from ContentControl.content_template import ContentTemplate
-from Handlers.meals_handler import MealsHandler, Meal
+from Services.meals_service import MealsService
+from Services.orders_service import OrdersService
 from ContentControl.AddOrderView.meal_details_view import MealDetailsView
 from ContentControl.AddOrderView.current_order_view import CurrentOrderView
 from Templates.cbutton import CButton
@@ -11,12 +13,11 @@ from Templates.images import IMAGES
 
 class AddOrderView(ContentTemplate):
     COLUMNS = 4
-    CURRENT_ORDER_TITLE = "Current order"
 
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
             parent=parent,
-            title="Add new order",
+            title=REFS.ADDORDERVIEW_TITLE,
             toolbar_container=toolbar_container,
             background=background,
             shown=shown
@@ -35,16 +36,15 @@ class AddOrderView(ContentTemplate):
         self._meal_details_view = MealDetailsView(self, background, False)
         self._current_order_view = CurrentOrderView(self, background, False)
 
-        self._current_order_view.meal_number_changed_event.add(self._added_meal_number_changed)
+        self._current_order_view.meal_number_changed_event.add(
+            self._added_meal_number_changed)
 
         ######## Setting toolbar content ########
 
-        #### Right Button Container
-        self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
+        # Right Button Container
+        self._button_container_right = Frame(
+            self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
-
-        # TODO
-        self._dummy_counter = 0
 
         self._label_meal_counter = Label(
             master=self._button_container_right,
@@ -54,7 +54,7 @@ class AddOrderView(ContentTemplate):
             background="#EFEFEF"
         )
         self._label_meal_counter.grid(row=0, column=0, padx=15)
-        
+
         # Button: Finish current order
         self._finish_order_button = CButton(
             parent=self._button_container_right,
@@ -75,8 +75,9 @@ class AddOrderView(ContentTemplate):
             row=0, column=2
         )
 
-        ### Middle Breadcrumb Container
-        self._breadcrumb_container_middle = Frame(self.toolbar, background="#EFEFEF")
+        # Middle Breadcrumb Container
+        self._breadcrumb_container_middle = Frame(
+            self.toolbar, background="#EFEFEF")
         self._breadcrumb_container_middle.grid(row=0, column=1, sticky='nsew')
 
         self._breadcrumb = Label(
@@ -88,22 +89,25 @@ class AddOrderView(ContentTemplate):
         )
         self._breadcrumb.pack(side=LEFT, padx=10, fill='x', expand=1)
 
-        #### Left Button Container
+        # Left Button Container
         self._button_container_left = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_left.grid(row=0, column=0, sticky='nsew')
 
         self.toolbar.grid_rowconfigure(0, weight=1)
-        self.toolbar.grid_columnconfigure(0, weight=0) # Left Container     -> fit
-        self.toolbar.grid_columnconfigure(1, weight=1) # Middle Container   -> expand
-        self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
-        
+        self.toolbar.grid_columnconfigure(
+            0, weight=0)  # Left Container     -> fit
+        self.toolbar.grid_columnconfigure(
+            1, weight=1)  # Middle Container   -> expand
+        self.toolbar.grid_columnconfigure(
+            2, weight=0)  # Right Container    -> fit
+
         # Button: Add meal to order
         self._add_meal_to_order_button = CButton(
             parent=self._button_container_left,
             image=self._add_img,
             command=self.add_meal_to_order,
             fg=CButton.WHITE, bg=CButton.GREEN,
-            spaceX=(0.0,1.0),
+            spaceX=(0.0, 1.0),
             row=0, column=0
         )
 
@@ -135,39 +139,13 @@ class AddOrderView(ContentTemplate):
         return self._current_category
 
     def initialize(self):
-        meals_db = MealsHandler.get_raw_meals()
+        meals_db = MealsService.get_raw_meals()
 
-        # ----------------------------------------------------------------- #
-
-        print("\nNo split:")
-        self._root_category = MealsHandler.split_meals_by_categories(
-            meals_db, MealsHandler.NO_SPLIT)
+        self._root_category = MealsService.split_meals_by_categories(
+            meals_db, MealsService.SPLIT_ALL)
 
         # Print a tree of all categories
         self._root_category.printc()
-
-        # ----------------------------------------------------------------- #
-
-        print("\nSplit main categories:")
-        self._root_category = MealsHandler.split_meals_by_categories(
-            meals_db, MealsHandler.SPLIT_MAIN)
-
-        # Print a tree of all categories
-        self._root_category.printc()
-
-        # ----------------------------------------------------------------- #
-
-        print("\nSplit all:")
-        self._root_category = MealsHandler.split_meals_by_categories(
-            meals_db, MealsHandler.SPLIT_ALL)
-
-        # Print a tree of all categories
-        self._root_category.printc()
-
-        # ----------------------------------------------------------------- #
-
-        self._root_category = MealsHandler.split_meals_by_categories(
-            meals_db, MealsHandler.SPLIT_MAIN)
 
         # Update the tiles on the view to match the category
         self._update_tiles(self._root_category)
@@ -179,10 +157,6 @@ class AddOrderView(ContentTemplate):
             return
 
         if self._current_category != self._root_category:
-        #      or (
-        #     self._root_category.splitmode == MealsHandler.NO_SPLIT and
-        #     self._meal_details_view.is_shown
-        # )
             prev_category = self._current_category.parent
 
             if prev_category == None:
@@ -190,7 +164,7 @@ class AddOrderView(ContentTemplate):
 
             self._update_tiles(prev_category)
 
-    def reset(self):        
+    def reset(self):
         # If we are in the CurrentOrderView: close it and go to root category
         if self._current_order_view.is_shown:
             self._update_tiles(self._root_category)
@@ -199,7 +173,7 @@ class AddOrderView(ContentTemplate):
         if self._current_category != self._root_category:
             self._update_tiles(self._root_category)
 
-    def _open_meal_details(self, meal: Meal, category):
+    def _open_meal_details(self, meal, category):
         self._current_category = category
         self._meal_details_view.update_content(meal, True)
 
@@ -212,7 +186,7 @@ class AddOrderView(ContentTemplate):
         self._current_order_view.hide_view()
         self._finish_order_button._hide()
         self._label_meal_counter.grid()
-        
+
         self._current_category = root_category
 
         # Update the breadcrumb in the toolbar to fit the current category
@@ -222,10 +196,10 @@ class AddOrderView(ContentTemplate):
             self._add_meal_to_order_button._enable()
             self._open_meal_details(root_category.meal, root_category)
             return
-        
+
         self._add_meal_to_order_button._disable()
 
-        self._meal_tiles = []
+        self._meal_tile_buttons = []
 
         for idx, subcat in enumerate(root_category.subcategories):
             x = idx % AddOrderView.COLUMNS
@@ -251,24 +225,31 @@ class AddOrderView(ContentTemplate):
 
             # Button styles for 'category'-buttons
             foreground = '#646464'
-            largefont = ("Helvetica", "42", "bold italic")
+            largefont = ("Helvetica", "32", "bold italic")
             buttoncmd = partial(self._update_tiles, subcat)
 
             if subcat.has_meal():
                 # Button styles for 'meal'-buttons
                 foreground = '#000000'
-                largefont = ("Helvetica", "42", "bold")
+                largefont = ("Helvetica", "32", "bold")
+
+            # Replace every space with a new line character
+            button_text = f"{subcat.name}"
+            button_text = button_text.replace(' ', '\n')
 
             meal_tile_button = Button(meal_tile,
-                                      text=subcat.name,
+                                      text=button_text,
                                       foreground=foreground,
-                                      #  background=self.TILE_BGD,
                                       command=buttoncmd,
-                                      font=largefont
+                                      font=largefont                                      
                                       )
             meal_tile_button.pack(fill="both", expand=1)
+            
+            self._meal_tile_buttons.append(meal_tile_button)
 
-            self._meal_tiles.append(meal_tile)
+        for meal_button in self._meal_tile_buttons:
+            meal_button.update()
+            meal_button.config(wraplength=meal_button.winfo_width()-20)
 
     def _clear_frame(self):
         for child in self.winfo_children():
@@ -302,7 +283,8 @@ class AddOrderView(ContentTemplate):
             self._add_meal_to_order_button._enable()
 
     def _added_meal_number_changed(self):
-        self._label_meal_counter.config(text=f"{self._current_order_view.number_of_meals}")
+        self._label_meal_counter.config(
+            text=f"{self._current_order_view.number_of_meals}")
 
         if self._current_order_view.number_of_meals > 0:
             self._finish_order_button._enable()
@@ -316,14 +298,15 @@ class AddOrderView(ContentTemplate):
         """
         self._add_meal_to_order_button._disable()
         CashDeskModel.call_after_delay(self._enable_add_button, 1.0)
-        
+
         meal_to_add = self._meal_details_view.get_adapted_meal()
+        meal_code = self._meal_details_view.get_meal_code()
 
         if meal_to_add == None:
             return
 
-        # TODO: Add new (adapted) meal object to the current order
-        self._current_order_view.add_meal(meal_to_add)
+        # Add new (adapted) meal object to the current order
+        self._current_order_view.add_meal(meal_to_add, meal_code)
 
         # TODO: IMPLEMENT THE FOLLOWING VARIABLES
         # This is set, if the meal has been successfully added to the current order
@@ -354,7 +337,7 @@ class AddOrderView(ContentTemplate):
             else:
                 self._clear_frame()
 
-            self._set_breadcrumb_text(AddOrderView.CURRENT_ORDER_TITLE)
+            self._set_breadcrumb_text(REFS.CURRENT_ORDER_TITLE)
 
             self._add_meal_to_order_button._disable()
             self._current_order_view.show_view()
@@ -366,4 +349,12 @@ class AddOrderView(ContentTemplate):
     def finish_current_order(self):
         """ Finished the current order
         """
-        self._current_order_view.save_order()
+        # Grab the list of added meals from the Current Order View
+        meals_list = self._current_order_view.added_meals
+        order_form = self._current_order_view.order_form
+
+        OrdersService.create_new_order(meals_list, order_form)
+
+        # TODO: Only reset, if every step before succeeded!
+        # Reset Current Order View
+        self._current_order_view.remove_all()

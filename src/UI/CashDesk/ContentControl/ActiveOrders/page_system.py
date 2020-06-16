@@ -1,6 +1,7 @@
 from tkinter import *
 from ContentControl.ActiveOrders.order_tile_gui import OrderTileGUI
 from EventHandler.Event import Event
+from Templates.order import Order
 
 class PageSystem(Frame):
     FIX_COLS = 5
@@ -68,7 +69,7 @@ class PageSystem(Frame):
         self._update_view(self.current_page.objects)
         self._pages_changed_event()
 
-    def insert_object(self, order_object, beginning: bool = False):
+    def insert_object(self, order_object: Order, beginning: bool = False):
         """ Insert a new object of type Order
         """
         not_fitted_object = self._pages[0].insert_object(order_object, beginning)
@@ -139,16 +140,30 @@ class Page():
     def objects(self) -> []:
         return self._orders
 
-    def insert_object(self, order, beginning: bool = False):
-        # In case the object should be inserted at the end AND this page is full
-        if not beginning and self._is_full():
-            # Return it to be passed to the next page
-            return order
+    def insert_object(self, order: Order, beginning: bool = False) -> Order:
+        # Should the object be inserted at the end?
+        if not beginning: # -> YES
+            # Is the page full?
+            if self._is_full(): # -> YES
+                # Return it to be passed to the next page
+                return order
+            else: # -> NO
+                # Add new object to the end
+                self._orders.append(order)
+        elif beginning: # -> NO
+            last_obj = None
 
-        if beginning:
+            # Is the page full?
+            if self._is_full(): # -> YES
+                # Remove last object but store it temporarily
+                last_obj = self._orders.pop(len(self._orders) - 1)
+            
+                # Add new object to the beginning
             self._orders.insert(0, order)
-        else:
-            self._orders.append(order)
+
+            return last_obj
+
+        return None
 
     def _is_full(self) -> bool:
         return len(self._orders) >= self._max_orders

@@ -4,26 +4,9 @@ from functools import partial
 from ContentControl.AddOrderView.added_meal_tile import AddedMealTile
 from EventHandler.Event import Event
 import Templates.references as REFS
-import numpy as np
-import math
 
 
 class CurrentOrderView(Frame):
-    BUTTON_DEFAULT_BACKGROUND = None
-    BUTTON_INGR_BACKGROUND = '#FF9B9B'
-    BUTTON_ADON_BACKGROUND = '#BBFF9E'
-    BUTTON_SIZE_BACKGROUND = '#B7EDFF'
-    BUTTON_INACTIVE_FOREGROUND = '#606060'
-    BUTTON_FONT_SIZE = '20'
-
-    SEPARATOR_WIDTH = 10
-    SEPARATOR_COLOR = '#696969'#'#525252'
-    SIZES_FRAME_WIDTH = 250
-
-    INGREDIENTS_LABEL = 'Zutaten'
-    ADDONS_LABEL = 'Extras'
-    SIZES_LABEL = 'Größen'
-
     NUM_COLUMNS = 5
     NUM_ROWS = 2
 
@@ -51,10 +34,15 @@ class CurrentOrderView(Frame):
             self.show_view()
 
         self._added_meals = []
+        self._order_form = 0 # TODO
 
     @property
     def added_meals(self) -> []:
         return self._added_meals
+
+    @property
+    def order_form(self) -> int:
+        return self._order_form
 
     @property
     def is_shown(self) -> bool:
@@ -67,10 +55,6 @@ class CurrentOrderView(Frame):
     @property
     def meal_number_changed_event(self) -> Event:
         return self._meal_number_changed_event
-
-    def save_order(self):
-        # TODO
-        self.remove_all()
 
     def add_meal(self, adapted_meal):
         """ Adds the adapted (!) meal object to the current order
@@ -116,9 +100,6 @@ class CurrentOrderView(Frame):
             self.grid_rowconfigure(y, weight=1)
 
             meal_tile.set_position(row=y, column=x)
-
-        if len(self._added_meals) < (CurrentOrderView.NUM_COLUMNS * CurrentOrderView.NUM_ROWS):
-            pass
 
         # -- Fill last row with empty space -- #
 

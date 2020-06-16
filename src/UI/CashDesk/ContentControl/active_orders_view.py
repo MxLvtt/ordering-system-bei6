@@ -1,9 +1,13 @@
+import Templates.references as REFS
 from tkinter import *
 from random import *
 from ContentControl.content_template import ContentTemplate
 from ContentControl.ActiveOrders.page_system import PageSystem
 from Templates.cbutton import CButton
+from Templates.toggle_button import ToggleButton, ToggleButtonGroup
 from Templates.images import IMAGES
+from Templates.order import Order
+from Services.orders_service import OrdersService
 
 class ActiveOrdersView(ContentTemplate):
     NUM_COLUMNS = 5
@@ -11,11 +15,13 @@ class ActiveOrdersView(ContentTemplate):
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
             parent=parent,
-            title="Active orders overview",
+            title=REFS.ACTIVEORDERSVIEW_TITLE,
             toolbar_container=toolbar_container,
             background=background,
             shown=shown
         )
+
+        OrdersService.on_order_created_event.add(self._order_created_event)
 
         self._page_system = PageSystem(parent=self, background=background)
         self._page_system.pack(side=TOP, fill='both', expand=1)
@@ -26,6 +32,7 @@ class ActiveOrdersView(ContentTemplate):
         ######## Setting toolbar content ########
 
         self._checkmark_img = IMAGES.create(IMAGES.CHECK_MARK)
+        self._checkmark_dark_img = IMAGES.create(IMAGES.CHECK_MARK_DARK)
         self._add_img = IMAGES.create(IMAGES.ADD)
         self._back_img = IMAGES.create(IMAGES.BACK)
         self._next_img = IMAGES.create(IMAGES.NEXT)
@@ -36,13 +43,43 @@ class ActiveOrdersView(ContentTemplate):
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
 
-        # Button: Show current order
-        self._current_order_button = CButton(
+        self._toggle_button_group = ToggleButtonGroup()
+        
+        # Button: Mark orders as done
+        self._mark_done_button = ToggleButton(
             parent=self._button_container_right,
-            image=self._order_img,
-            command=exit,
-            fg=CButton.WHITE, bg=CButton.LIGHT,
+            image=self._checkmark_dark_img,
+            highlight_image=self._checkmark_img,
+            command=None,
+            initial_state=True,
+            group=self._toggle_button_group,
+            bg=REFS.LIGHT_GREEN, highlight=CButton.GREEN,
             row=0, column=0
+        )
+
+        # Button: Mark orders as open
+        self._mark_open_button = ToggleButton(
+            parent=self._button_container_right,
+            image=self._checkmark_dark_img,
+            highlight_image=self._checkmark_img,
+            command=None,
+            initial_state=False,
+            group=self._toggle_button_group,
+            bg=REFS.LIGHT_GRAY, highlight=CButton.DARK,
+            spaceX=(0.0,1.0),
+            row=0, column=1
+        )
+
+        # Button: Mark orders as canceled
+        self._mark_canceled_button = ToggleButton(
+            parent=self._button_container_right,
+            image=self._checkmark_dark_img,
+            highlight_image=self._checkmark_img,
+            command=None,
+            initial_state=False,
+            group=self._toggle_button_group,
+            bg=REFS.LIGHT_RED, highlight=CButton.DARK_RED,
+            row=0, column=2
         )
 
         ### Middle Breadcrumb Container
@@ -51,8 +88,8 @@ class ActiveOrdersView(ContentTemplate):
 
         self._current_page_label = Label(
             master=self._container_middle,
-            text='1/1',
-            font=('Helvetica', '16'),
+            text='1 / 1',
+            font=('Helvetica', '16', 'bold'),
             foreground='black',
             background='#EFEFEF'
         )
@@ -89,9 +126,12 @@ class ActiveOrdersView(ContentTemplate):
 
         ######## END setting toolbar content ########
 
+    def _order_created_event(self, order: Order):
+        self.add_order_tile(order)
+
     def _pages_changed(self):
         self._current_page_label.config(
-            text=f"{self._page_system.current_page_index + 1}/{len(self._page_system.pages)}"
+            text=f"{self._page_system.current_page_index + 1} / {len(self._page_system.pages)}"
         )
         
         if self._page_system.current_page_index == 0:
@@ -110,27 +150,10 @@ class ActiveOrdersView(ContentTemplate):
     def go_to_next_page(self):
         self._page_system.next_page()
 
-    def add_order_tile(self):
-        # rh = random() * 200 + 500
-        # OrderTileGUI(parent=self, row=self._idxr, column=self._idx, height=rh)
-        # self._idx = self._idx + 1
-        # if self._idx == 4:
-        #     self._idx = 0
-        #     self._idxr = self._idxr + 1
-        # curr_x = len(self._active_orders) % ActiveOrdersView.NUM_COLUMNS
+    def add_order_tile(self, order: Order):
+        self._active_orders.append(order)
 
-        # rh = random() * 200 + 500
-
-        # tile_frame = Frame(
-        #     master=self._column_frames[curr_x],
-        #     background='#525252',
-        #     height=rh,
-        #     width=200
-        # )
-        # tile_frame.pack(side=TOP, padx=15, pady=(15,0), fill='x', expand=1)
-
-        test_frame = Frame()
-
-        self._active_orders.append(test_frame)
-
-        self._page_system.insert_object(test_frame, False)
+        self._page_system.insert_object(
+            order_object=order,
+            beginning=True
+        )

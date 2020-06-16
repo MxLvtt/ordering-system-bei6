@@ -2,7 +2,9 @@ import time
 from random import random
 from tkinter import PhotoImage
 from threading import Timer
-from Handlers.meals_handler import MealsHandler
+from Handlers.database_handler import DatabaseHandler
+from Services.meals_service import MealsService
+from Services.orders_service import OrdersService
 from EventHandler.Event import Event
 from Notification.toast import Toast
 from Templates.cbutton import CButton
@@ -19,7 +21,7 @@ class CashDeskModel():
         self._on_cycle_event: Event = Event()
 
         # Event that is triggered, when the MealsHandler established the connection to the database
-        self._meals_db_connection_ready_event: Event = Event()
+        self._db_connection_ready_event: Event = Event()
 
         # Event that is triggered, when the content of the body changes
         self._body_content_changed_event: Event = Event()
@@ -27,12 +29,25 @@ class CashDeskModel():
         # Holds the value of the currently displayed time
         self._current_time = "<TIME>"
 
-    def initialize(self):
+    def initialize(self, debug: bool = False):
         """ Has to be called, when the GUI is finished with initialization.
         """
         self._main_cycle_thread()
 
-        self._meals_handler = MealsHandler(self._meals_db_connection_ready_event)
+        ##### Handler Registration
+
+        # Initialize database handler
+        self._database_handler = DatabaseHandler(debug=debug)
+
+        ##### Service Registration
+
+        # Initialize meals service (which is using the database handler)
+        self._meals_service = MealsService()
+        self._orders_service = OrdersService()
+
+        # If the db connection has been established: trigger the event
+        if self._database_handler.CONNECTION_READY:
+            self._db_connection_ready_event()
 
     ### ------------------- PROPERTIES ------------------- ###
 
@@ -41,8 +56,8 @@ class CashDeskModel():
         return self._on_cycle_event
 
     @property
-    def meals_db_connection_ready_event(self) -> Event:
-        return self._meals_db_connection_ready_event
+    def db_connection_ready_event(self) -> Event:
+        return self._db_connection_ready_event
 
     @property
     def body_content_changed_event(self) -> Event:
