@@ -17,6 +17,13 @@ class OrdersService():
         OrdersService.initialized = True
 
     @staticmethod
+    def get_orders() -> []:
+        if not OrdersService.initialized:
+            return None
+
+        DatabaseHandler.
+
+    @staticmethod
     def create_new_order(meals_list: [], order_form: int) -> Order:
         if not OrdersService.initialized or meals_list == None or order_form == None:
             return None
@@ -44,9 +51,13 @@ class OrdersService():
             REFS.ORDERS_TABLE_TIMESTAMP,
             REFS.ORDERS_TABLE_FORM,
             REFS.ORDERS_TABLE_STATE,
-            REFS.ORDERS_TABLE_ACTIVE
+            REFS.ORDERS_TABLE_ACTIVE,
+            REFS.ORDERS_TABLE_MEALS
         ]
 
+        # Joins the individual meal codes into one string, separated by a pipe symbol
+        meals_code = '|'.join(new_order.meal_codes)
+        # Defines whether the order is active or not: Y = Yes, it is active, since it's new
         active = 'Y'
 
         values = [
@@ -54,7 +65,8 @@ class OrdersService():
             new_order.timestamp,
             new_order.form,
             new_order.state,
-            f"'{active}'"
+            f"'{active}'",
+            f"'{meals_code}'"
         ]
 
         # Insert new order into the database table

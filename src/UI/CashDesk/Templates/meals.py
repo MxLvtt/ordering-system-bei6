@@ -43,13 +43,6 @@ class Meal(object):
         else:
             self._sizes = self._sizes_raw.split(REFS.LIST_DELIMITER)
 
-    @staticmethod
-    def COPY(source_meal: 'Meal') -> 'Meal':
-        return Meal(source_meal.database_content, Meal.DB_COLUMN_NAMES)
-
-    def copy(self) -> 'Meal':
-        return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
-
     @property
     def database_content(self) -> str:
         return self._db_content
@@ -90,6 +83,44 @@ class Meal(object):
     def sizes(self) -> []:
         return self._sizes
 
+    @staticmethod
+    def COPY(source_meal: 'Meal') -> 'Meal':
+        return Meal(source_meal.database_content, Meal.DB_COLUMN_NAMES)
+
+    def copy(self) -> 'Meal':
+        return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
+
+    def get_meal_code(self) -> str:
+        """Returns the code for this meal (-configuration).
+
+        The code contains information on the type of meal, it's removed ingredients,
+        size and added extras, so that it can be easily stored in the database.
+
+        Form: name%ingredient1;ingredient2;ingredientN%addon1;addon2;addonN%size
+        """
+        meal_code = f"{self.name}%"
+
+        for idx, ingr in enumerate(self.ingredients):
+            if idx == len(self.ingredients) - 1:
+                meal_code = f"{meal_code}{ingr}"
+            else:
+                meal_code = f"{meal_code}{ingr};"
+
+        meal_code = f"{meal_code}%"
+
+        for idx, addon in enumerate(self.addons):
+            if idx == len(self.addons) - 1:
+                meal_code = f"{meal_code}{addon}"
+            else:
+                meal_code = f"{meal_code}{addon};"
+
+        meal_code = f"{meal_code}%"
+
+        if len(self.sizes) != 0:
+            meal_code = f"{meal_code}{self.sizes[0]}"
+
+        return meal_code
+        
 
 class Category():
     def __init__(self, name: str, splitmode: int = -1):

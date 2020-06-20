@@ -21,11 +21,11 @@ class PageSystem(Frame):
         self._current_page_index = 0
         self._max_orders = (PageSystem.FIX_COLS*PageSystem.FIX_ROWS)
 
-        self._pages.append(
-            Page(
-                max_orders=self._max_orders
-            )
-        )
+        # self._pages.append(
+        #     Page(
+        #         max_orders=self._max_orders
+        #     )
+        # )
 
         self._row_container_top = Frame(self, background=self._background)
         self._row_container_bot = Frame(self, background=self._background)
@@ -69,12 +69,21 @@ class PageSystem(Frame):
         self._update_view(self.current_page.objects)
         self._pages_changed_event()
 
+    def clear_pages(self):
+        """ Clears all pages by deleting every single order
+        """
+        for page in self._pages:
+            page.clear_page()
+
+        self._pages.clear()
+        self._pages_changed_event()
+        self._update_view(self.current_page.objects)
+
     def insert_object(self, order_object: Order, beginning: bool = False):
         """ Insert a new object of type Order
         """
-        not_fitted_object = self._pages[0].insert_object(order_object, beginning)
-
-        index = 1
+        not_fitted_object = order_object
+        index = 0
 
         while(not_fitted_object != None):
             if index < len(self._pages):
@@ -139,6 +148,9 @@ class Page():
     @property
     def objects(self) -> []:
         return self._orders
+
+    def clear_page(self):
+        self.objects.clear()
 
     def insert_object(self, order: Order, beginning: bool = False) -> Order:
         # Should the object be inserted at the end?

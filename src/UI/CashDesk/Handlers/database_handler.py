@@ -178,8 +178,6 @@ class DatabaseHandler:
         # Run the previous method surrounded by try and catch
         DatabaseHandler._surround_by_try_catch(func=send_command)
 
-    # TODO: Test select_from_table
-
     @staticmethod
     def select_from_table(table_name: str, columns: [] = [], row_filter: str = ""):
         """ Sends the following sql command to the database:

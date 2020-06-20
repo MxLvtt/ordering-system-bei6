@@ -144,6 +144,19 @@ class ActiveOrdersView(ContentTemplate):
         else:
             self._next_button._enable()
 
+    def _contains_order(self, order: Order) -> bool:
+        for added_order in self._active_orders:
+            if added_order.equals(order):
+                return True
+
+        return False
+
+    def _update_content(self):
+        """ Gets all active orders form the database and updates the pagesystem
+        """
+        OrdersService.TODO
+        pass
+
     def go_to_prev_page(self):
         self._page_system.previous_page()
 
@@ -151,6 +164,9 @@ class ActiveOrdersView(ContentTemplate):
         self._page_system.next_page()
 
     def add_order_tile(self, order: Order):
+        if self._contains_order(order):
+            return
+        
         self._active_orders.append(order)
 
         self._page_system.insert_object(

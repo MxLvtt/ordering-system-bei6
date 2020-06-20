@@ -141,6 +141,7 @@ class MealDetailsView(Frame):
         self._addons_states = []        # state: 1 = Added, 0 = Left Out
         self._sizes_states = []         # state: 1 = Selected, 0 = Not Selected
         self._opened_meal = None
+        self._adapted_meal = None
 
     @property
     def title(self) -> str:
@@ -153,15 +154,6 @@ class MealDetailsView(Frame):
     @property
     def opened_meal(self):
         return self._opened_meal
-
-    def get_meal_code(self):
-        """Returns the code for this meal (-configuration).
-
-        The code contains information on the type of meal, it's removed ingredients,
-        size and added extras, so that it can be easily stored in the database.
-        """
-        # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        pass
 
     def get_adapted_meal(self):
         if self.opened_meal == None or \
@@ -187,6 +179,8 @@ class MealDetailsView(Frame):
         for idx, s_state in enumerate(self._sizes_states):
             if s_state == 1:
                 meal_copy.sizes.append(self._opened_meal.sizes[idx])
+
+        self._adapted_meal = meal_copy
 
         return meal_copy
 

@@ -33,12 +33,21 @@ class CurrentOrderView(Frame):
         else:
             self.show_view()
 
-        self._added_meals = []
+        self._added_meal_tiles = []
         self._order_form = 0 # TODO
 
     @property
+    def added_meal_tiles(self) -> []:
+        return self._added_meal_tiles
+
+    @property
     def added_meals(self) -> []:
-        return self._added_meals
+        meals = []
+
+        for meal_tile in self._added_meal_tiles:
+            meals.append(meal_tile.meal)
+
+        return meals
 
     @property
     def order_form(self) -> int:
@@ -50,7 +59,7 @@ class CurrentOrderView(Frame):
 
     @property
     def number_of_meals(self) -> int:
-        return len(self._added_meals)
+        return len(self._added_meal_tiles)
 
     @property
     def meal_number_changed_event(self) -> Event:
@@ -62,25 +71,25 @@ class CurrentOrderView(Frame):
         added_meal = AddedMealTile(
             parent=self,
             meal=adapted_meal,
-            index=len(self._added_meals),
+            index=len(self._added_meal_tiles),
             remove_meal_cb=self.remove_meal
         )
-        self._added_meals.append(added_meal)    # Add meal tile to list
+        self._added_meal_tiles.append(added_meal)    # Add meal tile to list
         self._meal_number_changed_event()       # Trigger event to notify add order view
         self._update_view()                     # Update the view
 
     def remove_meal(self, meal_tile: AddedMealTile):
-        self._added_meals.remove(meal_tile)
+        self._added_meal_tiles.remove(meal_tile)
         self._meal_number_changed_event()
 
         meal_tile.destroy()
         self._update_view()
 
     def remove_all(self):
-        for meal in self._added_meals:
+        for meal in self._added_meal_tiles:
             meal.destroy()
 
-        self._added_meals.clear()
+        self._added_meal_tiles.clear()
         self._meal_number_changed_event()
         self._update_view()
 
@@ -92,7 +101,7 @@ class CurrentOrderView(Frame):
         x = 0
         y = 0
 
-        for idx, meal_tile in enumerate(self._added_meals):
+        for idx, meal_tile in enumerate(self._added_meal_tiles):
             x = idx % CurrentOrderView.NUM_COLUMNS
             y = int(idx / CurrentOrderView.NUM_COLUMNS)
 
@@ -103,7 +112,7 @@ class CurrentOrderView(Frame):
 
         # -- Fill last row with empty space -- #
 
-        needed_cols = len(self._added_meals) % CurrentOrderView.NUM_COLUMNS
+        needed_cols = len(self._added_meal_tiles) % CurrentOrderView.NUM_COLUMNS
 
         if needed_cols != 0:
             empty = CurrentOrderView.NUM_COLUMNS - needed_cols

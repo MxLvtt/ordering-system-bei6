@@ -299,14 +299,13 @@ class AddOrderView(ContentTemplate):
         self._add_meal_to_order_button._disable()
         CashDeskModel.call_after_delay(self._enable_add_button, 1.0)
 
-        meal_to_add = self._meal_details_view.get_adapted_meal()
-        meal_code = self._meal_details_view.get_meal_code()
+        meal_to_add = self._meal_details_view.get_adapted_meal()    # First we have to calculate the adapted meal!
 
         if meal_to_add == None:
             return
 
         # Add new (adapted) meal object to the current order
-        self._current_order_view.add_meal(meal_to_add, meal_code)
+        self._current_order_view.add_meal(meal_to_add)
 
         # TODO: IMPLEMENT THE FOLLOWING VARIABLES
         # This is set, if the meal has been successfully added to the current order
