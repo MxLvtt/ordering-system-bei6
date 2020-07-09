@@ -80,35 +80,24 @@ class Meal(object):
         # INGREDIENTS
 
         self._ingredients = []
-        self._ingredient_objects = []
 
         if self._ingredients_raw != None:
             self._ingredients = self._ingredients_raw.split(
                 REFS.LIST_DELIMITER)
-            for ingr in self._ingredients:
-                self._ingredient_objects.append(NamePricePair(ingr))
 
         # ADDONS
 
         self._addons = []
-        self._addon_objects = []
 
         if self._addons_raw != None:
             self._addons = self._addons_raw.split(REFS.LIST_DELIMITER)
-            
-            for addon in self._addons:
-                self._addon_objects.append(NamePricePair(addon))
 
         # SIZES
 
         self._sizes = []
-        self._size_objects = []
 
         if self._sizes_raw != None:
             self._sizes = self._sizes_raw.split(REFS.LIST_DELIMITER)
-            
-            for size in self._sizes:
-                self._size_objects.append(NamePricePair(size))
 
     @property
     def database_content(self) -> str:
@@ -136,6 +125,9 @@ class Meal(object):
 
     @property
     def ingredient_objects(self) -> []:
+        self._ingredient_objects = []
+        for ingr in self._ingredients:
+            self._ingredient_objects.append(NamePricePair(ingr))
         return self._ingredient_objects
 
     @property
@@ -148,6 +140,9 @@ class Meal(object):
 
     @property
     def addon_objects(self) -> []:
+        self._addon_objects = []
+        for addon in self._addons:
+            self._addon_objects.append(NamePricePair(addon))
         return self._addon_objects
 
     @property
@@ -160,6 +155,9 @@ class Meal(object):
 
     @property
     def size_objects(self) -> []:
+        self._size_objects = []
+        for size in self._sizes:
+            self._size_objects.append(NamePricePair(size))
         return self._size_objects
 
     @property
@@ -182,8 +180,26 @@ class Meal(object):
         return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
 
     def calculate_whole_price(self) -> float:
-        raise NotImplementedError("Calculating the whole price is not implemented yet.")
+        base_price = self.price
 
+        if len(self._sizes) != 0 and self._sizes[0] != '':
+            if self.size_objects[0].price != 0.0:
+                base_price = self.size_objects[0].price
+
+        ingr_price = 0.0
+
+        for idx,ingr in enumerate(self._ingredients):
+            if ingr != '':
+                ingr_price = ingr_price + self.ingredient_objects[idx].price
+
+        addon_price = 0.0
+
+        for idx,addon in enumerate(self._addons):
+            if addon != '':
+                addon_price = addon_price + self.addon_objects[idx].price
+
+        return base_price + addon_price - ingr_price
+        
     def get_meal_code(self) -> str:
         """Returns the code for this meal (-configuration).
 

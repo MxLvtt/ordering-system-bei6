@@ -25,7 +25,7 @@ class MealsService:
         content: A multiline string containing the included extras and excluded ingredients.
         """
         size_text = ""
-        if len(meal.size_objects) != 0 and meal.size_objects[0] != None:
+        if len(meal.size_objects) != 0 and meal.size_objects[0] != None and meal.size_objects[0].name != "":
             size_text = f" ({meal.size_objects[0].name})"
 
         amount_text = ""
@@ -37,11 +37,11 @@ class MealsService:
         meal_text = ""
 
         for ingredient in meal.ingredient_objects:
-            if ingredient != '':
+            if ingredient != None and ingredient.name != '':
                 meal_text = f"{meal_text}{indent}- OHNE {ingredient.name}\n"
 
         for addon in meal.addon_objects:
-            if addon != '':
+            if addon != None and addon.name != '':
                 meal_text = f"{meal_text}{indent}+ MIT {addon.name}\n"
 
         if meal_text != "" and meal_text[-1] == '\n':

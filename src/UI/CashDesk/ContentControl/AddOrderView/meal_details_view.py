@@ -55,6 +55,15 @@ class MealDetailsView(Frame):
         )
         self._title.grid(row=0, columnspan=3, sticky='nsew', pady=(10, 10))
 
+        # PRICE LABEL
+        self._price = Label(
+            master=self,
+            text='<price>',
+            font=bigfont,
+            background=background
+        )
+        self._price.grid(row=0, column=4, sticky='nsew', pady=(10, 10))
+
         # HORIZONTAL SEPARATOR
         Frame(
             master=self,
@@ -186,6 +195,7 @@ class MealDetailsView(Frame):
 
     def update_content(self, meal, expand_title: bool = False):
         self._opened_meal = meal
+        self._total_price = meal.price
 
         for child in self._frame_ingredients.winfo_children():
             child.destroy()
@@ -238,7 +248,9 @@ class MealDetailsView(Frame):
                          #  MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                          cols=1
                          )
+
         self._update_size_buttons()
+        self._calculate_total_price()
 
     def _get_button_text(self, name_price_pair_array, show_zero: bool = False) -> []:
         content = []
@@ -340,6 +352,8 @@ class MealDetailsView(Frame):
             button.config(foreground=MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                           background=MealDetailsView.BUTTON_INGR_BACKGROUND)
 
+        self._calculate_total_price()
+
     def _clicked_addon_button(self, button: Button, index: int):
         if index >= len(self._addons_states):
             return
@@ -353,6 +367,8 @@ class MealDetailsView(Frame):
             button.config(foreground=MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                           background=MealDetailsView.BUTTON_DEFAULT_BACKGROUND)
 
+        self._calculate_total_price()
+
     def _clicked_size_button(self, button: Button, index: int):
         if index >= len(self._sizes_states):
             return
@@ -360,6 +376,7 @@ class MealDetailsView(Frame):
         self._sizes_states.fill(0)
         self._sizes_states[index] = 1
 
+        self._calculate_total_price()
         self._update_size_buttons()
 
     def _update_size_buttons(self):
@@ -376,6 +393,12 @@ class MealDetailsView(Frame):
                         elif self._sizes_states[idx] == 0:
                             child.config(foreground='#000000',
                                          background=MealDetailsView.BUTTON_DEFAULT_BACKGROUND)
+
+    def _calculate_total_price(self, update_view: bool = True):
+        self._total_price = self.get_adapted_meal().calculate_whole_price()
+
+        if update_view:
+            self._price.config(text=f"{self._total_price}{REFS.CURRENCY}")
 
     def hide_view(self):
         if not self._is_hidden:

@@ -11,8 +11,6 @@ from Templates.order import Order
 from Services.orders_service import OrdersService
 
 class SettingsView(ContentTemplate):
-    NUM_COLUMNS = 5
-
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
             parent=parent,
@@ -50,89 +48,11 @@ class SettingsView(ContentTemplate):
         )
         self._cat_meals.pack(side=LEFT, padx=10, pady=10, fill='both', expand=1)
 
-
-        # WORKING SCROLLBAR!
-
-
-        self._bot_row_frame = Frame(master=self, background=background)
-        self._bot_row_frame.pack(side=TOP, fill='both', expand=1)
-        self._bot_row_frame.pack_propagate(0)
-
-        self.canvas = Canvas(self._bot_row_frame)
-        scrollbar = ttk.Scrollbar(self._bot_row_frame, orient="vertical", command=self.canvas.yview)#, width=25)
-        self.scrollable_frame = Frame(self.canvas)
-
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(
-                scrollregion=self.canvas.bbox("all")
-            )
-        )
-
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        self.canvas.configure(yscrollcommand=scrollbar.set)
-
-        self.canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-                
-        for i in range(50):
-            Label(self.scrollable_frame, text="Sample scrolling label", background="red", width=50).pack()
-
-
-        # WORKING SCROLLBAR!
-
-
-
-
-
-
         ######## Setting toolbar content ########
 
         #### Right Button Container
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
-
-        self._toggle_button_group = ToggleButtonGroup()
-        
-        # Button: Mark orders as done
-        self._mark_done_button = ToggleButton(
-            parent=self._button_container_right,
-            image=self._checkmark_dark_img,
-            highlight_image=self._checkmark_img,
-            command=None,
-            initial_state=True,
-            group=self._toggle_button_group,
-            bg=REFS.LIGHT_GREEN, highlight=CButton.GREEN,
-            row=0, column=0
-        )
-
-        # Button: Mark orders as open
-        self._mark_open_button = ToggleButton(
-            parent=self._button_container_right,
-            image=self._checkmark_dark_img,
-            highlight_image=self._checkmark_img,
-            command=None,
-            initial_state=False,
-            group=self._toggle_button_group,
-            bg=REFS.LIGHT_GRAY, highlight=CButton.DARK,
-            spaceX=(0.0,1.0),
-            row=0, column=1
-        )
-
-        # Button: Mark orders as canceled
-        self._mark_canceled_button = ToggleButton(
-            parent=self._button_container_right,
-            image=self._checkmark_dark_img,
-            highlight_image=self._checkmark_img,
-            command=None,
-            initial_state=False,
-            group=self._toggle_button_group,
-            bg=REFS.LIGHT_RED, highlight=CButton.DARK_RED,
-            row=0, column=2
-        )
 
         ### Middle Breadcrumb Container
         self._container_middle = Frame(self.toolbar, background="#EFEFEF")
@@ -159,7 +79,7 @@ class SettingsView(ContentTemplate):
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=0
         )
-        # self._prev_button._disable()
+        self._back_button._disable()
 
         self.toolbar.grid_rowconfigure(0, weight=1)
         self.toolbar.grid_columnconfigure(0, weight=0) # Left Container     -> fit
@@ -167,8 +87,3 @@ class SettingsView(ContentTemplate):
         self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
         
         ######## END setting toolbar content ########
-
-    # TODO
-
-    def _on_mousewheel(self, event):
-        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
