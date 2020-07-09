@@ -7,7 +7,7 @@ import Templates.references as REFS
 
 
 class CurrentOrderView(Frame):
-    NUM_COLUMNS = 5
+    NUM_COLUMNS = 4
     NUM_ROWS = 2
 
     def __init__(self, parent, background, shown: bool = False):

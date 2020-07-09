@@ -35,8 +35,8 @@ class ToggleButton(CButton):
         self._select_background = highlight
         self._select_image = highlight_image
 
-        self._state: bool = not initial_state
-        self.state = initial_state
+        self._state: bool = initial_state
+        self._update_colors()
 
         self._group: ToggleButtonGroup = group
 
@@ -51,34 +51,31 @@ class ToggleButton(CButton):
 
     @state.setter
     def state(self, new_state):
-        if self._state != new_state:
-            self._state = new_state
+        self._state = new_state
+        self._update_colors()
 
-            if self._state == True:
-                self.config(background=self._select_background)
-                self.config(image=self._select_image)
-            else:
-                self.config(background=self._unselect_background)
-                self.config(image=self._unselect_image)
-
-    def _set_state(self):
-        self.state = True
-
-    def _reset_state(self):
-        self.state = False
+    def _update_colors(self):
+        if self._state == True:
+            self.config(background=self._select_background)
+            self.config(image=self._select_image)
+        else:
+            self.config(background=self._unselect_background)
+            self.config(image=self._unselect_image)
 
     def _button_command(self):
+        # Change the state of the toggle
+        if self._state == True:
+            self._state = False
+            self._update_colors()
+        else:
+            self._state = True
+            self._update_colors()
+            if self._group != None:
+                self._group.update_buttons(set_button=self)
+                
         if self._external_callback != None:
             # On button press: call function/command that was given with the constructor
             self._external_callback()
-
-        # Then: Change the state of the toggle
-        if self.state == True:
-            self._reset_state()
-        else:
-            self._set_state()
-            if self._group != None:
-                self._group.update_buttons(set_button=self)
 
 class ToggleButtonGroup():
     """ If you add toggle buttons to a toggle button group,
@@ -94,4 +91,4 @@ class ToggleButtonGroup():
     def update_buttons(self, set_button: ToggleButton):
         for tbutton in self._toggle_buttons:
             if tbutton != set_button:
-                tbutton._reset_state()
+                tbutton.state = False

@@ -20,6 +20,8 @@ class ContentTemplate(Frame):
         self._is_hidden = shown
         self._toolbar_container = toolbar_container
 
+        self._background = background
+
         self._toolbar = Frame(master=toolbar_container,background=background)
         # self._toolbar.grid(row=0, column=0, sticky='nsew')
         self._toolbar.pack(side=TOP, fill='x')
@@ -31,6 +33,10 @@ class ContentTemplate(Frame):
             self.show_view()
 
     ### ------------------- PROPERTIES ------------------- ###
+
+    @property
+    def background(self):
+        return self._background
 
     @property
     def toolbar(self) -> Frame:

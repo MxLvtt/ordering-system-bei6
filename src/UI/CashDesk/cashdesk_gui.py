@@ -24,7 +24,7 @@ class CashDeskGUI():
         helv18 = ('Helvetica', '18')
 
         # Declaring the cash desk's model object
-        self.model = CashDeskModel()
+        self.model = CashDeskModel(root)
 
         ## -------- HEADER STUFF -------- ##
 
@@ -137,7 +137,9 @@ class CashDeskGUI():
         ## -------- ADDITIONAL STUFF -------- ##
 
         # Add callback functions that are called as soon as the database connection is established
+        # TODO: temp exluce
         self.model.db_connection_ready_event.add(self.body.add_order_view.initialize)
+        # self.body.add_order_view.initialize()
 
         # Initializing the model after the GUI has finished the init process
         self.model.initialize(debug=CashDeskGUI.DEBUG)
@@ -182,22 +184,12 @@ class CashDeskGUI():
     def show_history(self):
         """ Show the history view in the body.
         """
-        # TODO
-        # if not self.body.is_history_shown():
-        #     self.body.show_history_view()
-        # else:
-        #     self.body.show_add_order_view()
-        pass
+        self.body.show_history_view()
 
     def show_settings(self):
         """ Show the settings view in the body.
         """
-        # TODO
-        # if not self.body.is_settings_shown():
-        #     self.body.show_settings_view()
-        # else:
-        #     self.body.show_add_order_view()
-        pass
+        self.body.show_settings_view()
 
     ### ------------------- PRIVATE METHODS ------------------- ###
 

@@ -2,15 +2,25 @@ import Templates.references as REFS
 from tkinter import *
 from random import *
 from ContentControl.content_template import ContentTemplate
-from ContentControl.ActiveOrders.page_system import PageSystem
+from ContentControl.ActiveOrders.order_tile_gui import OrderTileGUI
 from Templates.cbutton import CButton
 from Templates.toggle_button import ToggleButton, ToggleButtonGroup
 from Templates.images import IMAGES
 from Templates.order import Order
+from Templates.page_system import PageSystem
 from Services.orders_service import OrdersService
+
 
 class ActiveOrdersView(ContentTemplate):
     NUM_COLUMNS = 5
+    NUM_ROWS = 2
+
+    MARK_OFF = -1
+    MARK_DONE = 0
+    MARK_OPEN = 1
+    MARK_CANCEL = 2
+
+    ACTIVE_ORDERS = []
 
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
@@ -21,23 +31,34 @@ class ActiveOrdersView(ContentTemplate):
             shown=shown
         )
 
-        OrdersService.on_order_created_event.add(self._order_created_event)
+        # OrdersService.on_order_created_event.add(self._order_created_event)
+        OrdersService.on_orders_changed.add(self.update_view_and_database_content)
 
-        self._page_system = PageSystem(parent=self, background=background)
-        self._page_system.pack(side=TOP, fill='both', expand=1)
-        self._page_system.pages_changed_event.add(self._pages_changed)
+        self._mark_mode = ActiveOrdersView.MARK_OFF
+        
+        self.page_system = PageSystem(
+            on_page_changed=self.update_view_and_database_content,
+            items_per_page=ActiveOrdersView.NUM_COLUMNS * ActiveOrdersView.NUM_ROWS,
+            numbering_mode=PageSystem.PAGE_NUMBERING
+        )
 
-        self._active_orders = []
+        ######## Setting main content ########
+
+        self.body_container = Frame(
+            master=self,
+            background=background
+        )
+        self.body_container.pack(side=TOP, fill='both', expand=1)
+        self.body_container.grid_propagate(0)
 
         ######## Setting toolbar content ########
 
         self._checkmark_img = IMAGES.create(IMAGES.CHECK_MARK)
         self._checkmark_dark_img = IMAGES.create(IMAGES.CHECK_MARK_DARK)
-        self._add_img = IMAGES.create(IMAGES.ADD)
-        self._back_img = IMAGES.create(IMAGES.BACK)
-        self._next_img = IMAGES.create(IMAGES.NEXT)
-        self._trashcan_img = IMAGES.create(IMAGES.TRASH_CAN)
-        self._order_img = IMAGES.create(IMAGES.ORDER)
+        self._close_img = IMAGES.create(IMAGES.CLOSE_LIGHT)
+        self._close_dark_img = IMAGES.create(IMAGES.CLOSE_DARK)
+        self._undo_img = IMAGES.create(IMAGES.UNDO_LIGHT)
+        self._undo_dark_img = IMAGES.create(IMAGES.UNDO)
 
         #### Right Button Container
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
@@ -50,126 +71,177 @@ class ActiveOrdersView(ContentTemplate):
             parent=self._button_container_right,
             image=self._checkmark_dark_img,
             highlight_image=self._checkmark_img,
-            command=None,
+            command=self._update_mark_mode,
             initial_state=True,
             group=self._toggle_button_group,
-            bg=REFS.LIGHT_GREEN, highlight=CButton.GREEN,
+            # bg=REFS.LIGHT_GREEN,
+            bg=REFS.LIGHT_GRAY,
+            # highlight=CButton.GREEN,
+            highlight=REFS.LIGHT_GREEN,
             row=0, column=0
         )
 
         # Button: Mark orders as open
         self._mark_open_button = ToggleButton(
             parent=self._button_container_right,
-            image=self._checkmark_dark_img,
-            highlight_image=self._checkmark_img,
-            command=None,
+            image=self._undo_dark_img,
+            highlight_image=self._undo_img,
+            command=self._update_mark_mode,
             initial_state=False,
             group=self._toggle_button_group,
-            bg=REFS.LIGHT_GRAY, highlight=CButton.DARK,
-            spaceX=(0.0,1.0),
+            bg=REFS.LIGHT_GRAY,
+            highlight=CButton.DARK,
+            # spaceX=(0.0,1.0),
             row=0, column=1
         )
 
         # Button: Mark orders as canceled
         self._mark_canceled_button = ToggleButton(
             parent=self._button_container_right,
-            image=self._checkmark_dark_img,
-            highlight_image=self._checkmark_img,
-            command=None,
+            image=self._close_dark_img,
+            highlight_image=self._close_img,
+            command=self._update_mark_mode,
             initial_state=False,
             group=self._toggle_button_group,
-            bg=REFS.LIGHT_RED, highlight=CButton.DARK_RED,
+            # bg=REFS.LIGHT_RED,
+            bg=REFS.LIGHT_GRAY,
+            # highlight=CButton.DARK_RED,
+            highlight=REFS.LIGHT_RED,
             row=0, column=2
         )
+
+        self._update_mark_mode()
 
         ### Middle Breadcrumb Container
         self._container_middle = Frame(self.toolbar, background="#EFEFEF")
         self._container_middle.grid(row=0, column=1, sticky='nsew')
 
-        self._current_page_label = Label(
-            master=self._container_middle,
-            text='1 / 1',
-            font=('Helvetica', '16', 'bold'),
-            foreground='black',
-            background='#EFEFEF'
-        )
-        self._current_page_label.pack(side=LEFT, padx=10, fill='x', expand=1)
-
         #### Left Button Container
         self._button_container_left = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_left.grid(row=0, column=0, sticky='nsew')
+
+        self.page_system.config_navigation(
+            button_container=self._button_container_left,
+            label_container=self._container_middle
+        )
 
         self.toolbar.grid_rowconfigure(0, weight=1)
         self.toolbar.grid_columnconfigure(0, weight=0) # Left Container     -> fit
         self.toolbar.grid_columnconfigure(1, weight=1) # Middle Container   -> expand
         self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
         
-        # Button: Go to previous page
-        self._prev_button = CButton(
-            parent=self._button_container_left,
-            image=self._back_img,
-            command=self.go_to_prev_page,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=0
-        )
-        self._prev_button._disable()
-
-        # Button: Go to next page
-        self._next_button = CButton(
-            parent=self._button_container_left,
-            image=self._next_img,
-            command=self.go_to_next_page,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=1
-        )
-        self._next_button._disable()
-
         ######## END setting toolbar content ########
 
-    def _order_created_event(self, order: Order):
-        self.add_order_tile(order)
-
-    def _pages_changed(self):
-        self._current_page_label.config(
-            text=f"{self._page_system.current_page_index + 1} / {len(self._page_system.pages)}"
-        )
-        
-        if self._page_system.current_page_index == 0:
-            self._prev_button._disable()
-        else:
-            self._prev_button._enable()
-        
-        if self._page_system.current_page_index == (len(self._page_system.pages) - 1):
-            self._next_button._disable()
-        else:
-            self._next_button._enable()
-
-    def _contains_order(self, order: Order) -> bool:
-        for added_order in self._active_orders:
-            if added_order.equals(order):
-                return True
-
-        return False
-
-    def _update_content(self):
-        """ Gets all active orders form the database and updates the pagesystem
+    def show_view(self):
+        """ Is called everytime this view is opened
         """
-        OrdersService.TODO
-        pass
+        super().show_view()
 
-    def go_to_prev_page(self):
-        self._page_system.previous_page()
+        self.update_view_and_database_content()
 
-    def go_to_next_page(self):
-        self._page_system.next_page()
+    def update_view_and_database_content(self):
+        all_active_orders = OrdersService.get_orders(
+            # Ordered by timestamp (newest first)
+            order_by=f"{REFS.ORDERS_TABLE_TIMESTAMP} DESC",
+            # Only orders that are active (column 'active' = 'Y')
+            row_filter=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_TRUE}'"
+        )
 
-    def add_order_tile(self, order: Order):
-        if self._contains_order(order):
+        self.page_system.update(all_active_orders)
+        
+        self.update_view()
+
+    def update_view(self):
+        for child_widget in self.body_container.winfo_children():
+            child_widget.destroy()
+
+        for i in range(0, ActiveOrdersView.NUM_COLUMNS):
+            self.body_container.grid_columnconfigure(i, weight=1)
+            
+        self.body_container.grid_rowconfigure(0, weight=1)
+        self.body_container.grid_rowconfigure(1, weight=1)
+
+        x_pos = 0
+        y_pos = 0
+
+        pady = 10
+        padx = (0, 10)
+
+        # Place each object on this frame in a 2 dimensional grid
+        for idx, order in enumerate(self.page_system.current_items):
+            x_pos = idx % ActiveOrdersView.NUM_COLUMNS
+            y_pos = int(idx / ActiveOrdersView.NUM_COLUMNS)
+
+            new_order_obj = OrdersService.convert_to_order_object(order)
+
+            # Create OrderTileGUI for this order
+            order_tile = OrderTileGUI(
+                parent=self.body_container,
+                order=new_order_obj
+            )
+
+            pady = 10
+            padx = (0, 10)
+
+            if y_pos == 1:
+                pady = (0, 10)
+            if x_pos == 0:
+                padx = 10
+
+            # Place OrderTileGUI on this frame
+            order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')
+            order_tile.pack_propagate(0)
+            order_tile.bind_on_click(self.on_tile_clicked)
+
+        # -- Fill last row with empty space -- #
+
+        rest = len(self.page_system.current_items) % ActiveOrdersView.NUM_COLUMNS
+
+        if rest != 0:
+            empty = ActiveOrdersView.NUM_COLUMNS - rest
+
+            for i in range(0, empty):
+                padx = (0, 10)
+
+                if (x_pos + i + 1) == 0:
+                    padx = 10
+
+                empty_tile = Frame(self.body_container, background=self.background)
+                empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
+
+    def on_tile_clicked(self, clicked_order_tile, event = None):
+        if self._mark_mode == ActiveOrdersView.MARK_OFF:
+            return
+
+        prev_state = clicked_order_tile.order.state
+        new_state = prev_state
+
+        if self._mark_mode == ActiveOrdersView.MARK_DONE:
+            new_state = REFS.PREPARED
+        elif self._mark_mode == ActiveOrdersView.MARK_OPEN:
+            new_state = REFS.OPEN
+        elif self._mark_mode == ActiveOrdersView.MARK_CANCEL:
+            new_state = REFS.CANCELED
+
+        if new_state != prev_state:
+            clicked_order_tile.order.state = new_state
+
+            # If we are in CashDesk:
+            OrdersService.update_order(clicked_order_tile.order, active=True)
+            # If we are in Kitchen:
+            # TODO: Send message via NetworkHandler to CashDesk station
+
+            self.show_view()
+
+    def _update_mark_mode(self):
+        if self._mark_done_button.state:
+            self._mark_mode = ActiveOrdersView.MARK_DONE
+            return
+        if self._mark_open_button.state:
+            self._mark_mode = ActiveOrdersView.MARK_OPEN
+            return
+        if self._mark_canceled_button.state:
+            self._mark_mode = ActiveOrdersView.MARK_CANCEL
             return
         
-        self._active_orders.append(order)
-
-        self._page_system.insert_object(
-            order_object=order,
-            beginning=True
-        )
+        self._mark_mode = ActiveOrdersView.MARK_OFF

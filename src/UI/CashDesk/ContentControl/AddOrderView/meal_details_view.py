@@ -8,9 +8,9 @@ import math
 
 class MealDetailsView(Frame):
     BUTTON_DEFAULT_BACKGROUND = None
-    BUTTON_INGR_BACKGROUND = '#FF9B9B'
-    BUTTON_ADON_BACKGROUND = '#BBFF9E'
-    BUTTON_SIZE_BACKGROUND = '#B7EDFF'
+    BUTTON_INGR_BACKGROUND = REFS.LIGHTEST_RED
+    BUTTON_ADON_BACKGROUND = REFS.LIGHTEST_GREEN
+    BUTTON_SIZE_BACKGROUND = REFS.LIGHT_CYAN
     BUTTON_INACTIVE_FOREGROUND = '#606060'
     BUTTON_FONT_SIZE = '20'
 
@@ -212,24 +212,44 @@ class MealDetailsView(Frame):
         if len(meal.sizes) > 0:
             self._sizes_states[0] = 1
 
+        ingredient_content = self._get_button_text(meal.ingredient_objects)
+
+        # Creating ingredient buttons
         self._fill_frame(self._frame_ingredients,
-                         meal.ingredients,
+                         ingredient_content,
                          self._clicked_ingredients_button
                          )
 
+        addon_content = self._get_button_text(meal.addon_objects)
+
+        # Creating addon buttons
         self._fill_frame(self._frame_addons,
-                         meal.addons,
+                         addon_content,
                          self._clicked_addon_button,
                          MealDetailsView.BUTTON_INACTIVE_FOREGROUND
                          )
 
+        size_content = self._get_button_text(meal.size_objects)
+
+        # Creating size buttons
         self._fill_frame(self._frame_sizes,
-                         meal.sizes,
+                         size_content,
                          self._clicked_size_button,
                          #  MealDetailsView.BUTTON_INACTIVE_FOREGROUND,
                          cols=1
                          )
         self._update_size_buttons()
+
+    def _get_button_text(self, name_price_pair_array, show_zero: bool = False) -> []:
+        content = []
+
+        for pair in name_price_pair_array:
+            if not show_zero and pair.price == 0.0:
+                content.append(f"{pair.name}")
+            else:
+                content.append(f"{pair.name}\n{pair.price}{REFS.CURRENCY}")
+
+        return content
 
     def _fill_frame(self,
                     container: Frame,
@@ -238,7 +258,7 @@ class MealDetailsView(Frame):
                     default_button_foreground: str = '#000000',
                     cols=3, rows=3):
         NUM_COLUMNS = cols  # Minimum number of columns
-        NUM_ROWS = rows    # Minimum number of rows
+        NUM_ROWS = rows     # Minimum number of rows
 
         for idx, content in enumerate(button_contents):
             x = idx % NUM_COLUMNS

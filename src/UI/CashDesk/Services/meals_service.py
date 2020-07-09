@@ -15,16 +15,47 @@ class MealsService:
         # Getting the column information for the 'meals' table
         (MealsService.NUM_COLUMNS, MealsService.COLUMN_NAMES) = DatabaseHandler.get_table_information(
             table_name=REFS.MEALS_TABLE_NAME)
+    
+    @staticmethod
+    def meal_content_to_text(meal: Meal, indent: str = "    ") -> (str,str):
+        """ Converts a string representation of the given meal and returns a tupel of two strings.
+
+        (title,content) = MealsService.meal_content_to_text(meal)
+        title: A string containing the name and (opt.) the size of the meal
+        content: A multiline string containing the included extras and excluded ingredients.
+        """
+        size_text = ""
+        if len(meal.size_objects) != 0 and meal.size_objects[0] != None:
+            size_text = f" ({meal.size_objects[0].name})"
+
+        amount_text = ""
+        if meal.amount > 1:
+            amount_text = f"{meal.amount}x "
+        
+        meal_title = f"{amount_text}{meal.name}{size_text}"
+
+        meal_text = ""
+
+        for ingredient in meal.ingredient_objects:
+            if ingredient != '':
+                meal_text = f"{meal_text}{indent}- OHNE {ingredient.name}\n"
+
+        for addon in meal.addon_objects:
+            if addon != '':
+                meal_text = f"{meal_text}{indent}+ MIT {addon.name}\n"
+
+        if meal_text != "" and meal_text[-1] == '\n':
+            meal_text = meal_text[0:-1]
+
+        return (meal_title, meal_text)
 
     @staticmethod
     def get_meal_by_name(name: str):
-        return DatabaseHandler.send_sql_command(
-            f"SELECT * FROM {REFS.MEALS_TABLE_NAME} WHERE name = {name}")
+        return DatabaseHandler.select_from_table(REFS.MEALS_TABLE_NAME, row_filter=f"name={name}")
 
     @staticmethod
     def get_meal_by_id(id: int):
-        return DatabaseHandler.send_sql_command(
-            f"SELECT * FROM {REFS.MEALS_TABLE_NAME} WHERE id = {id}")
+        return DatabaseHandler.select_from_table(REFS.MEALS_TABLE_NAME, row_filter=f"id={id}")
 
     @staticmethod
     def get_raw_meals():

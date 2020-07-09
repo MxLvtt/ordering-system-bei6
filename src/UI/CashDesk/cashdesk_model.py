@@ -2,6 +2,7 @@ import time
 from random import random
 from tkinter import PhotoImage
 from threading import Timer
+from Handlers.timer_handler import TimerHandler
 from Handlers.database_handler import DatabaseHandler
 from Services.meals_service import MealsService
 from Services.orders_service import OrdersService
@@ -14,11 +15,14 @@ class CashDeskModel():
     # PUBLIC STATIC VARIABLES
     INTERVAL=0.2
 
-    def __init__(self):
+    def __init__(self, root):
         # Timer to trigger the main periodical thread
         self._main_cycle_timer: Timer
         # Event that is triggered on every execution of the main cycle
         self._on_cycle_event: Event = Event()
+        
+        # Initializing the timer handler
+        self.timer_handler = TimerHandler(root_object=root)
 
         # Event that is triggered, when the MealsHandler established the connection to the database
         self._db_connection_ready_event: Event = Event()

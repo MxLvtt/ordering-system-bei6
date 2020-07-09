@@ -2,7 +2,10 @@ from tkinter import *
 from ContentControl.content_template import ContentTemplate
 from ContentControl.add_order_view import AddOrderView
 from ContentControl.active_orders_view import ActiveOrdersView
+from ContentControl.settings_view import SettingsView
+from ContentControl.history_view import HistoryView
 from Templates.cbutton import CButton
+from Services.orders_service import OrdersService
 
 
 class ContentPanel(Frame):
@@ -49,6 +52,26 @@ class ContentPanel(Frame):
         # Add the view to the list
         self.VIEWS.append(self.active_orders_content)
 
+        ## ------- HISTORY VIEW ------- ##
+
+        self.history_content: HistoryView = HistoryView(
+            parent=self,
+            toolbar_container=toolbar_container,
+            background=CButton.WHITE
+        )
+        # Add the view to the list
+        self.VIEWS.append(self.history_content)
+
+        ## ------- SETTINGS VIEW ------- ##
+
+        self.settings_content: SettingsView = SettingsView(
+            parent=self,
+            toolbar_container=toolbar_container,
+            background=CButton.WHITE
+        )
+        # Add the view to the list
+        self.VIEWS.append(self.settings_content)
+
     ### ------------------- PROPERTIES ------------------- ###
 
     @property
@@ -67,6 +90,12 @@ class ContentPanel(Frame):
     def show_active_orders_view(self):
         self._show_content(self.active_orders_content)
 
+    def show_history_view(self):
+        self._show_content(self.history_content)
+
+    def show_settings_view(self):
+        self._show_content(self.settings_content)
+
     ### ------------------- CHECK METHODS ------------------- ###
 
     def is_add_order_shown(self) -> bool:
@@ -74,6 +103,12 @@ class ContentPanel(Frame):
 
     def is_active_orders_shown(self) -> bool:
         return self.active_orders_content.is_shown
+
+    def is_history_shown(self) -> bool:
+        return self.history_content.is_shown
+
+    def is_settings_shown(self) -> bool:
+        return self.settings_content.is_shown
 
     ### ------------------- HELPER METHODS ------------------- ###
 

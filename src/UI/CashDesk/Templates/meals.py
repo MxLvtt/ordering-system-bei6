@@ -5,43 +5,110 @@ class Meal(object):
     DB_COLUMN_NAMES = None
 
     def __init__(self, database_content, db_column_names: []):
+        if len(database_content) != len(db_column_names):
+            raise RuntimeError("Database content and column names differ in size.")
+
         self._db_content = database_content
 
-        if Meal.DB_COLUMN_NAMES == None or db_column_names != Meal.DB_COLUMN_NAMES:
-            Meal.DB_COLUMN_NAMES = db_column_names 
+        if Meal.DB_COLUMN_NAMES == None: # and db_column_names != Meal.DB_COLUMN_NAMES:
+            Meal.DB_COLUMN_NAMES = db_column_names
 
-        self._id = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_ID_COLUMN)]
-        self._category_raw = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_KATEGORIE_COLUMN)]
-        self._name = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_NAME_COLUMN)]
-        self._ingredients_raw = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_ZUTATEN_COLUMN)]
-        self._addons_raw = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_ADDONS_COLUMN)]
-        self._sizes_raw = database_content[db_column_names.index(
-            REFS.MEALS_TABLE_GROESSEN_COLUMN)]
+        self._id = -1
+        self._category_raw = None
+        self._name = ""
+        self._ingredients_raw = None
+        self._addons_raw = None
+        self._sizes_raw = None
+        self._price = 0.0
+        self._amount = 1
+
+        try:
+            self._id = int(database_content[db_column_names.index(
+                REFS.MEALS_TABLE_ID_COLUMN)])
+        except:
+            pass
+
+        try:
+            self._category_raw = database_content[db_column_names.index(
+                REFS.MEALS_TABLE_KATEGORIE_COLUMN)]
+        except:
+            pass
+
+        try:
+            self._name = database_content[db_column_names.index(
+                REFS.MEALS_TABLE_NAME_COLUMN)]
+        except:
+            pass
+
+        try:
+            self._ingredients_raw = database_content[db_column_names.index(
+                REFS.MEALS_TABLE_ZUTATEN_COLUMN)]
+        except:
+            pass
+
+        try:
+            self._addons_raw = database_content[db_column_names.index(
+                REFS.MEALS_TABLE_ADDONS_COLUMN)]
+        except:
+            pass
+
+        try:
+            self._sizes_raw = database_content[db_column_names.index(
+                REFS.MEALS_TABLE_GROESSEN_COLUMN)]
+        except:
+            pass
+
+        try:
+            self._price = float(database_content[db_column_names.index(
+                REFS.MEALS_TABLE_PRICE_COLUMN)])
+        except:
+            pass
+
+        try:
+            self._amount = int(database_content[db_column_names.index(
+                REFS.MEALS_AMOUNT_IDENTIFIER)])
+        except:
+            pass
+
+        # CATEGORY
 
         if self._category_raw == None:
             self._category = []
         else:
             self._category = self._category_raw.split(REFS.CATEGORY_DELIMITER)
 
-        if self._ingredients_raw == None:
-            self._ingredients = []
-        else:
-            self._ingredients = self._ingredients_raw.split(REFS.LIST_DELIMITER)
+        # INGREDIENTS
 
-        if self._addons_raw == None:
-            self._addons = []
-        else:
+        self._ingredients = []
+        self._ingredient_objects = []
+
+        if self._ingredients_raw != None:
+            self._ingredients = self._ingredients_raw.split(
+                REFS.LIST_DELIMITER)
+            for ingr in self._ingredients:
+                self._ingredient_objects.append(NamePricePair(ingr))
+
+        # ADDONS
+
+        self._addons = []
+        self._addon_objects = []
+
+        if self._addons_raw != None:
             self._addons = self._addons_raw.split(REFS.LIST_DELIMITER)
+            
+            for addon in self._addons:
+                self._addon_objects.append(NamePricePair(addon))
 
-        if self._sizes_raw == None:
-            self._sizes = []
-        else:
+        # SIZES
+
+        self._sizes = []
+        self._size_objects = []
+
+        if self._sizes_raw != None:
             self._sizes = self._sizes_raw.split(REFS.LIST_DELIMITER)
+            
+            for size in self._sizes:
+                self._size_objects.append(NamePricePair(size))
 
     @property
     def database_content(self) -> str:
@@ -68,12 +135,20 @@ class Meal(object):
         return self._ingredients
 
     @property
+    def ingredient_objects(self) -> []:
+        return self._ingredient_objects
+
+    @property
     def addons_raw(self) -> str:
         return self._addons_raw
 
     @property
     def addons(self) -> []:
         return self._addons
+
+    @property
+    def addon_objects(self) -> []:
+        return self._addon_objects
 
     @property
     def sizes_raw(self) -> str:
@@ -83,12 +158,31 @@ class Meal(object):
     def sizes(self) -> []:
         return self._sizes
 
+    @property
+    def size_objects(self) -> []:
+        return self._size_objects
+
+    @property
+    def price(self) -> float:
+        return self._price
+
+    @property
+    def amount(self) -> int:
+        return self._amount
+
+    @amount.setter
+    def amount(self, amount: int):
+        self._amount = amount
+
     @staticmethod
     def COPY(source_meal: 'Meal') -> 'Meal':
         return Meal(source_meal.database_content, Meal.DB_COLUMN_NAMES)
 
     def copy(self) -> 'Meal':
         return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
+
+    def calculate_whole_price(self) -> float:
+        raise NotImplementedError("Calculating the whole price is not implemented yet.")
 
     def get_meal_code(self) -> str:
         """Returns the code for this meal (-configuration).
@@ -98,29 +192,69 @@ class Meal(object):
 
         Form: name%ingredient1;ingredient2;ingredientN%addon1;addon2;addonN%size
         """
-        meal_code = f"{self.name}%"
+        meal_code = f"{self.name}{REFS.MEAL_CODE_DELIMITER}"
 
         for idx, ingr in enumerate(self.ingredients):
             if idx == len(self.ingredients) - 1:
                 meal_code = f"{meal_code}{ingr}"
             else:
-                meal_code = f"{meal_code}{ingr};"
+                meal_code = f"{meal_code}{ingr}{REFS.LIST_DELIMITER}"
 
-        meal_code = f"{meal_code}%"
+        meal_code = f"{meal_code}{REFS.MEAL_CODE_DELIMITER}"
 
         for idx, addon in enumerate(self.addons):
             if idx == len(self.addons) - 1:
                 meal_code = f"{meal_code}{addon}"
             else:
-                meal_code = f"{meal_code}{addon};"
+                meal_code = f"{meal_code}{addon}{REFS.LIST_DELIMITER}"
 
-        meal_code = f"{meal_code}%"
+        meal_code = f"{meal_code}{REFS.MEAL_CODE_DELIMITER}"
 
         if len(self.sizes) != 0:
             meal_code = f"{meal_code}{self.sizes[0]}"
 
+        meal_code = f"{meal_code}{REFS.MEAL_CODE_DELIMITER}{self.price}"
+
+        meal_code = f"{meal_code}{REFS.MEAL_CODE_DELIMITER}{self.amount}"
+
         return meal_code
-        
+
+    @staticmethod
+    def get_meal_from_code(meal_code: str) -> 'Meal':
+        return Meal(
+            meal_code.split(REFS.MEAL_CODE_DELIMITER),
+            [
+                REFS.MEALS_TABLE_NAME_COLUMN,
+                REFS.MEALS_TABLE_ZUTATEN_COLUMN,
+                REFS.MEALS_TABLE_ADDONS_COLUMN,
+                REFS.MEALS_TABLE_GROESSEN_COLUMN,
+                REFS.MEALS_TABLE_PRICE_COLUMN,
+                REFS.MEALS_AMOUNT_IDENTIFIER
+            ]
+        )
+
+
+class NamePricePair():
+    def __init__(self, raw: str):
+        result: [] = raw.split(REFS.MEAL_PRICE_DELIMITER)
+
+        if result == None or len(result) == 0:
+            raise RuntimeError("Creating name price pair failed.") 
+
+        self._name: str = result[0]
+        self._price: float = 0.0
+
+        if len(result) == 2:
+            self._price = float(result[1])
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def price(self) -> float:
+        return self._price
+
 
 class Category():
     def __init__(self, name: str, splitmode: int = -1):

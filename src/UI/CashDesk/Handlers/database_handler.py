@@ -8,56 +8,60 @@ class DatabaseHandler:
     CONNECTION = None
     CURSOR = None
 
+    DEBUG = False
+
     def __init__(self, debug: bool = False):
         self._cursor = None
 
-        try:
-            if not debug:
-                print(
-                    f"Establishing connection to database '{REFS.CASH_DESK_DB_NAME}' @ {REFS.CASH_DESK_IP}:{REFS.CASH_DESK_DB_PORT} ...", end='')
+        DatabaseHandler.DEBUG = debug
 
-                self._connection = MySQL.connect(
-                    host=REFS.CASH_DESK_IP,
-                    port=REFS.CASH_DESK_DB_PORT,
-                    user=REFS.CASH_DESK_DB_USER,
-                    passwd=REFS.CASH_DESK_DB_PW,
-                    database=REFS.CASH_DESK_DB_NAME
-                )
-            else:
-                print(
-                    f"Establishing connection to database '{REFS.CASH_DESK_DB_NAME}' @ {REFS.CASH_DESK_IP_DBG}:{REFS.CASH_DESK_DB_PORT_DBG} ...", end='')
+        # try:
+        #     if not debug:
+        #         print(
+        #             f"Establishing connection to database '{REFS.CASH_DESK_DB_NAME}' @ {REFS.CASH_DESK_IP}:{REFS.CASH_DESK_DB_PORT} ...", end='')
 
-                self._connection = MySQL.connect(
-                    host=REFS.CASH_DESK_IP_DBG,
-                    port=REFS.CASH_DESK_DB_PORT_DBG,
-                    user=REFS.CASH_DESK_DB_USER,
-                    passwd=REFS.CASH_DESK_DB_PW,
-                    database=REFS.CASH_DESK_DB_NAME,
-                    auth_plugin='mysql_native_password'
-                )
+        #         self._connection = MySQL.connect(
+        #             host=REFS.CASH_DESK_IP,
+        #             port=REFS.CASH_DESK_DB_PORT,
+        #             user=REFS.CASH_DESK_DB_USER,
+        #             passwd=REFS.CASH_DESK_DB_PW,
+        #             database=REFS.CASH_DESK_DB_NAME
+        #         )
+        #     else:
+        #         print(
+        #             f"Establishing connection to database '{REFS.CASH_DESK_DB_NAME}' @ {REFS.CASH_DESK_IP_DBG}:{REFS.CASH_DESK_DB_PORT_DBG} ...", end='')
 
-            self._cursor = self._connection.cursor()
-            DatabaseHandler.CURSOR = self._cursor
-            DatabaseHandler.CONNECTION = self._connection
-        except MySQL.Error as err:
-            print("")
-            if err.errno == MySQL.errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
-            elif err.errno == MySQL.errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist")
-            else:
-                print(err)
+        #         self._connection = MySQL.connect(
+        #             host=REFS.CASH_DESK_IP_DBG,
+        #             port=REFS.CASH_DESK_DB_PORT_DBG,
+        #             user=REFS.CASH_DESK_DB_USER,
+        #             passwd=REFS.CASH_DESK_DB_PW,
+        #             database=REFS.CASH_DESK_DB_NAME,
+        #             auth_plugin='mysql_native_password'
+        #         )
 
-            messagebox.showerror("Database Connection Error", str(
-                err) + "\n\nMake sure, the database is running/reachable and restart the software.")
-        else:
-            DatabaseHandler.CONNECTION_READY = True
-            print(" Done")
+        #     self._cursor = self._connection.cursor()
+        #     DatabaseHandler.CURSOR = self._cursor
+        #     DatabaseHandler.CONNECTION = self._connection
+        # except MySQL.Error as err:
+        #     print("")
+        #     if err.errno == MySQL.errorcode.ER_ACCESS_DENIED_ERROR:
+        #         print("Something is wrong with your user name or password")
+        #     elif err.errno == MySQL.errorcode.ER_BAD_DB_ERROR:
+        #         print("Database does not exist")
+        #     else:
+        #         print(err)
+
+        #     messagebox.showerror("Database Connection Error", str(
+        #         err) + "\n\nMake sure, the database is running/reachable and restart the software.")
+        # else:
+        #     DatabaseHandler.CONNECTION_READY = True
+        #     print(" Done")
+
+        DatabaseHandler.CONNECTION_READY = True
 
     def __del__(self):
-        if DatabaseHandler.CONNECTION_READY:
-            print("Closing connection to database...")
-            self._connection.close()
+        DatabaseHandler.disconnect()
 
 
     ######### PROPERTIES
@@ -95,35 +99,80 @@ class DatabaseHandler:
         raise RuntimeError("Reached the end of the function.")
 
 
+    @staticmethod
+    def connect():
+        """ Establishes a new connection to the database.
+
+        Returns the connection and cursor object: (conn, cur)
+        """
+        if DatabaseHandler.CURSOR != None:
+            DatabaseHandler.CURSOR.close()
+        if DatabaseHandler.CONNECTION != None:
+            DatabaseHandler.CONNECTION.close()
+
+        if not DatabaseHandler.DEBUG:
+            _connection = MySQL.connect(
+                host=REFS.CASH_DESK_IP,
+                port=REFS.CASH_DESK_DB_PORT,
+                user=REFS.CASH_DESK_DB_USER,
+                passwd=REFS.CASH_DESK_DB_PW,
+                database=REFS.CASH_DESK_DB_NAME
+            )
+        else:
+            _connection = MySQL.connect(
+                host=REFS.CASH_DESK_IP_DBG,
+                port=REFS.CASH_DESK_DB_PORT_DBG,
+                user=REFS.CASH_DESK_DB_USER,
+                passwd=REFS.CASH_DESK_DB_PW,
+                database=REFS.CASH_DESK_DB_NAME,
+                auth_plugin='mysql_native_password'
+            )
+
+        _cursor = _connection.cursor()
+
+        DatabaseHandler.CURSOR = _cursor
+        DatabaseHandler.CONNECTION = _connection
+
+        DatabaseHandler.CONNECTION_READY = True
+
+        return (_connection, _cursor)
+
+
+    @staticmethod
+    def disconnect():
+        """ Closes the connection to the database.
+        """
+        if DatabaseHandler.CURSOR != None:
+            DatabaseHandler.CURSOR.close()
+        if DatabaseHandler.CONNECTION != None:
+            DatabaseHandler.CONNECTION.close()
+
+
     ######### SPECIFIC METHODS
 
 
     @staticmethod
     def get_table_row_count(table_name: str, row_filter: str = "") -> int:
-        if DatabaseHandler.CURSOR == None:
-            print(f"DatabaseHandler's cursor is not set.")
-            return 0
-
         result = DatabaseHandler.select_from_table(
-            table_name, columns=["COUNT(*)"], row_filter=row_filter)
+            table_name, columns=["COUNT(*)"], row_filter=row_filter, disconnect=False)
 
         if result == None or len(result) < 1 or result[0] == None or len(result[0]) < 1:
             raise RuntimeError(
                 f"Result ({result}) of SQL command is empty or Nonetype.")
 
+        DatabaseHandler.disconnect()
+
         return result[0][0]
 
     @staticmethod
     def get_table_information(table_name: str) -> (int, []):
-        if DatabaseHandler.CURSOR == None:
-            print(f"DatabaseHandler's cursor is not set.")
-            return (0, [])
-
         # Dummy-command to get table information, ignore fetched results
-        DatabaseHandler.select_from_table(table_name, row_filter="id = 0")
+        DatabaseHandler.select_from_table(table_name, row_filter="id = 0", disconnect=False)
 
         num_columns = len(DatabaseHandler.CURSOR.description)
         column_names = [i[0] for i in DatabaseHandler.CURSOR.description]
+
+        DatabaseHandler.disconnect()
 
         return (num_columns, column_names)
 
@@ -132,7 +181,59 @@ class DatabaseHandler:
 
 
     @staticmethod
+    def update_table(table_name: str, columns: [], values: [], condition: str):
+        DatabaseHandler.connect()
+
+        if DatabaseHandler.CURSOR == None:
+            raise RuntimeError(f"DatabaseHandler's cursor is not set.")
+
+        if columns == None or values == None or len(columns) != len(values) or len(columns) == 0 or condition == None or condition == "":
+            raise ValueError(
+                "The provided arguments do not fit the requirements.")
+
+        # Prepare setter arguments for the command
+        setter_arg = f"{columns[0]}={values[0]}"
+        for idx, col in enumerate(columns):
+            if idx != 0:
+                val = values[idx]
+                setter_arg = f"{setter_arg},{col}={val}"
+
+        def send_command():
+            DatabaseHandler.CURSOR.execute(
+                f"UPDATE {table_name} SET {setter_arg} WHERE {condition}"
+            )
+            DatabaseHandler.CONNECTION.commit()
+
+        # Run the previous method surrounded by try and catch
+        DatabaseHandler._surround_by_try_catch(func=send_command)
+        
+        DatabaseHandler.disconnect()
+
+    @staticmethod
+    def delete_from_table(table_name: str, row_filter: str = ""):
+        DatabaseHandler.connect()
+
+        if DatabaseHandler.CURSOR == None:
+            raise RuntimeError(f"DatabaseHandler's cursor is not set.")
+
+        condition = ""
+
+        if row_filter != "" and row_filter != None:
+            condition = f" WHERE {row_filter}"
+
+        def send_command():
+            DatabaseHandler.CURSOR.execute(f"DELETE FROM {table_name}{condition}")
+            DatabaseHandler.CONNECTION.commit()
+
+        # Run the previous method surrounded by try and catch
+        DatabaseHandler._surround_by_try_catch(func=send_command)
+        
+        DatabaseHandler.disconnect()
+
+    @staticmethod
     def truncate_table(table_name: str):
+        DatabaseHandler.connect()
+
         if DatabaseHandler.CURSOR == None:
             raise RuntimeError(f"DatabaseHandler's cursor is not set.")
 
@@ -142,6 +243,8 @@ class DatabaseHandler:
 
         # Run the previous method surrounded by try and catch
         DatabaseHandler._surround_by_try_catch(func=send_command)
+        
+        DatabaseHandler.disconnect()
 
     @staticmethod
     def insert_into_table(table_name: str, columns: [], values: []):
@@ -149,6 +252,7 @@ class DatabaseHandler:
 
         INSERT INTO {table_name} ({columns[0]},{columns[1]},...) VALUES ({values[0]},{values[1]},...)
         """
+        DatabaseHandler.connect()
 
         if DatabaseHandler.CURSOR == None:
             raise RuntimeError(f"DatabaseHandler's cursor is not set.")
@@ -177,15 +281,22 @@ class DatabaseHandler:
 
         # Run the previous method surrounded by try and catch
         DatabaseHandler._surround_by_try_catch(func=send_command)
+        
+        DatabaseHandler.disconnect()
 
     @staticmethod
-    def select_from_table(table_name: str, columns: [] = [], row_filter: str = ""):
+    def select_from_table(table_name: str, columns: [] = [], row_filter: str = "", order_by: str = "", disconnect: bool = True):
         """ Sends the following sql command to the database:
 
-        SELECT {columns[0]},{columns[1]},... FROM {table_name} [WHERE {row_filter}]
+        SELECT {columns[0]},{columns[1]},... FROM {table_name} [WHERE {row_filter}] [ORDER BY {order_by}]
 
+        If columns is [] (default), the column identifier will be "*".
         The condition is only used, if the row_filter parameter is set.
+        Sorting is only used, if the order_by parameter is set.
+
+        order_by: "col1 ASC, col2 DESC"
         """
+        DatabaseHandler.connect()
 
         if DatabaseHandler.CURSOR == None:
             raise RuntimeError(f"DatabaseHandler's cursor is not set.")
@@ -205,15 +316,24 @@ class DatabaseHandler:
             cols_identifier = "*"
 
         condition = ""
+        sorting = ""
 
         if row_filter != "" and row_filter != None:
             condition = f" WHERE {row_filter}"
 
+        if order_by != "" and order_by != None:
+            sorting = f" ORDER BY {order_by}"
+
         def send_command():
             DatabaseHandler.CURSOR.execute(
-                f"SELECT {cols_identifier} FROM {table_name}{condition}"
+                f"SELECT {cols_identifier} FROM {table_name}{condition}{sorting}"
             )
             return DatabaseHandler.CURSOR.fetchall()
 
         # Run the previous method surrounded by try and catch
-        return DatabaseHandler._surround_by_try_catch(func=send_command)
+        results = DatabaseHandler._surround_by_try_catch(func=send_command)
+        
+        if disconnect:
+            DatabaseHandler.disconnect()
+
+        return results

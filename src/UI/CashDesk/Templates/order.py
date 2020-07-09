@@ -3,16 +3,29 @@ from EventHandler.Event import Event
 from random import *
 
 class Order():
-    def __init__(self, meals: [], form: int, meal_codes: [] = []):
+    def __init__(self,
+        meals: [],
+        form: int,
+        meal_codes: [] = [],
+        timestamp: int = 0,
+        id: int = -1,
+        state: int = 0
+    ):
         # Properties
-        self._timestamp: int = int(time.time())
-        self._id: int = -1
-        self._state: int = 0
+        self._timestamp = timestamp
+        if timestamp == 0:
+            self._timestamp: int = int(time.time())
+
+        self._id: int = id
+        self._state: int = state
         self._form: int = form
         self._meals: [] = meals
         self._meal_codes: [] = meal_codes
 
         self._is_id_set: bool = False
+
+        if self._id != -1:
+            self._is_id_set = True
 
         # Events
         self._state_changed_event: Event = Event()
@@ -48,6 +61,10 @@ class Order():
     def form(self) -> int:
         return self._form
 
+    @form.setter
+    def form(self, form: int) -> int:
+        self._form = form
+
     @property
     def meals(self) -> []:
         return self._meals
@@ -65,6 +82,17 @@ class Order():
         return codes
 
     ### Methods
+
+    def copy(self) -> 'Order':
+        copy_order = Order(
+            meals = self.meals,
+            form = self.form,
+            timestamp = self.timestamp,
+            id = self.id,
+            state = self.state
+        )
+
+        return copy_order
 
     def equals(self, order: 'Order') -> bool:
         # Is id equal?
