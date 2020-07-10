@@ -3,6 +3,7 @@ from tkinter import font as tkFont
 from functools import partial
 from ContentControl.AddOrderView.added_meal_tile import AddedMealTile
 from EventHandler.Event import Event
+from Templates.radio_button import RadioButton, RadioButtonGroup
 import Templates.references as REFS
 
 
@@ -18,6 +19,49 @@ class CurrentOrderView(Frame):
         )
 
         self._meal_number_changed_event: Event = Event()
+        self._meal_number_changed_event.add(self._update_price)
+
+        self._meals_frame = Frame(
+            master=self,
+            background='#F4F4F4'
+        )
+        self._meals_frame.pack(side=LEFT, fill='both', expand=1)
+
+        self._info_frame = Frame(
+            master=self,
+            background=background
+        )
+        self._info_frame.pack(side=RIGHT, fill='y')
+
+        form_radiobutton_group = RadioButtonGroup()
+
+        self._order_form = REFS.DEFAULT_FORM
+
+        def _form_button_pressed(button_form):
+            self._order_form = button_form
+
+        for idx, form in enumerate(REFS.ORDER_FORMS):
+            command = partial(_form_button_pressed, idx)
+
+            form_radio_button = RadioButton(
+                master=self._info_frame,
+                text=form,
+                group=form_radiobutton_group,
+                highlight=REFS.LIGHT_CYAN,
+                font=('Helvetica', '18'),
+                command=command,
+                initial_state=self._order_form,
+                height=3
+            )
+            form_radio_button.pack(side=TOP, fill='x', padx=10, pady=10)
+
+        self._price_label = Label(
+            master=self._info_frame,
+            text='<price>',
+            font=('Helvetica', '18'),
+            background=background
+        )
+        self._price_label.pack(side=BOTTOM, fill='x', padx=10, pady=10)
 
         # Assure that the frame won't resize with the contained widgets
         self.pack_propagate(0)
@@ -34,7 +78,7 @@ class CurrentOrderView(Frame):
             self.show_view()
 
         self._added_meal_tiles = []
-        self._order_form = 0 # TODO
+        self._update_price()
 
     @property
     def added_meal_tiles(self) -> []:
@@ -65,14 +109,23 @@ class CurrentOrderView(Frame):
     def meal_number_changed_event(self) -> Event:
         return self._meal_number_changed_event
 
+    def _update_price(self):
+        _price: float = 0.0
+        for meal_tile in self._added_meal_tiles:
+            _price = _price + meal_tile.meal.calculate_whole_price()
+        _price_str = "{:.2f}".format(_price)
+
+        self._price_label.config(text=f"{_price_str}{REFS.CURRENCY}")
+
     def add_meal(self, adapted_meal):
         """ Adds the adapted (!) meal object to the current order
         """
         added_meal = AddedMealTile(
-            parent=self,
+            parent=self._meals_frame,
             meal=adapted_meal,
             index=len(self._added_meal_tiles),
-            remove_meal_cb=self.remove_meal
+            remove_meal_cb=self.remove_meal,
+            on_amount_changed_cb=self._update_price
         )
         self._added_meal_tiles.append(added_meal)    # Add meal tile to list
         self._meal_number_changed_event()       # Trigger event to notify add order view
@@ -94,7 +147,7 @@ class CurrentOrderView(Frame):
         self._update_view()
 
     def _update_view(self):
-        for child in self.winfo_children():
+        for child in self._meals_frame.winfo_children():
             if not isinstance(child, AddedMealTile):
                 child.destroy()
 
@@ -105,8 +158,8 @@ class CurrentOrderView(Frame):
             x = idx % CurrentOrderView.NUM_COLUMNS
             y = int(idx / CurrentOrderView.NUM_COLUMNS)
 
-            self.grid_columnconfigure(x, weight=1)
-            self.grid_rowconfigure(y, weight=1)
+            self._meals_frame.grid_columnconfigure(x, weight=1)
+            self._meals_frame.grid_rowconfigure(y, weight=1)
 
             meal_tile.set_position(row=y, column=x)
 
@@ -119,16 +172,22 @@ class CurrentOrderView(Frame):
             for i in range(0, empty):
                 col = (i+x+1)
 
-                empty_tile = Frame(self, background=self._background)
+                empty_tile = Frame(
+                    master=self._meals_frame,
+                    background=self._background
+                )
                 empty_tile.grid(row=y, column=col, padx=15, pady=15, sticky='nsew')
 
-                self.grid_columnconfigure(col, weight=1)
+                self._meals_frame.grid_columnconfigure(col, weight=1)
 
         # -- Fill space with empty rows if necessary -- #
 
         if (y + 1) < CurrentOrderView.NUM_ROWS:
             for i_row in range((y + 1), CurrentOrderView.NUM_ROWS):
-                empty_tile = Frame(self, background=self._background)
+                empty_tile = Frame(
+                    master=self._meals_frame,
+                    background=self._background
+                )
                 empty_tile.grid(
                     row=i_row,
                     column=0,
@@ -137,8 +196,8 @@ class CurrentOrderView(Frame):
                     sticky='nsew'
                 )
 
-                self.grid_columnconfigure(0, weight=1)
-                self.grid_rowconfigure(i_row, weight=1)
+                self._meals_frame.grid_columnconfigure(0, weight=1)
+                self._meals_frame.grid_rowconfigure(i_row, weight=1)
 
     def hide_view(self):
         if not self._is_hidden:

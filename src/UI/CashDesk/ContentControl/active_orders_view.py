@@ -31,6 +31,8 @@ class ActiveOrdersView(ContentTemplate):
             shown=shown
         )
 
+        self._background = background
+
         # OrdersService.on_order_created_event.add(self._order_created_event)
         OrdersService.on_orders_changed.add(self.update_view_and_database_content)
 
@@ -50,6 +52,10 @@ class ActiveOrdersView(ContentTemplate):
         )
         self.body_container.pack(side=TOP, fill='both', expand=1)
         self.body_container.grid_propagate(0)
+
+        self._order_tiles = []
+
+        self._insert_order_tiles()
 
         ######## Setting toolbar content ########
 
@@ -152,62 +158,59 @@ class ActiveOrdersView(ContentTemplate):
         self.update_view()
 
     def update_view(self):
-        for child_widget in self.body_container.winfo_children():
-            child_widget.destroy()
+        if len(self.page_system.current_items) > len(self._order_tiles):
+            raise RuntimeError("More items on the page than allowed.")
 
-        for i in range(0, ActiveOrdersView.NUM_COLUMNS):
-            self.body_container.grid_columnconfigure(i, weight=1)
-            
-        self.body_container.grid_rowconfigure(0, weight=1)
-        self.body_container.grid_rowconfigure(1, weight=1)
+        for idx in range(0, len(self._order_tiles)):
+            if idx >= len(self.page_system.current_items):
+                # Make order tile empty
+                self._order_tiles[idx].empty_tile(self._background)
+            else:
+                # Fill order tile with order content
+                order = self.page_system.current_items[idx]
+                new_order_obj = OrdersService.convert_to_order_object(order)
 
-        x_pos = 0
-        y_pos = 0
+                self._order_tiles[idx].order = new_order_obj
 
-        pady = 10
-        padx = (0, 10)
+            # x_pos = idx % ActiveOrdersView.NUM_COLUMNS
+            # y_pos = int(idx / ActiveOrdersView.NUM_COLUMNS)
 
-        # Place each object on this frame in a 2 dimensional grid
-        for idx, order in enumerate(self.page_system.current_items):
-            x_pos = idx % ActiveOrdersView.NUM_COLUMNS
-            y_pos = int(idx / ActiveOrdersView.NUM_COLUMNS)
+            # new_order_obj = OrdersService.convert_to_order_object(order)
 
-            new_order_obj = OrdersService.convert_to_order_object(order)
+            # # Create OrderTileGUI for this order
+            # order_tile = OrderTileGUI(
+            #     parent=self.body_container,
+            #     order=new_order_obj
+            # )
 
-            # Create OrderTileGUI for this order
-            order_tile = OrderTileGUI(
-                parent=self.body_container,
-                order=new_order_obj
-            )
+            # pady = 10
+            # padx = (0, 10)
 
-            pady = 10
-            padx = (0, 10)
+            # if y_pos == 1:
+            #     pady = (0, 10)
+            # if x_pos == 0:
+            #     padx = 10
 
-            if y_pos == 1:
-                pady = (0, 10)
-            if x_pos == 0:
-                padx = 10
-
-            # Place OrderTileGUI on this frame
-            order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')
-            order_tile.pack_propagate(0)
-            order_tile.bind_on_click(self.on_tile_clicked)
+            # # Place OrderTileGUI on this frame
+            # order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')
+            # order_tile.pack_propagate(0)
+            # order_tile.bind_on_click(self.on_tile_clicked)
 
         # -- Fill last row with empty space -- #
 
-        rest = len(self.page_system.current_items) % ActiveOrdersView.NUM_COLUMNS
+        # rest = len(self.page_system.current_items) % ActiveOrdersView.NUM_COLUMNS
 
-        if rest != 0:
-            empty = ActiveOrdersView.NUM_COLUMNS - rest
+        # if rest != 0:
+        #     empty = ActiveOrdersView.NUM_COLUMNS - rest
 
-            for i in range(0, empty):
-                padx = (0, 10)
+        #     for i in range(0, empty):
+        #         padx = (0, 10)
 
-                if (x_pos + i + 1) == 0:
-                    padx = 10
+        #         if (x_pos + i + 1) == 0:
+        #             padx = 10
 
-                empty_tile = Frame(self.body_container, background=self.background)
-                empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
+        #         empty_tile = Frame(self.body_container, background=self.background)
+        #         empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
 
     def on_tile_clicked(self, clicked_order_tile, event = None):
         if self._mark_mode == ActiveOrdersView.MARK_OFF:
@@ -245,3 +248,46 @@ class ActiveOrdersView(ContentTemplate):
             return
         
         self._mark_mode = ActiveOrdersView.MARK_OFF
+
+    def _insert_order_tiles(self):
+        if len(self._order_tiles) != 0:
+            return
+
+        for i in range(0, ActiveOrdersView.NUM_COLUMNS):
+            self.body_container.grid_columnconfigure(i, weight=1)
+            
+        self.body_container.grid_rowconfigure(0, weight=1)
+        self.body_container.grid_rowconfigure(1, weight=1)
+
+        x_pos = 0
+        y_pos = 0
+
+        pady = 10
+        padx = (0, 10)
+
+        # Place each order tile on this frame in a 2 dimensional grid
+        for idx in range(0, ActiveOrdersView.NUM_COLUMNS * ActiveOrdersView.NUM_ROWS):
+            x_pos = idx % ActiveOrdersView.NUM_COLUMNS
+            y_pos = int(idx / ActiveOrdersView.NUM_COLUMNS)
+
+            # Create OrderTileGUI for this order
+            order_tile = OrderTileGUI(
+                parent=self.body_container,
+                order=None
+            )
+
+            pady = 10
+            padx = (0, 10)
+
+            if y_pos == 1:
+                pady = (0, 10)
+            if x_pos == 0:
+                padx = 10
+
+            # Place OrderTileGUI on this frame
+            order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')
+            order_tile.pack_propagate(0)
+            order_tile.bind_on_click(self.on_tile_clicked)
+
+            self._order_tiles.append(order_tile)
+

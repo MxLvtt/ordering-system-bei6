@@ -259,7 +259,7 @@ class MealDetailsView(Frame):
             if not show_zero and pair.price == 0.0:
                 content.append(f"{pair.name}")
             else:
-                content.append(f"{pair.name}\n{pair.price}{REFS.CURRENCY}")
+                content.append(f"{pair.name}\n{pair.price_str}{REFS.CURRENCY}")
 
         return content
 
@@ -398,7 +398,8 @@ class MealDetailsView(Frame):
         self._total_price = self.get_adapted_meal().calculate_whole_price()
 
         if update_view:
-            self._price.config(text=f"{self._total_price}{REFS.CURRENCY}")
+            self._total_price_str = "{:.2f}".format(self._total_price)
+            self._price.config(text=f"{self._total_price_str}{REFS.CURRENCY}")
 
     def hide_view(self):
         if not self._is_hidden:

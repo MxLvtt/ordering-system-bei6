@@ -40,17 +40,15 @@ class OrderTileGUI(Frame):
             master=self._header_container,
             background=self.LIGHT_GRAY,
             font=self._font_bold,
-            text=f"#{self._order.id}"
+            text="<id>"
         )
         self._id_label.pack(side=LEFT, padx=2, pady=2)
-
-        timestamp_str = OrdersService.convert_timestamp(self._order.timestamp)
 
         self._timestamp_label = Label(
             master=self._header_container,
             background=self.LIGHT_GRAY,
             font=self._font,
-            text=f"{timestamp_str}"
+            text="<timestamp>"
         )
         self._timestamp_label.pack(side=RIGHT, padx=2, pady=2)
 
@@ -78,38 +76,75 @@ class OrderTileGUI(Frame):
             spacing=1
         )
 
-        self._set_meals_list_text()
-
         ### Footer
 
         self._footer_container = Frame(
             master=self,
-            background=REFS.ORDER_STATE_COLORS[self._order.state],
+            background=background,
             height=30
         )
         self._footer_container.pack(side=BOTTOM, fill='x')
 
         self._form_label = Label(
             master=self._footer_container,
-            background=REFS.ORDER_STATE_COLORS[self._order.state],
+            background=background,
             font=self._font,
-            text=REFS.ORDER_FORMS[self._order.form]
+            text="<form>"
         )
         self._form_label.pack(side=LEFT, padx=2, pady=2)
 
         self._state_label = Label(
             master=self._footer_container,
-            background=REFS.ORDER_STATE_COLORS[self._order.state],
+            background=background,
             font=self._font_bold,
-            text=REFS.ORDER_STATES[self._order.state]
+            text="<state>"
         )
         self._state_label.pack(side=RIGHT, padx=2, pady=2)
-
-        self.update_colors()
+        
+        self._update_content()
 
     @property
     def order(self) -> Order:
         return self._order
+
+    @order.setter
+    def order(self, order):
+        self._order = order
+        self._update_content()
+
+    def empty_tile(self, background='white'):
+        self._order = None
+        
+        self._id_label.config(text="")
+        self._timestamp_label.config(text="")
+        self._form_label.config(text="")
+        self._state_label.config(text="")
+        self.scrolllist.remove_all()
+
+        self._meal_labels_frame.pack_forget()
+
+        self.update_colors(
+            background_light=background,
+            background_dark=background,
+            update_text=False
+        )
+
+    def _update_content(self):
+        if self._order == None:
+            return
+
+        timestamp_str = OrdersService.convert_timestamp(self._order.timestamp)
+
+        self._id_label.config(text=f"#{self._order.id}")
+        self._timestamp_label.config(text=timestamp_str)
+        self._form_label.config(text=REFS.ORDER_FORMS[self._order.form])
+        self._state_label.config(text=REFS.ORDER_STATES[self._order.state])
+
+        self._set_meals_list_text()
+        self.update_colors(
+            background_light=REFS.ORDER_STATE_COLORS[self._order.state],
+            background_dark=REFS.ORDER_STATE_COLORS_BGD[self._order.state]
+        )
 
     def _bind_all_childs(self, start_element, func):
         curr = start_element
@@ -130,42 +165,34 @@ class OrderTileGUI(Frame):
 
         self._bind_all_childs(start_element=self, func=func)
 
-    def update_colors(self):
-        self._header_container.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
-        self._id_label.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
-        self._timestamp_label.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
+    def update_colors(self, background_light, background_dark, update_text=True):
+        self._header_container.config(background=background_light)
+        self._id_label.config(background=background_light)
+        self._timestamp_label.config(background=background_light)
 
-        self._body_container.config(background=REFS.ORDER_STATE_COLORS_BGD[self._order.state])
-        self._meal_labels_frame.config(background=REFS.ORDER_STATE_COLORS_BGD[self._order.state])
+        self._body_container.config(background=background_dark)
+        self._meal_labels_frame.config(background=background_dark)
 
         for element in self.scrolllist.Elements:
-            element.change_background(background=REFS.ORDER_STATE_COLORS_BGD[self._order.state])
+            element.change_background(background=background_dark)
 
-        self._footer_container.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
-        self._form_label.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
-        self._state_label.config(background=REFS.ORDER_STATE_COLORS[self._order.state])
-        self._state_label.config(text=REFS.ORDER_STATES[self._order.state])
+        self._footer_container.config(background=background_light)
+        self._form_label.config(background=background_light)
+        self._state_label.config(background=background_light)
+        if update_text:
+            self._state_label.config(text=REFS.ORDER_STATES[self._order.state])
 
     def _set_meals_list_text(self):
-        self._meals_labels.clear()
+        self._meal_labels_frame.pack(side=TOP, fill='both', expand=1, padx=10, pady=10)
 
-        meals : [] = self.order.meals
+        self.scrolllist.remove_all()
+
+        meals : [] = self._order.meals
         
         for meal in meals:
             # Create additional text for the ingredients and addons for the meal
             (meal_name_text, meal_text) = MealsService.meal_content_to_text(meal)
             
-            # Create "title" of current meal which contains its name and (opt.) size
-            # size_text = ""
-            # if len(meal.size_objects) != 0 and meal.size_objects[0] != None:
-            #     size_text = f" ({meal.size_objects[0].name})"
-
-            # amount_text = ""
-            # if meal.amount > 1:
-            #     amount_text = f"{meal.amount}x "
-            
-            # meal_name_text = f"{amount_text}{meal.name}{size_text}"
-
             meal_list_item = MealListItem(
                 parent=self.scrolllist,
                 title=meal_name_text,

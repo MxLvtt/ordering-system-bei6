@@ -98,6 +98,7 @@ class Meal(object):
 
         if self._sizes_raw != None:
             self._sizes = self._sizes_raw.split(REFS.LIST_DELIMITER)
+            
 
     @property
     def database_content(self) -> str:
@@ -165,6 +166,10 @@ class Meal(object):
         return self._price
 
     @property
+    def price_str(self) -> str:
+        return "{:.2f}".format(self._price)
+
+    @property
     def amount(self) -> int:
         return self._amount
 
@@ -198,7 +203,11 @@ class Meal(object):
             if addon != '':
                 addon_price = addon_price + self.addon_objects[idx].price
 
-        return base_price + addon_price - ingr_price
+        return (base_price + addon_price - ingr_price) * self.amount
+
+    @property
+    def formatted_whole_price(self) -> str:
+        return "{:.2f}".format(self.calculate_whole_price())
         
     def get_meal_code(self) -> str:
         """Returns the code for this meal (-configuration).
@@ -270,6 +279,10 @@ class NamePricePair():
     @property
     def price(self) -> float:
         return self._price
+
+    @property
+    def price_str(self) -> float:
+        return "{:.2f}".format(self._price)
 
 
 class Category():

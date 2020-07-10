@@ -11,12 +11,15 @@ class RadioButton(Button):
         background = None,
         font = None,
         command = None,
-        initial_state = False
+        initial_state = False,
+        height=None,
+        width=None
     ):
         super().__init__(
             master=master,
             text=text,
             command=self._button_command,
+            width=width, height=height,
             cnf={}
         )
 

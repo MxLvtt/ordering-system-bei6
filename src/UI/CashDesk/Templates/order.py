@@ -9,7 +9,8 @@ class Order():
         meal_codes: [] = [],
         timestamp: int = 0,
         id: int = -1,
-        state: int = 0
+        state: int = 0,
+        price: float = 0.0
     ):
         # Properties
         self._timestamp = timestamp
@@ -21,6 +22,7 @@ class Order():
         self._form: int = form
         self._meals: [] = meals
         self._meal_codes: [] = meal_codes
+        self._price = price
 
         self._is_id_set: bool = False
 
@@ -80,6 +82,14 @@ class Order():
             codes.append(meal.get_meal_code())
         
         return codes
+    
+    @property
+    def price(self) -> float:
+        return self._price
+
+    @property
+    def price_str(self) -> str:
+        return "{:.2f}".format(self._price)
 
     ### Methods
 
@@ -116,6 +126,14 @@ class Order():
             return False
 
         return True # TODO: reminder - there is no check if the actual codes are equal too (performance!)
+
+    def calculate_price(self) -> float:
+        price = 0.0
+
+        for meal in self.meals:
+            price = price + meal.calculate_whole_price()
+
+        return price
 
     ### Events
 

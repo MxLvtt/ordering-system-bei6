@@ -1,10 +1,17 @@
 from tkinter import *
 from functools import partial
 from Services.meals_service import MealsService
+from EventHandler.Event import Event
 from Templates.images import IMAGES
 
 class AddedMealTile(Frame):
-    def __init__(self, parent, meal, index, remove_meal_cb, background='#F4F4F4'):
+    def __init__(self, 
+            parent,
+            meal, 
+            index,
+            remove_meal_cb,
+            on_amount_changed_cb=None,
+            background='#F4F4F4'):
         super().__init__(
             master=parent,
             cnf={},
@@ -12,6 +19,11 @@ class AddedMealTile(Frame):
             highlightbackground='#606060',
             highlightthickness=2
         )
+
+        self.on_amount_changed_event : Event = Event()
+
+        if on_amount_changed_cb != None and callable(on_amount_changed_cb):
+            self.on_amount_changed_event.add(on_amount_changed_cb)
 
         self._meal = meal
 
@@ -167,6 +179,8 @@ class AddedMealTile(Frame):
             raise RuntimeError(f"Count direction '{direction}' has an invalid value. Must be +1 or -1.")
 
         self.meal.amount = self.meal.amount + direction
+
+        self.on_amount_changed_event()
 
         if self.meal.amount == 1:
             self._b_count_down.config(state="disabled")

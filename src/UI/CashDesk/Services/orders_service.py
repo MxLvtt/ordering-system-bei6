@@ -86,6 +86,9 @@ class OrdersService():
         state_i = col_names.index(REFS.ORDERS_TABLE_STATE)
         state_db = db_content[state_i]
 
+        price_i = col_names.index(REFS.ORDERS_TABLE_PRICE)
+        price_db = db_content[price_i]
+
         meals_i = col_names.index(REFS.ORDERS_TABLE_MEALS)
         meals_db = db_content[meals_i]
         meals_list = []
@@ -97,7 +100,8 @@ class OrdersService():
             form=form_db,
             timestamp=time_db,
             id=id_db,
-            state=state_db
+            state=state_db,
+            price=price_db
         )
 
         return order
@@ -233,6 +237,7 @@ class OrdersService():
         columns = [
             REFS.ORDERS_TABLE_TIMESTAMP,
             REFS.ORDERS_TABLE_FORM,
+            REFS.ORDERS_TABLE_PRICE,
             REFS.ORDERS_TABLE_MEALS
         ]
 
@@ -243,11 +248,14 @@ class OrdersService():
         # active = REFS.ORDERS_TABLE_ACTIVE_TRUE
         # ACTIVE DEFAULTS TO 'Y' IF NOT SET! -> CAN BE LEFT OUT
 
+        order_price = new_order.calculate_price()
+
         values = [
             new_order.timestamp,
             new_order.form,
             # new_order.state, # -> Defaults to 0 in the database, so not necessary here
             # f"'{active}'",   # -> Defaults to 'Y' in the database, so not necessary here
+            order_price,
             f"'{meals_code}'"
         ]
 

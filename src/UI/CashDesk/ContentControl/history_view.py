@@ -126,6 +126,15 @@ class HistoryView(ContentTemplate):
         )
         self.form_head.pack(side=LEFT, padx=30)
 
+        self.price_head = Label(
+            master=self.header,
+            background=header_bg,
+            text=REFS.ORDERS_TABLE_PRICE_GER.capitalize(),
+            font=HistoryView.FONT_NORMAL,
+            width=6
+        )
+        self.price_head.pack(side=LEFT, padx=30)
+
         self.edit_head = Label(
             master=self.header,
             background=header_bg,
@@ -269,10 +278,9 @@ class HistoryItem(Scrollable):
 
         ##### TIMESTAMP #####
 
-        timestamp_i = column_names.index(REFS.ORDERS_TABLE_TIMESTAMP)
         self.timestamp = Label(
             master=self.row_frame,
-            text=OrdersService.convert_timestamp(order[timestamp_i], extended=True),
+            text=OrdersService.convert_timestamp(self._order.timestamp, extended=True),
             font=HistoryView.FONT_NORMAL,
             background=background,
             width=18
@@ -281,10 +289,9 @@ class HistoryItem(Scrollable):
 
         ##### NUMBER #####
 
-        number_i = column_names.index(REFS.ORDERS_TABLE_ID)
         self.number = Label(
             master=self.row_frame,
-            text=f"#{order[number_i]}",
+            text=f"#{self._order.id}",
             font=HistoryView.FONT_BOLD,
             background=background,
             width=8
@@ -293,15 +300,25 @@ class HistoryItem(Scrollable):
 
         ##### FORM #####
 
-        form_i = column_names.index(REFS.ORDERS_TABLE_FORM)
         self.form = Label(
             master=self.row_frame,
-            text=OrdersService.convert_form(order[form_i]),
+            text=OrdersService.convert_form(self._order.form),
             font=HistoryView.FONT_NORMAL,
             background=background,
             width=10
         )
         self.form.pack(side=LEFT, padx=30)
+
+        ##### PRICE #####
+
+        self.price = Label(
+            master=self.row_frame,
+            text=f"{self._order.price_str}{REFS.CURRENCY}",
+            font=HistoryView.FONT_NORMAL,
+            background=background,
+            width=6
+        )
+        self.price.pack(side=LEFT, padx=30)
 
         ##### EDIT BUTTON #####
 

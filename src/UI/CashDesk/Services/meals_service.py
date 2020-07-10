@@ -58,10 +58,19 @@ class MealsService:
         return DatabaseHandler.select_from_table(REFS.MEALS_TABLE_NAME, row_filter=f"id={id}")
 
     @staticmethod
-    def get_raw_meals():
+    def get_raw_meals(order_by: str = ""):
         """ Returns an array of all meals in the database in their raw form.
         """
-        return DatabaseHandler.select_from_table(REFS.MEALS_TABLE_NAME)
+        return DatabaseHandler.select_from_table(REFS.MEALS_TABLE_NAME, order_by=order_by)
+
+    @staticmethod
+    def get_meal_objects(order_by: str = ""):
+        meal_objects = []
+        raw_meals = MealsService.get_raw_meals(order_by=order_by)
+        for raw_meal in raw_meals:
+            meal_obj = Meal(raw_meal, MealsService.COLUMN_NAMES)
+            meal_objects.append(meal_obj)
+        return meal_objects
 
     @staticmethod
     def split_meals_by_categories(meals, splitmode: int) -> Category:

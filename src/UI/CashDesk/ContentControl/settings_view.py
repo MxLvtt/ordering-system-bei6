@@ -1,9 +1,11 @@
 import Templates.references as REFS
+from functools import partial
 from tkinter import *
 from tkinter import ttk
 from random import *
 from ContentControl.content_template import ContentTemplate
 from ContentControl.Settings.settings_category import SettingsCategory
+from ContentControl.Settings.meals_settings_view import MealsSettingsView
 from Templates.cbutton import CButton
 from Templates.toggle_button import ToggleButton, ToggleButtonGroup
 from Templates.images import IMAGES
@@ -29,22 +31,39 @@ class SettingsView(ContentTemplate):
         self._order_img = IMAGES.create(IMAGES.ORDER)
         self._burger_img = IMAGES.create(IMAGES.BURGER_DARK)
 
-        self._top_row_frame = Frame(master=self, background=background)
+        self.main_view = Frame(master=self, background=background)
+        self.main_view.pack(side=TOP, fill='both', expand=1)
+        
+        self._active_view = self.main_view
+
+        ######## Setting main content ########
+
+        self._top_row_frame = Frame(master=self.main_view, background=background)
         self._top_row_frame.pack(side=TOP, fill='both', expand=1)
 
+        ### ORDERS CATEGORY
+
+        self.orders_cat_view = MealsSettingsView(self, background)
+        
         self._cat_orders : SettingsCategory = SettingsCategory(
             parent=self._top_row_frame,
             image=self._order_img,
             title="Orders",
-            command=None
+            show_view_command=self.switch_to_view,
+            view=self.orders_cat_view
         )
         self._cat_orders.pack(side=LEFT, padx=10, pady=10, fill='both', expand=1)
 
+        ### MEALS CATEGORY
+
+        self.meals_cat_view = MealsSettingsView(self, background)
+        
         self._cat_meals : SettingsCategory = SettingsCategory(
             parent=self._top_row_frame,
             image=self._burger_img,
             title="Meals",
-            command=None
+            show_view_command=self.switch_to_view,
+            view=self.meals_cat_view
         )
         self._cat_meals.pack(side=LEFT, padx=10, pady=10, fill='both', expand=1)
 
@@ -54,7 +73,7 @@ class SettingsView(ContentTemplate):
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
 
-        ### Middle Breadcrumb Container
+        #### Middle Breadcrumb Container
         self._container_middle = Frame(self.toolbar, background="#EFEFEF")
         self._container_middle.grid(row=0, column=1, sticky='nsew')
 
@@ -71,11 +90,13 @@ class SettingsView(ContentTemplate):
         self._button_container_left = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_left.grid(row=0, column=0, sticky='nsew')
 
+        go_back_command = partial(self.switch_to_view, self.main_view)
+
         # Button: Go back
         self._back_button = CButton(
             parent=self._button_container_left,
             image=self._back_img,
-            command=None,
+            command=go_back_command,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=0
         )
@@ -87,3 +108,19 @@ class SettingsView(ContentTemplate):
         self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
         
         ######## END setting toolbar content ########
+
+    def switch_to_view(self, view: Frame):
+        if view != self.main_view:
+            self._back_button._enable()
+        else:
+            self._back_button._disable()
+
+        self._active_view.pack_forget()
+        view.pack(side=TOP, fill='both', expand=1)
+
+        try:
+            view.update_view()
+        except:
+            pass
+
+        self._active_view = view

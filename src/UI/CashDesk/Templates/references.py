@@ -23,6 +23,8 @@ MEAL_CODE_DELIMITER = "%"
 MEAL_CODES_DELIMITER = "|"
 MEAL_PRICE_DELIMITER = "@"
 
+MEALS_BASE_PRICE = "Basispreis"
+
 CURRENCY = "€"
 
 # ORDERS # TODO
@@ -35,6 +37,7 @@ ORDERS_TABLE_STATE = "state"
 ORDERS_TABLE_ACTIVE = "active"
 ORDERS_TABLE_ACTIVE_TRUE = "Y"
 ORDERS_TABLE_ACTIVE_FALSE = "N"
+ORDERS_TABLE_PRICE = "price"
 ORDERS_TABLE_MEALS = "meals"
 
 # GERMAN
@@ -47,6 +50,7 @@ ORDERS_TABLE_STATE_GER = "Status"
 ORDERS_TABLE_ACTIVE_GER = "Aktiv?"
 ORDERS_TABLE_ACTIVE_TRUE_GER = "Ja"
 ORDERS_TABLE_ACTIVE_FALSE_GER = "Nein"
+ORDERS_TABLE_PRICE_GER = "Preis"
 ORDERS_TABLE_MEALS_GER = "Gerichte"
 
 HISTORY_TABLE_EDIT = "Bearbeiten"
@@ -107,3 +111,5 @@ ORDER_FORMS=[                                       # names of the different for
 ]
 EAT_IN=0                                            # indices for the order forms array
 TAKEAWAY=1
+
+DEFAULT_FORM = EAT_IN
