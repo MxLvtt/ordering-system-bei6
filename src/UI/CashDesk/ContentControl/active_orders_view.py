@@ -172,46 +172,6 @@ class ActiveOrdersView(ContentTemplate):
 
                 self._order_tiles[idx].order = new_order_obj
 
-            # x_pos = idx % ActiveOrdersView.NUM_COLUMNS
-            # y_pos = int(idx / ActiveOrdersView.NUM_COLUMNS)
-
-            # new_order_obj = OrdersService.convert_to_order_object(order)
-
-            # # Create OrderTileGUI for this order
-            # order_tile = OrderTileGUI(
-            #     parent=self.body_container,
-            #     order=new_order_obj
-            # )
-
-            # pady = 10
-            # padx = (0, 10)
-
-            # if y_pos == 1:
-            #     pady = (0, 10)
-            # if x_pos == 0:
-            #     padx = 10
-
-            # # Place OrderTileGUI on this frame
-            # order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')
-            # order_tile.pack_propagate(0)
-            # order_tile.bind_on_click(self.on_tile_clicked)
-
-        # -- Fill last row with empty space -- #
-
-        # rest = len(self.page_system.current_items) % ActiveOrdersView.NUM_COLUMNS
-
-        # if rest != 0:
-        #     empty = ActiveOrdersView.NUM_COLUMNS - rest
-
-        #     for i in range(0, empty):
-        #         padx = (0, 10)
-
-        #         if (x_pos + i + 1) == 0:
-        #             padx = 10
-
-        #         empty_tile = Frame(self.body_container, background=self.background)
-        #         empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
-
     def on_tile_clicked(self, clicked_order_tile, event = None):
         if self._mark_mode == ActiveOrdersView.MARK_OFF:
             return

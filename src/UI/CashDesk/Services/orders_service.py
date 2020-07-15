@@ -4,6 +4,7 @@ import Templates.references as REFS
 from EventHandler.Event import Event
 from Templates.order import Order
 from Templates.meals import Meal
+from Services.orders_messaging_service import OrdersMessagingService
 from Handlers.database_handler import DatabaseHandler
 from Handlers.timer_handler import TimerHandler
 from datetime import datetime
@@ -222,6 +223,12 @@ class OrdersService():
 
     @staticmethod
     def create_new_order(meals_list: [], order_form: int) -> Order:
+        """ Creates a new order object from the given meals and order type.
+
+        This can only be called from the main station (cash desk), so there is not need
+        to distinguish between the two stations. We only have to make sure that we send
+        a notification message to the other station to inform it about the change.
+        """
         if not OrdersService.initialized or meals_list == None or order_form == None:
             return None
 
@@ -273,6 +280,9 @@ class OrdersService():
 
         # Increment counter of added orders
         OrdersService.counter = OrdersService.counter + 1
+
+        # Send message to other station about new order
+        OrdersMessagingService.notify_on_order_creation(new_order)
 
         # Trigger event to inform others of a change in the orders-list
         OrdersService.on_order_created_event(new_order)

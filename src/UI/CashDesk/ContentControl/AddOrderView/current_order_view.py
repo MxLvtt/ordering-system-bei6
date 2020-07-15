@@ -174,7 +174,7 @@ class CurrentOrderView(Frame):
 
                 empty_tile = Frame(
                     master=self._meals_frame,
-                    background=self._background
+                    background='#F4F4F4'
                 )
                 empty_tile.grid(row=y, column=col, padx=15, pady=15, sticky='nsew')
 
@@ -186,7 +186,7 @@ class CurrentOrderView(Frame):
             for i_row in range((y + 1), CurrentOrderView.NUM_ROWS):
                 empty_tile = Frame(
                     master=self._meals_frame,
-                    background=self._background
+                    background='#F4F4F4'
                 )
                 empty_tile.grid(
                     row=i_row,

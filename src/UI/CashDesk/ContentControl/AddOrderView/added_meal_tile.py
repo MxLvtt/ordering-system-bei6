@@ -11,7 +11,7 @@ class AddedMealTile(Frame):
             index,
             remove_meal_cb,
             on_amount_changed_cb=None,
-            background='#F4F4F4'):
+            background='white'):
         super().__init__(
             master=parent,
             cnf={},
