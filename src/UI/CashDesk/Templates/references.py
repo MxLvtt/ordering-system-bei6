@@ -9,7 +9,7 @@ CASH_DESK_DB_NAME = "ordsys"                # name of the database
 
 PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
 
-CASHDESK_SERVER_IP = "0.0.0.0"
+CASHDESK_SERVER_IP = "0.0.0.0" # CASH_DESK_IP
 CASHDESK_SERVER_PORT = "0000"
 
 KITCHEN_SERVER_IP = "0.0.0.0"

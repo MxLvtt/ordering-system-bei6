@@ -24,7 +24,7 @@ class NetworkHandler:
 
     SERVER_SOCKET = None
 
-    def __init__(self, main_station: bool):    
+    def __init__(self, main_station: bool):
         """ Initializes the network handler.
 
         main_station: True, if the ordering system runs on the cashdesk station. False, for the kitchen station.
@@ -52,6 +52,10 @@ class NetworkHandler:
 
     @staticmethod
     def receive(socket):
+        if not EncryptionHandler.initialized:
+            print("EncryptionHandler not initialized yet. Aborting the receive method.")
+            return
+
         # Array to store all received message junks
         msg_chunks = []
         # Counter of received bytes
@@ -126,7 +130,7 @@ class NetworkHandler:
 
 
     @staticmethod
-    def send_with_handshake_to(raw_message):
+    def send_with_handshake_to(raw_message): # TODO: Is this even necessary? TCP/IP already used acknowledgement
         # Create client connection to the server of the other station
         _socket = NetworkHandler.connect()
 
@@ -143,7 +147,7 @@ class NetworkHandler:
                 raise err
 
             # Check response for handshake identifier
-            if response.decode("utf-8") is NetworkHandler.HANDSHAKE_MSG:
+            if response.decode("utf-8") is NetworkHandler.HANDSHAKE_MSG: # TODO: Change handshake message
                 print("Message received with hanshake")
                 _socket.close()
             else:
@@ -152,6 +156,10 @@ class NetworkHandler:
 
     @staticmethod
     def send(raw_message, _socket) -> bool:
+        if not EncryptionHandler.initialized:
+            print("EncryptionHandler not initialized yet. Aborting the receive method.")
+            return
+
         # Encrypt the raw message
         msg = EncryptionHandler.encrypt(raw_message)
 

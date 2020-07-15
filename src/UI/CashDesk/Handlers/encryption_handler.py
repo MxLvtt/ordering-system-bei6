@@ -4,12 +4,16 @@ from Crypto import Random
 from Crypto.Cipher import AES
 
 class EncryptionHandler(object):
+    initialized = False
+
     KEY = ""
     BS = 0
 
     def __init__(self, key: str): 
         EncryptionHandler.BS = AES.block_size
         EncryptionHandler.KEY = hashlib.sha256(key.encode()).digest()
+
+        EncryptionHandler.initialized = True
 
     @staticmethod
     def encrypt(message_raw):
