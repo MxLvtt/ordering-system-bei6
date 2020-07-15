@@ -14,7 +14,7 @@ class TimerHandler():
             TimerHandler.cancel_timer(tid)
     
     @staticmethod
-    def start_timer(callback, delay_ms: int) -> int:
+    def start_timer(callback, delay_ms: int, store_id = True) -> int:
         if TimerHandler.ROOT_OBJECT == None:
             raise RuntimeError("Timer could not be started. Root object in References is Nonetype.")
 
@@ -23,7 +23,8 @@ class TimerHandler():
         if TimerHandler.DEBUG:
             print(f"Started timer #{tid} with delay of {delay_ms} ms ...")
 
-        TimerHandler.TIMER_IDS.append(tid)
+        if store_id:
+            TimerHandler.TIMER_IDS.append(tid)
 
         return tid
 
@@ -35,7 +36,8 @@ class TimerHandler():
         try:
             TimerHandler.TIMER_IDS.index(timer_id)
         except:
-            raise RuntimeError("Timer id not found.")
+            print(f"Timer id {timer_id} not registered.")
+            return
 
         TimerHandler.ROOT_OBJECT.after_cancel(timer_id)
         TimerHandler.TIMER_IDS.remove(timer_id)

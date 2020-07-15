@@ -4,12 +4,15 @@ from tkinter import PhotoImage
 from threading import Timer
 from Handlers.timer_handler import TimerHandler
 from Handlers.database_handler import DatabaseHandler
+from Handlers.network_handler import NetworkHandler
+from Handlers.encryption_handler import EncryptionHandler
 from Services.meals_service import MealsService
 from Services.orders_service import OrdersService
 from EventHandler.Event import Event
 from Notification.toast import Toast
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
+import Templates.references as REFS
  
 class CashDeskModel():
     # PUBLIC STATIC VARIABLES
@@ -40,8 +43,16 @@ class CashDeskModel():
 
         ##### Handler Registration
 
+        # EncryptionHandler
+        self._encryption_handler = EncryptionHandler(key=REFS.PUBLIC_KEY_16BIT)
+
         # Initialize database handler
         self._database_handler = DatabaseHandler(debug=debug)
+
+        # Initialize network handler
+        self._network_handler = NetworkHandler(main_station = True)
+        # Start continous receive-loop
+        self._network_handler.start_receive_loop()
 
         ##### Service Registration
 

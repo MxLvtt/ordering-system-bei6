@@ -7,6 +7,17 @@ CASH_DESK_DB_USER = "ordsysRD"              # user with just read-access
 CASH_DESK_DB_PW = "he=h5bY&x#Lb/=$"         # password for above user
 CASH_DESK_DB_NAME = "ordsys"                # name of the database
 
+PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
+
+CASHDESK_SERVER_IP = "0.0.0.0"
+CASHDESK_SERVER_PORT = "0000"
+
+KITCHEN_SERVER_IP = "0.0.0.0"
+KITCHEN_SERVER_PORT = "0000"
+
+MESSAGE_LENGTH = 200                        # Length of a message in bytes
+RECEIVE_REFRESH_DELAY = 500                 # Refresh delay in milliseconds
+
 # MEALS
 MEALS_TABLE_NAME = "meals"                  # name of the table containing all available meals
 MEALS_TABLE_ID_COLUMN = "id"                # name of the 'id' column
