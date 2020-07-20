@@ -142,14 +142,6 @@ class NetworkHandler:
                 store_id=False
             )
 
-    # @staticmethod
-    # def do_decrypt(ciphertext):
-    #     iv = Random.new().read(AES.block_size)
-    #     cipher = AES.new(REFS.PUBLIC_KEY_16BIT, AES.MODE_CBC, iv)
-    #     message = iv + cipher.decrypt(ciphertext)
-
-    #     return message
-
 
 ###################################### CLIENT METHODES (SENDING DATA)  ######################################
 
@@ -254,67 +246,3 @@ class NetworkHandler:
             raise err
 
         return _socket
-
-    # @staticmethod
-    # def do_encrypt(message) -> bytes:
-    #     cipher = AES.new(REFS.PUBLIC_KEY_16BIT, AES.MODE_CBC, 'This is an IV456')
-    #     ciphertext = cipher.encrypt(message)
-    #     return ciphertext
-
-
-###################################### some other stuff maybe i'll need it maybe ned ######################################
-
-    # def send(self, imsg):
-    #     # MSGLEN = len(msg)                                                     # get msg length
-    #     # msg = f'{len(msg):<{HEADERSIZE}}' + msg                               # integrate it in the beginning of the msg -> msg= Length + Headersize*space + msg
-    #     # totalsent = 0
-    #     msg = self.do_encrypt(imsg)
-    #     while totalsent < MSGLEN:                                             # check if the total sent less than msg length
-    #         sent = NetworkHandler.SERVER_SOCKET.send(msg[totalsent:])                            # send the msg part
-    #         if sent == 0:
-    #             raise RuntimeError("socket connection broken")
-    #         totalsent = totalsent + sent
-    #         if totalsent == MSGLEN:
-    #             print(f"full message length: {totalsent} was sent successfully")
-
-    # def receive(self,clientsocket):
-    #     msg_chunks = []
-    #     bytes_received = 0
-
-    #     while bytes_received < MSGLEN:
-    #         chunk = clientsocket.recv(min(MSGLEN - bytes_received, 2048))
-    #         if chunk == b'':
-    #             raise RuntimeError("socket connection broken")
-    #         msg_chunks.append(chunk)
-    #         bytes_received = bytes_received + len(chunk)
-
-    #     string_fullmsg = b''.join(msg_chunks)
-    #     return do_decrypt(string_fullmsg)
-
-
-###################################### other shit ######################################
-
-    # def create_keys(self):                                                 # Client
-    #     random_generator = Random.new().read
-    #     self.key = RSA.generate(1024,random_generator)                      # private key size of 1024 of random characters
-    #     public = key.publickey().exportKey()                                # public key exported public key from previously generated private key
-    #     hash_object = hashlib.sha1(public)                                  # hash public key to send over to server
-    #     hex_digest  = hash_object.hexdigest()                               # hex_digest and public will be sent to server, which will verify them by comparing the hash got from client and new hash of the public key.
-
-    # def encrypt(self):                                                        # server
-    #     """ encrypt CTR MODE session key """
-    #     key_128 = os.urandom(16)                                              # create 16bit long key
-    #     en = AES.new(key_128,AES.MODE_CTR,counter = lambda:key_128)
-    #     encrypto = en.encrypt(key_128)                                        # encrypt created key
-    #     #hashing sha1
-    #     en_object = hashlib.sha1(encrypto)
-    #     en_digest = en_object.hexdigest()                                     # en_digest is session key
-    #     #encrypting session key and public key
-    #     E = server_public_key.encrypt(encrypto,16)                            # after encrypting
-
-    # def decrypt(string msg):                                                   #decrypt msg coming from server
-    #     en = eval(msg)
-    #     decrypt = key.decrypt(en)
-    #     return decrypt
-    #    # hashing sha1
-    #     en_object = hashlib.sha1(decrypt) en_digest = en_object.hexdigest()

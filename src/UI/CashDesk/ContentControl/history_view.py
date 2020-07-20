@@ -15,16 +15,15 @@ from Templates.images import IMAGES
 from Templates.order import Order
 from Templates.scroll_list import ScrollList
 from Templates.scrollable import Scrollable
+from Templates.fonts import Fonts
 from Templates.page_system import PageSystem
 from Templates.radio_button import RadioButton, RadioButtonGroup
 
 
 class HistoryView(ContentTemplate):
     SPACING = 3
-    FONT_NORMAL = ('Helvetica', '14')
-    FONT_BOLD = ('Helvetica', '14', 'bold')
-    FONT_BOLD_XL = ('Helvetica', '20', 'bold')
-    
+    PADX_COL = 30
+
     EDIT_HEADER_WIDTH = 0
     EXPAND_HEADER_WIDTH = 0
 
@@ -38,6 +37,13 @@ class HistoryView(ContentTemplate):
             background='#696969',
             shown=shown
         )
+
+        if REFS.MOBILE:
+            HistoryView.SPACING = 2
+            HistoryView.PADX_COL = 10
+            
+            HistoryItem.HEIGHT=80 - 40 * REFS.MOBILE
+            HistoryItem.EXPAND_HEIGHT=600 - 300 * REFS.MOBILE
 
         OrdersService.on_orders_changed.add(self.update_view_and_database_content)
 
@@ -103,46 +109,46 @@ class HistoryView(ContentTemplate):
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_TIMESTAMP_GER.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=18
         )
-        self.timestamp_head.pack(side=LEFT, padx=30)
+        self.timestamp_head.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         self.number_head = Label(
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_ID_GER.capitalize(),
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             width=8
         )
-        self.number_head.pack(side=LEFT, padx=30)
+        self.number_head.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         self.form_head = Label(
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_FORM_GER.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=10
         )
-        self.form_head.pack(side=LEFT, padx=30)
+        self.form_head.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         self.price_head = Label(
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_PRICE_GER.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=6
         )
-        self.price_head.pack(side=LEFT, padx=30)
+        self.price_head.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         self.edit_head = Label(
             master=self.header,
             background=header_bg,
             # text=REFS.HISTORY_TABLE_EDIT,
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=5
         )
-        self.edit_head.pack(side=RIGHT, padx=30)
+        self.edit_head.pack(side=RIGHT, padx=HistoryView.PADX_COL)
         self.edit_head.update()
 
         HistoryView.EDIT_HEADER_WIDTH = self.edit_head.winfo_reqwidth()
@@ -151,10 +157,10 @@ class HistoryView(ContentTemplate):
             master=self.header,
             background=header_bg,
             # text=REFS.HISTORY_TABLE_EXPAND,
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=5
         )
-        self.expand_head.pack(side=RIGHT, padx=(30,0))
+        self.expand_head.pack(side=RIGHT, padx=(HistoryView.PADX_COL,0))
         self.expand_head.update()
 
         HistoryView.EXPAND_HEADER_WIDTH = self.expand_head.winfo_reqwidth()
@@ -163,19 +169,19 @@ class HistoryView(ContentTemplate):
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_ACTIVE_GER.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=8
         )
-        self.active_head.pack(side=RIGHT, padx=30)
+        self.active_head.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
         self.state_head = Label(
             master=self.header,
             background=header_bg,
             text=REFS.ORDERS_TABLE_STATE_GER.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=10
         )
-        self.state_head.pack(side=RIGHT, padx=30)
+        self.state_head.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
         ########## TABLE ##########
 
@@ -281,44 +287,44 @@ class HistoryItem(Scrollable):
         self.timestamp = Label(
             master=self.row_frame,
             text=OrdersService.convert_timestamp(self._order.timestamp, extended=True),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=18
         )
-        self.timestamp.pack(side=LEFT, padx=30)
+        self.timestamp.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         ##### NUMBER #####
 
         self.number = Label(
             master=self.row_frame,
             text=f"#{self._order.id}",
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             background=background,
             width=8
         )
-        self.number.pack(side=LEFT, padx=30)
+        self.number.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         ##### FORM #####
 
         self.form = Label(
             master=self.row_frame,
             text=OrdersService.convert_form(self._order.form),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=10
         )
-        self.form.pack(side=LEFT, padx=30)
+        self.form.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         ##### PRICE #####
 
         self.price = Label(
             master=self.row_frame,
             text=f"{self._order.price_str}{REFS.CURRENCY}",
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=6
         )
-        self.price.pack(side=LEFT, padx=30)
+        self.price.pack(side=LEFT, padx=HistoryView.PADX_COL)
 
         ##### EDIT BUTTON #####
 
@@ -328,7 +334,7 @@ class HistoryItem(Scrollable):
             height=60,
             bg=background
         )
-        self.edit_container.pack(side=RIGHT, padx=30)
+        self.edit_container.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
         self.edit = Button(
             master=self.edit_container,
@@ -350,7 +356,7 @@ class HistoryItem(Scrollable):
             height=60,
             bg=background
         )
-        self.expand_container.pack(side=RIGHT, padx=(30,0))
+        self.expand_container.pack(side=RIGHT, padx=(HistoryView.PADX_COL,0))
 
         expand_button_cmd = partial(self.expand_button_command, HistoryItem.MEALS_CONTENT_MODE)
 
@@ -367,11 +373,11 @@ class HistoryItem(Scrollable):
         self.active = Label(
             master=self.row_frame,
             text=OrdersService.convert_active(order[active_i]),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=8
         )
-        self.active.pack(side=RIGHT, padx=30)
+        self.active.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
         ##### STATUS #####
 
@@ -379,11 +385,11 @@ class HistoryItem(Scrollable):
         self.state = Label(
             master=self.row_frame,
             text=OrdersService.convert_status(order[state_i]),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=REFS.ORDER_STATE_COLORS[int(order[state_i])],
             width=10
         )
-        self.state.pack(side=RIGHT, padx=30)
+        self.state.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
     def _save_order(self):
         OrdersService.update_order(self._changed_order)
@@ -536,7 +542,7 @@ class HistoryItem(Scrollable):
                 master=meal_container,
                 text=meal_title,
                 background=bg,
-                font=HistoryView.FONT_BOLD_XL,
+                font=Fonts.large(bold=True),
                 justify='left',
                 anchor='nw'
             )
@@ -547,7 +553,7 @@ class HistoryItem(Scrollable):
                 meal_ingredients_label = Label(
                     master=meal_container,
                     text=meal_text,
-                    font=HistoryView.FONT_NORMAL,
+                    font=Fonts.xsmall(),
                     background=bg,
                     anchor='w',
                     justify='left'
@@ -567,7 +573,7 @@ class HistoryItem(Scrollable):
         form_title_label = Label(
             master=form_container,
             text=f"{REFS.ORDERS_TABLE_FORM_GER}",
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             background=self._background
         )
         form_title_label.pack(side=TOP, fill='x')
@@ -586,7 +592,7 @@ class HistoryItem(Scrollable):
                 text=form,
                 group=form_radiobutton_group,
                 highlight=REFS.LIGHT_CYAN,
-                font=HistoryView.FONT_NORMAL,
+                font=Fonts.xsmall(),
                 initial_state=initial_state,
                 command=command
             )
@@ -602,7 +608,7 @@ class HistoryItem(Scrollable):
         state_title_label = Label(
             master=state_container,
             text=f"{REFS.ORDERS_TABLE_STATE_GER}",
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             background=self._background
         )
         state_title_label.pack(side=TOP, fill='x')

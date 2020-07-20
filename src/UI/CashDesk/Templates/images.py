@@ -8,6 +8,7 @@ class IMAGES():
     CHECK_MARK_DARK = f"{BASE_PATH}checkmark_dark.png"
 
     EXIT = f"{BASE_PATH}exit.png"
+    NAVIGATION = f"{BASE_PATH}nav.png"
     
     ADD = f"{BASE_PATH}add.png"
     EDIT = f"{BASE_PATH}edit.png"

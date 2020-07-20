@@ -17,19 +17,27 @@ class CButton(Button):
         image,
         command,
         width=-1,
-        height=1.0,
+        height=-1,
+        vertical=False,
         fg=DARK,
         bg=WHITE,
         row=0,
         column=0,
+        flip_row_and_col=False,
         spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
         spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
         if width == -1:
-            width = 1.0 + (not REFS.MOBILE)
+            if REFS.MOBILE:
+                width = 1.0
+            else:
+                width = 2.0
 
-        if REFS.MOBILE:
-            height = 0.6
+        if height == -1:
+            if REFS.MOBILE:
+                height = 1.0 - 0.4 * (not vertical) - 0.3 * vertical
+            else:
+                height = 1.0
 
         super().__init__(
             master=parent,
@@ -44,7 +52,10 @@ class CButton(Button):
         # helv36 = tkFont.Font(family='Helvetica', size=26, weight=tkFont.BOLD)
         # self.config(font=helv36)
 
-        self.grid(row=row, column=column)
+        if flip_row_and_col:
+            self.grid(row=column, column=row)
+        else:
+            self.grid(row=row, column=column)
 
         sY = (self.SIZE*spaceY[0], self.SIZE*spaceY[1])
         sX = (self.SIZE*spaceX[0], self.SIZE*spaceX[1])

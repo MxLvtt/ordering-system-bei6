@@ -1,6 +1,7 @@
 from tkinter import *
 from ContentControl.history_view import HistoryView, HistoryItem
 from Services.meals_service import MealsService
+from Templates.fonts import Fonts
 from Templates.scroll_list import ScrollList, Scrollable
 import Templates.references as REFS
 
@@ -34,7 +35,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             text="#",
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=5
         )
         self.index_head.pack(side=LEFT, padx=30)
@@ -43,7 +44,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             text=REFS.MEALS_TABLE_KATEGORIE_COLUMN.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=30
         )
         self.category_head.pack(side=LEFT, padx=30)
@@ -52,7 +53,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             text=REFS.MEALS_TABLE_NAME_COLUMN.capitalize(),
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             width=15
         )
         self.name_head.pack(side=LEFT, padx=30)
@@ -61,7 +62,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             # text=REFS.HISTORY_TABLE_EDIT,
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=5
         )
         self.edit_head.pack(side=RIGHT, padx=30)
@@ -73,7 +74,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             # text=REFS.HISTORY_TABLE_EXPAND,
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=5
         )
         self.expand_head.pack(side=RIGHT, padx=(30,0))
@@ -85,7 +86,7 @@ class MealsSettingsView(Frame):
             master=self.header,
             background=header_bg,
             text=REFS.MEALS_BASE_PRICE.capitalize(),
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             width=8
         )
         self.base_price_head.pack(side=RIGHT, padx=30)
@@ -142,7 +143,7 @@ class MealItem(Scrollable):
         self.index = Label(
             master=self,
             text=f"{index}",
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=5
         )
@@ -151,7 +152,7 @@ class MealItem(Scrollable):
         self.category = Label(
             master=self,
             text=meal.category_raw,
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=30
         )
@@ -160,7 +161,7 @@ class MealItem(Scrollable):
         self.name = Label(
             master=self,
             text=meal.name,
-            font=HistoryView.FONT_BOLD,
+            font=Fonts.xsmall(bold=True),
             background=background,
             width=15
         )
@@ -212,7 +213,7 @@ class MealItem(Scrollable):
         self.base_price_head = Label(
             master=self,
             text=f"{meal.price_str}{REFS.CURRENCY}",
-            font=HistoryView.FONT_NORMAL,
+            font=Fonts.xsmall(),
             background=background,
             width=8
         )

@@ -21,57 +21,57 @@ class Fonts():
     ]
 
     @staticmethod
-    def xxxxsmall(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(0, bold, italic)
+    def xxxxsmall(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(0, bold, italic, decrement)
 
     @staticmethod
-    def xxxsmall(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(1, bold, italic)
+    def xxxsmall(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(1, bold, italic, decrement)
 
     @staticmethod
-    def xxsmall(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(2, bold, italic)
+    def xxsmall(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(2, bold, italic, decrement)
 
     @staticmethod
-    def xsmall(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(3, bold, italic)
+    def xsmall(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(3, bold, italic, decrement)
 
     @staticmethod
-    def small(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(4, bold, italic)
+    def small(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(4, bold, italic, decrement)
 
     @staticmethod
-    def medium(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(5, bold, italic)
+    def medium(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(5, bold, italic, decrement)
 
     @staticmethod
-    def large(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(6, bold, italic)
+    def large(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(6, bold, italic, decrement)
 
     @staticmethod
-    def xlarge(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(7, bold, italic)
+    def xlarge(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(7, bold, italic, decrement)
 
     @staticmethod
-    def xxlarge(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(8, bold, italic)
+    def xxlarge(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(8, bold, italic, decrement)
 
     @staticmethod
-    def xxxlarge(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(9, bold, italic)
+    def xxxlarge(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(9, bold, italic, decrement)
 
     @staticmethod
-    def xxxxlarge(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(10, bold, italic)
+    def xxxxlarge(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(10, bold, italic, decrement)
 
     @staticmethod
-    def xxxxxlarge(bold: bool = False, italic: bool = False):
-        return Fonts._get_font(11, bold, italic)
+    def xxxxxlarge(bold: bool = False, italic: bool = False, decrement: int = 3):
+        return Fonts._get_font(11, bold, italic, decrement)
 
     @staticmethod
-    def _get_font(size_index: int, bold: bool = False, italic: bool = False):
+    def _get_font(size_index: int, bold: bool = False, italic: bool = False, decrement: int = 3):
         if REFS.MOBILE:
-            size_index = size_index - 3
+            size_index = size_index - decrement
 
             if size_index < 0:
                 size_index = 0

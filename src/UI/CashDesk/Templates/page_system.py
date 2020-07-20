@@ -3,6 +3,7 @@ from functools import partial
 from tkinter import *
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
+from Templates.fonts import Fonts
 from EventHandler.Event import Event
 
 
@@ -107,7 +108,7 @@ class PageSystem(Frame):
         self._current_page_label = Label(
             master=label_container,
             text='<current page index>',
-            font=('Helvetica', '16', 'bold'),
+            font=Fonts.small(bold=True),
             foreground='black',
             background=parent_bg
         )

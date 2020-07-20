@@ -7,6 +7,7 @@ from Services.orders_service import OrdersService
 from Services.meals_service import MealsService
 from tkinter import *
 from functools import partial
+from Templates.fonts import Fonts
 
 
 class OrderTileGUI(Frame):
@@ -23,9 +24,9 @@ class OrderTileGUI(Frame):
         self._order: Order = order
         # self._order.on_state_changed.add(self._state_changed_cb)
 
-        self._font_S = ('Helvetica', '10')
-        self._font = ('Helvetica', '12')
-        self._font_bold = ('Helvetica', '12', 'bold')
+        self._font_S = Fonts.xxxsmall(decrement = 1)
+        self._font =  Fonts.xxsmall(decrement = 1)
+        self._font_bold = Fonts.xxsmall(bold = True, decrement = 1)
 
         ### Header
 

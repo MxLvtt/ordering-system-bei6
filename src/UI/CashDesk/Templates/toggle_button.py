@@ -12,7 +12,7 @@ class ToggleButton(CButton):
         initial_state: bool = False,
         group = None,
         width=2.0,
-        height=1.0,
+        height=-1,
         fg=CButton.DARK,
         row=0,
         column=0,

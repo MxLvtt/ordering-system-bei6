@@ -31,6 +31,10 @@ class ActiveOrdersView(ContentTemplate):
             shown=False
         )
 
+        if REFS.MOBILE:
+            ActiveOrdersView.NUM_COLUMNS = 3
+            ActiveOrdersView.NUM_ROWS = 1
+
         self._background = background
 
         # OrdersService.on_order_created_event.add(self._order_created_event)
@@ -259,8 +263,8 @@ class ActiveOrdersView(ContentTemplate):
         for i in range(0, ActiveOrdersView.NUM_COLUMNS):
             self.body_container.grid_columnconfigure(i, weight=1)
             
-        self.body_container.grid_rowconfigure(0, weight=1)
-        self.body_container.grid_rowconfigure(1, weight=1)
+        for i in range(0, ActiveOrdersView.NUM_ROWS):
+            self.body_container.grid_rowconfigure(i, weight=1)
 
         x_pos = 0
         y_pos = 0

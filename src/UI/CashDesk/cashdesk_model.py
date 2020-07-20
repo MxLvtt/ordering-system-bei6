@@ -117,23 +117,31 @@ class CashDeskModel():
     def _main_cycle_thread(self, curtime='', *args, **kwargs):
         """ Private function that is called periodically on a separate thread.
         """
-        res: float = random()
+        try:
+            res: float = random()
 
-        if res < 0.01:
-            self._show_toast("Order updated")
+            if res < 0.01:
+                self._show_toast("Order updated")
 
-        # UPDATE CLOCK
-        newtime = time.strftime("%a, %d-%m-%Y\n%H:%M:%S")
-        if newtime != curtime:
-            curtime = newtime
-            self._current_time = curtime
+            # UPDATE CLOCK
+            time_format = "%a, %d-%m-%Y\n%H:%M:%S"
 
-        # EVENT TRIGGER
-        self.on_cycle_event()
+            if REFS.MOBILE:
+                time_format = "%A\n%d-%m-%y\n%H:%M:%S"
 
-        # REPEAT
-        self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
-        self._main_cycle_timer.start()
+            newtime = time.strftime(time_format)
+            if newtime != curtime:
+                curtime = newtime
+                self._current_time = curtime
+
+            # EVENT TRIGGER
+            self.on_cycle_event()
+        except:
+            pass
+        finally:
+            # REPEAT
+            self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
+            self._main_cycle_timer.start()
 
     def _show_toast(self, text="Notification Toast"):
         """ TODO: TEMP """

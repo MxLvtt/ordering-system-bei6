@@ -4,12 +4,15 @@ from ContentControl.add_order_view import AddOrderView
 from ContentControl.content_panel import ContentPanel
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
+from Templates.fonts import Fonts
 import Templates.references as REFS
 
 class CashDeskGUI():
-    DEBUG = True
+    DEBUG = False
 
-    def __init__(self, mobile_view: bool = False, main_station: bool = True):
+    def __init__(self, mobile_view: bool = False, main_station: bool = True, debug: bool = False):
+        CashDeskGUI.DEBUG = debug
+
         REFS.MOBILE = mobile_view
         REFS.MAIN_STATION = main_station
 
@@ -17,15 +20,28 @@ class CashDeskGUI():
         root = Tk()
         root.resizable(False, False)
 
-        if mobile_view:
-            root.wm_title('Ordering System - Mobile View (7")')
-            # root.attributes('-fullscreen', True)
-            # Window Size: approx. 7 in
-            root.config(width=866, height=487, background="#696969")
-        else:
-            root.wm_title('Ordering System - Fullscreen')
+        if not CashDeskGUI.DEBUG:
             root.attributes('-fullscreen', True)
-            root.config(width=1650, height=928, background="#696969")
+
+        # Window Size: approx. 7 in
+        root_bg = "#696969"
+        root.config(width=866, height=487, background=root_bg)
+
+        station = 'Küche'
+
+        if main_station:
+            station = 'Kasse'
+
+        title_size = 'Mobile Ansicht (7")'
+
+        if not mobile_view:
+            title_size = 'Vollbild'
+
+            if CashDeskGUI.DEBUG:
+                root.attributes('-fullscreen', True)
+
+
+        root.wm_title(f"Bestellsystem - {station} - {title_size}")
 
         root.update()
 
@@ -34,12 +50,12 @@ class CashDeskGUI():
         self._root = root
 
         # The default font for the labels
-        def_font = ('Helvetica', '18')
+        def_font = Fonts.medium()
         paddings = (5,5)
 
         if mobile_view:
             # The default font for the labels
-            def_font = ('Helvetica', '12')
+            def_font = Fonts.xxsmall()
             paddings = (0,0)
 
         # Declaring the cash desk's model object
@@ -50,27 +66,73 @@ class CashDeskGUI():
         self._headercontainer = Frame(root, background="#EFEFEF")
         self._headercontainer.pack(side=TOP, fill='x', padx=paddings, pady=paddings)
 
-        # TODO: Move all of this into the add order view and finish the 
-        # TODO: generic toolbar system (where the toolbar is chosen form the active view)
+        self._toolbar_container = Frame(self._headercontainer, background="#EFEFEF")
+        self._toolbar_container.pack(side=LEFT, fill='both', expand=1)
+
+        if REFS.MOBILE:
+            self._nav_img = IMAGES.create(IMAGES.NAVIGATION)
+
+            self._more_button_container = Frame(
+                master=self._headercontainer,
+                background="#EFEFEF"
+            )
+            self._more_button_container.pack(side=RIGHT, fill='both')
+
+            self._more_button = CButton(
+                parent=self._more_button_container,
+                image=self._nav_img,
+                width=1,
+                command=self.open_side_bar,
+                fg=CButton.DARK, bg=CButton.LIGHT,
+                row=0, column=0
+            )
 
         # The frame at the top of the window
         # header = Frame(self._headercontainer, background="#EFEFEF")
         # header.pack(side=TOP, fill='x', padx=5, pady=5)
         # header.grid(row=0, column=0, sticky='nsew')
 
-        ## -------- FOOTER STUFF -------- ##
-        
-        # The frame at the bottom of the window that acts as a container for all the elements
-        footerContainer = Frame(root, background="#EFEFEF")
+        ## -------- BODY STUFF -------- ##
 
-        if not mobile_view:
+        self.body_container = Frame(root, background=root_bg)
+        self.body_container.pack(side=TOP, expand=1, fill='both', padx=paddings)
+
+        # The content panel (container) in the middle of the window
+        self.body = ContentPanel(self.body_container, self._toolbar_container) #self.model.body_content_changed_event)
+        self.body.pack(side=LEFT, expand=1, fill='both')
+        # Lowered to the minimum z-Layer, so that the notification toasts are visible
+        self.body.lower()
+
+        ## -------- FOOTER STUFF -------- ##
+    
+        # The frame at the bottom of the window that acts as a container for all the elements
+        footerContainer = Frame(root, background="#EFEFEF")   
+
+        if REFS.MOBILE:
+            self.side_bar_visible = False
+            self.side_bar = Frame(self.body_container, background="#EFEFEF")
+            footerContainer = self.side_bar
+        else:
             footerContainer.pack(side=BOTTOM, fill='x', padx=paddings, pady=paddings)
 
         # The frame within the container holding all the buttons
-        footer = Frame(footerContainer, height=100, background="#EFEFEF")
-        footer.pack(side=LEFT)
+        footer = Frame(footerContainer, background="#EFEFEF")
+        
+        # The label within the container with the current timestamp
+        self._footer_clock = Label(
+            master=footerContainer,
+            text="<CURRENT_TIME>",
+            font=def_font,
+            padx=10
+        )
 
-        if not mobile_view:
+        if mobile_view:
+            footer.pack(side=BOTTOM)
+
+            self._footer_clock.pack(side=TOP)
+        else:
+            footer.pack(side=LEFT)
+
             # The label within the container with the title of the currently active view
             self._footer_title = Label(
                 master=footerContainer,
@@ -80,14 +142,14 @@ class CashDeskGUI():
             )
             self._footer_title.pack(side=LEFT)
 
-        # The label within the container with the current timestamp
-        self._footer_clock = Label(
-            master=footerContainer,
-            text="<CURRENT_TIME>",
-            font=def_font,
-            padx=10
-        )
-        self._footer_clock.pack(side=RIGHT)
+            self._footer_clock.pack(side=RIGHT)
+
+        spaceX = (0.0,1.0)
+        spaceY = (0.0,0.0)
+
+        if mobile_view:
+            spaceX = (0.0,0.0)
+            spaceY = (0.0,0.5)
 
         self._exit_img = IMAGES.create(IMAGES.EXIT)
 
@@ -95,11 +157,13 @@ class CashDeskGUI():
         self._exit_button = CButton(
             parent=footer,
             image=self._exit_img,
-            width=1,
-            spaceX=(0.0,1.0),
+            width=1 - 2 * mobile_view,
+            vertical=mobile_view,
+            spaceX=spaceX,
             command=self.terminate,
             fg=CButton.WHITE, bg=CButton.DARK_RED,
-            row=0, column=0
+            row=0, column=0 + 5 * mobile_view,
+            flip_row_and_col=mobile_view
         )
 
         if REFS.MAIN_STATION:
@@ -109,9 +173,11 @@ class CashDeskGUI():
             self._add_order_view_button = CButton(
                 parent=footer,
                 image=self.add_order_view_img,
+                vertical=mobile_view,
                 command=self.show_add_order,
                 fg=CButton.DARK, bg=CButton.LIGHT,
-                row=0, column=1
+                row=0, column=1,
+                flip_row_and_col=mobile_view
             )
 
         self.in_progress_img = IMAGES.create(IMAGES.IN_PROGRESS)
@@ -120,9 +186,11 @@ class CashDeskGUI():
         self._active_orders_button = CButton(
             parent=footer,
             image=self.in_progress_img,
+            vertical=mobile_view,
             command=self.show_active_orders,
             fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=2
+            row=0, column=2,
+            flip_row_and_col=mobile_view
         )
 
         self.history_img = IMAGES.create(IMAGES.HISTORY)
@@ -131,10 +199,12 @@ class CashDeskGUI():
         self._history_button = CButton(
             parent=footer,
             image=self.history_img,
-            spaceX=(0.0,1.0),
+            vertical=mobile_view,
+            spaceX=spaceX, spaceY=spaceY,
             command=self.show_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=3
+            row=0, column=3,
+            flip_row_and_col=mobile_view
         )
 
         if REFS.MAIN_STATION:
@@ -144,19 +214,13 @@ class CashDeskGUI():
             self._settings_button = CButton(
                 parent=footer,
                 image=self.settings_img,
-                spaceX=(0.0,1.0),
+                vertical=mobile_view,
+                spaceX=spaceX, spaceY=spaceY,
                 command=self.show_settings,
                 fg=CButton.DARK, bg=CButton.LIGHT,
-                row=0, column=4
+                row=0, column=4,
+                flip_row_and_col=mobile_view
             )
-
-        ## -------- BODY STUFF -------- ##
-
-        # The content panel (container) in the middle of the window
-        self.body = ContentPanel(root, self._headercontainer) #self.model.body_content_changed_event)
-        self.body.pack(side=TOP, expand=1, fill='both', padx=paddings)
-        # Lowered to the minimum z-Layer, so that the notification toasts are visible
-        self.body.lower()
 
         ## -------- ADDITIONAL STUFF -------- ##
 
@@ -222,8 +286,8 @@ class CashDeskGUI():
     def body_changed(self):
         """ Callback function to be called, whenever the body content changes
         """
-        for header_child in self._headercontainer.winfo_children():
-            header_child.destroy()
+        for toolbar_child in self._toolbar_container.winfo_children():
+            toolbar_child.destroy()
             # TODO
 
     def on_cycle(self):
@@ -243,3 +307,11 @@ class CashDeskGUI():
         """
         self.model._cancel_timer()
         self._root.destroy()
+
+    def open_side_bar(self):
+        if self.side_bar_visible:
+            self.side_bar.pack_forget()
+            self.side_bar_visible = False
+        else:
+            self.side_bar.pack(side=RIGHT, fill='y')
+            self.side_bar_visible = True
