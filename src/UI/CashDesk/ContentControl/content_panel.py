@@ -6,6 +6,7 @@ from ContentControl.settings_view import SettingsView
 from ContentControl.history_view import HistoryView
 from Templates.cbutton import CButton
 from Services.orders_service import OrdersService
+import Templates.references as REFS
 
 
 class ContentPanel(Frame):
@@ -28,29 +29,35 @@ class ContentPanel(Frame):
         # To prevent the content panel from collapsing because of the added views.
         self.pack_propagate(0)
 
-        ## ------- ADD ORDER VIEW ------- ##
+        if REFS.MAIN_STATION:
+            ## ------- ADD ORDER VIEW ------- ##
 
-        self.add_order_content: AddOrderView = AddOrderView(
-            parent=self,
-            toolbar_container=toolbar_container,
-            background=CButton.WHITE,
-            shown=True  # Set this view to be shown at the beginning
-        )
-        # Add the view to the list
-        self.VIEWS.append(self.add_order_content)
+            self.add_order_content: AddOrderView = AddOrderView(
+                parent=self,
+                toolbar_container=toolbar_container,
+                background=CButton.WHITE,
+                shown=True  # Set this view to be shown at the beginning
+            )
+            # Add the view to the list
+            self.VIEWS.append(self.add_order_content)
 
-        # Set this view to be the currently active one
-        self._active_view = self.add_order_content
+            # Set this view to be the currently active one
+            self._active_view = self.add_order_content
 
         ## ------- ACTIVE ORDERS VIEW ------- ##
 
         self.active_orders_content: ActiveOrdersView = ActiveOrdersView(
             parent=self,
             toolbar_container=toolbar_container,
-            background=CButton.WHITE
+            background=CButton.WHITE,
+            shown=not REFS.MAIN_STATION
         )
         # Add the view to the list
         self.VIEWS.append(self.active_orders_content)
+        
+        if not REFS.MAIN_STATION:
+            # Set this view to be the currently active one
+            self._active_view = self.active_orders_content
 
         ## ------- HISTORY VIEW ------- ##
 
@@ -62,15 +69,16 @@ class ContentPanel(Frame):
         # Add the view to the list
         self.VIEWS.append(self.history_content)
 
-        ## ------- SETTINGS VIEW ------- ##
+        if REFS.MAIN_STATION:
+            ## ------- SETTINGS VIEW ------- ##
 
-        self.settings_content: SettingsView = SettingsView(
-            parent=self,
-            toolbar_container=toolbar_container,
-            background=CButton.WHITE
-        )
-        # Add the view to the list
-        self.VIEWS.append(self.settings_content)
+            self.settings_content: SettingsView = SettingsView(
+                parent=self,
+                toolbar_container=toolbar_container,
+                background=CButton.WHITE
+            )
+            # Add the view to the list
+            self.VIEWS.append(self.settings_content)
 
     ### ------------------- PROPERTIES ------------------- ###
 
@@ -81,6 +89,10 @@ class ContentPanel(Frame):
     @property
     def add_order_view(self):
         return self.add_order_content
+
+    @property
+    def active_orders_view(self):
+        return self.active_orders_content
 
     ### ------------------- MAIN METHODS ------------------- ###
 

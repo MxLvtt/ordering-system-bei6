@@ -28,7 +28,7 @@ class ActiveOrdersView(ContentTemplate):
             title=REFS.ACTIVEORDERSVIEW_TITLE,
             toolbar_container=toolbar_container,
             background=background,
-            shown=shown
+            shown=False
         )
 
         self._background = background
@@ -137,6 +137,9 @@ class ActiveOrdersView(ContentTemplate):
         self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
         
         ######## END setting toolbar content ########
+
+        if shown:
+            super().show_view()
 
     def show_view(self):
         """ Is called everytime this view is opened

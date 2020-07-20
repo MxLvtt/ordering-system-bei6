@@ -1,4 +1,5 @@
 from tkinter import PhotoImage
+import Templates.references as REFS
 
 class IMAGES():
     BASE_PATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk\img\\"
@@ -40,4 +41,8 @@ class IMAGES():
     @staticmethod
     def create(filename: str):
         img = PhotoImage(file=filename)
+
+        if REFS.MOBILE:
+            img = img.subsample(2,2)
+
         return img

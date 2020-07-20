@@ -3,15 +3,19 @@ from functools import partial
 from Services.meals_service import MealsService
 from EventHandler.Event import Event
 from Templates.images import IMAGES
+from Templates.fonts import Fonts
+import Templates.references as REFS
 
 class AddedMealTile(Frame):
+    PADDING = 15
+
     def __init__(self, 
             parent,
             meal, 
             index,
             remove_meal_cb,
             on_amount_changed_cb=None,
-            background='#F4F4F4'):
+            background='white'):
         super().__init__(
             master=parent,
             cnf={},
@@ -19,6 +23,14 @@ class AddedMealTile(Frame):
             highlightbackground='#606060',
             highlightthickness=2
         )
+
+        self.padding = 15
+
+        if REFS.MOBILE:
+            self.padding = 5
+
+        if AddedMealTile.PADDING != self.padding:
+            AddedMealTile.PADDING = self.padding
 
         self.on_amount_changed_event : Event = Event()
 
@@ -35,18 +47,20 @@ class AddedMealTile(Frame):
 
         #### Setup header
 
+        std_button_width = 20 + 20 * (not REFS.MOBILE)
+
         self._header = Frame(
             master=self,
             background=background
         )
-        self._header.pack(side=TOP, padx=15, pady=15, fill='x')
+        self._header.pack(side=TOP, padx=self.padding, pady=self.padding, fill='x')
 
         self._l_name = Label(
             master=self._header,
             text=meal.name,
             background=background,
             foreground='black',
-            font=('Helvetica', '20', 'bold')
+            font=Fonts.large(bold=True)
         )
         self._l_name.pack(side=LEFT, fill='x', expand=1)
 
@@ -54,7 +68,8 @@ class AddedMealTile(Frame):
             master=self._header,
             image=self.close_img,
             command=partial(remove_meal_cb, self),
-            width=40, height=40
+            width=std_button_width,
+            height=std_button_width
         )
         self._b_delete.pack(side=RIGHT, padx=(5,0))
 
@@ -62,7 +77,7 @@ class AddedMealTile(Frame):
             master=self,
             background=background
         )
-        self.body_frame.pack(side=TOP, padx=15, pady=(0,15), fill='both', expand=1)
+        self.body_frame.pack(side=TOP, padx=self.padding, pady=(0,self.padding), fill='both', expand=1)
 
         self.left_frame = Frame(
             master=self.body_frame,
@@ -82,7 +97,8 @@ class AddedMealTile(Frame):
             master=self.right_frame,
             image=self.up_img,
             command=partial(self.change_amount, +1),
-            width=40, height=80
+            width=std_button_width,
+            height=std_button_width * 2
         )
         self._b_count_up.pack(side=TOP, pady=(0,5))
 
@@ -90,23 +106,28 @@ class AddedMealTile(Frame):
             master=self.right_frame,
             image=self.down_img,
             command=partial(self.change_amount, -1),
-            width=40, height=80
+            width=std_button_width,
+            height=std_button_width * 2
         )
         self._b_count_down.pack(side=TOP)
         self._b_count_down.config(state="disabled")
 
         #### Setup size
-
         if len(meal.size_objects) > 0:
+            size_text = f"{meal.size_objects[0].name}"
+
+            if not REFS.MOBILE:
+                size_text = f"{REFS.SIZE_LABEL}:  " + size_text
+
             self._l_size = Label(
                 master=self.left_frame,
-                text=f"GRÖßE:  {meal.size_objects[0].name}",
+                text=size_text,
                 background=background,
                 foreground='black',
-                font=('Helvetica', '12'),
+                font=Fonts.xxsmall(),
                 justify='left'
             )
-            self._l_size.pack(side=TOP, padx=15, pady=(0, 15), anchor='nw')
+            self._l_size.pack(side=TOP, padx=self.padding, pady=(0, self.padding), anchor='nw')
 
         (meal_title,meal_text) = MealsService.meal_content_to_text(meal, indent="")
         
@@ -115,10 +136,10 @@ class AddedMealTile(Frame):
             text=meal_text,
             background=background,
             foreground='black',
-            font=('Helvetica', '14'),
+            font=Fonts.xsmall(),
             justify='left'
         )
-        self._l_content.pack(side=TOP, padx=15, pady=(0, 15), anchor='nw')
+        self._l_content.pack(side=TOP, padx=self.padding, pady=(0, self.padding), anchor='nw')
         
         # #### Setup ingredients list
 
@@ -129,7 +150,7 @@ class AddedMealTile(Frame):
         #         text='',
         #         background=background,
         #         foreground='black',
-        #         font=('Helvetica', '12'),
+        #         font=Fonts.xxsmall(),
         #         justify='left'
         #     )
         #     self._l_ingredients.pack(side=TOP, padx=15, pady=(0, 15), anchor='nw')
@@ -150,7 +171,7 @@ class AddedMealTile(Frame):
         #         text='',
         #         background=background,
         #         foreground='black',
-        #         font=('Helvetica', '12'),
+        #         font=Fonts.xxsmall(),
         #         justify='left'
         #     )
         #     self._l_addons.pack(side=TOP, padx=15, pady=(0, 15), anchor='nw')
@@ -172,7 +193,7 @@ class AddedMealTile(Frame):
         return self._meal
 
     def set_position(self, row, column):
-        self.grid(row=row, column=column, padx=15, pady=15, sticky='nsew')
+        self.grid(row=row, column=column, padx=self.padding, pady=self.padding, sticky='nsew')
 
     def change_amount(self, direction):
         if direction != 1 and direction != -1:

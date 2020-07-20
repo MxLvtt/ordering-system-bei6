@@ -1,4 +1,5 @@
 from tkinter import Button, LEFT
+import Templates.references as REFS
 
 class CButton(Button):
     SIZE = 72
@@ -15,7 +16,7 @@ class CButton(Button):
         parent,
         image,
         command,
-        width=2.0,
+        width=-1,
         height=1.0,
         fg=DARK,
         bg=WHITE,
@@ -24,6 +25,12 @@ class CButton(Button):
         spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
         spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
+        if width == -1:
+            width = 1.0 + (not REFS.MOBILE)
+
+        if REFS.MOBILE:
+            height = 0.6
+
         super().__init__(
             master=parent,
             command=command,

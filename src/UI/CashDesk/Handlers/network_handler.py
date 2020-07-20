@@ -1,23 +1,25 @@
+import select
 import socket
 import time
 import sys
+import random
+import math
 
 # References file contains all the global information
 import Templates.references as REFS
 
 from Handlers.timer_handler import TimerHandler
-from Handlers.encrpytion_handler import EncryptionHandler
+from Handlers.encryption_handler import EncryptionHandler
 
 
 class NetworkHandler:
     DEBUG = True
     initialized = False
 
-    HANDSHAKE_MSG = "msg received thanks"
     HEADERSIZE = 5
 
-    IP_CONFIG = ("0.0.0.0", "0000")
-    IP_CONFIG_PARTNER = ("0.0.0.0", "0000")
+    IP_CONFIG = ("127.0.0.1", 80)
+    IP_CONFIG_PARTNER = ("127.0.0.1", 80)
 
     KITCHEN_IP_CONFIG = (REFS.KITCHEN_SERVER_IP, REFS.KITCHEN_SERVER_PORT)
     CASHDESK_IP_CONFIG = (REFS.CASHDESK_SERVER_IP, REFS.CASHDESK_SERVER_PORT)
@@ -80,7 +82,7 @@ class NetworkHandler:
             # Update the amount of bytes received
             bytes_received = bytes_received + len(chunk)
         
-        string_fullmsg = b''.join(msg_chunks)
+        string_fullmsg = ''.join(msg_chunks)
 
         return EncryptionHandler.decrypt(string_fullmsg)
 
@@ -92,30 +94,53 @@ class NetworkHandler:
         This can not be a static method and has to be called by the object created 
         in the cashdesk-gui-model class.
         """
-        if not NetworkHandler.initialized:
-            raise RuntimeError("NetworkHandler has not been initialized yet.")
-
-        # Waits for client to connect
-        (clientsocket, address) = NetworkHandler.SERVER_SOCKET.accept()
-
-        # Receiving data from client
-        received_msg = NetworkHandler.receive(clientsocket)
-
         try:
-            # Responding to client to indicate a successfull message transmission
-            clientsocket.send(NetworkHandler.string_to_byte(NetworkHandler.HANDSHAKE_MSG))
-        except OSError as err:
-            print("NetworkHandler send error: {0}".format(err))
-            raise err
+            if not NetworkHandler.initialized:
+                raise RuntimeError("NetworkHandler has not been initialized yet.")
 
-        # TODO: call event and give along the received message
+            read_list = [NetworkHandler.SERVER_SOCKET]
+            write_list = [NetworkHandler.SERVER_SOCKET]
 
-        # Run this function again after <delay_ms> milliseconds
-        TimerHandler.start_timer(
-            callback=self.start_receive_loop,
-            delay_ms=REFS.RECEIVE_REFRESH_DELAY,
-            store_id=False
-        )
+            readable, writable, inerror = select.select(read_list, write_list, [], 0)
+
+            for s in readable:
+                if s is NetworkHandler.SERVER_SOCKET:
+                    # Waits for client to connect
+                    (clientsocket, address) = NetworkHandler.SERVER_SOCKET.accept()
+
+                    # Receiving data from client
+                    received_msg = NetworkHandler.receive(clientsocket)
+
+                    print(f"Received: '{received_msg}'")
+
+                    service_response = ""
+
+                    # TODO: call event and give along the received message
+                    # TODO: if event returns anything, attach it to the handshake
+
+                    service_response = "M12OK"
+
+                    try:
+                        recved_id = received_msg[0:REFS.IDENTIFIER_LENGTH]
+                        # Responding to client to indicate a successfull message transmission
+                        # clientsocket.send(NetworkHandler.string_to_byte(REFS.HANDSHAKE_MSG))
+                        NetworkHandler.send(
+                            recved_id + REFS.HANDSHAKE_MSG + service_response,
+                            clientsocket
+                        )
+                    except OSError as err:
+                        print("NetworkHandler send error: {0}".format(err))
+                        raise err
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+            raise
+        finally:
+            # Run this function again after <delay_ms> milliseconds
+            TimerHandler.start_timer(
+                callback=self.start_receive_loop,
+                delay_ms=REFS.RECEIVE_REFRESH_DELAY,
+                store_id=False
+            )
 
     # @staticmethod
     # def do_decrypt(ciphertext):
@@ -130,7 +155,11 @@ class NetworkHandler:
 
 
     @staticmethod
-    def send_with_handshake_to(raw_message): # TODO: Is this even necessary? TCP/IP already used acknowledgement
+    def send_with_handshake(raw_message):
+        identifier = REFS.FORMAT_STRING.format(random.randint(0, REFS.MAX_IDENTIFIER))
+
+        raw_message = identifier + raw_message
+
         # Create client connection to the server of the other station
         _socket = NetworkHandler.connect()
 
@@ -139,20 +168,33 @@ class NetworkHandler:
             response = ""
 
             try:
+                if NetworkHandler.DEBUG:
+                    print("Waiting for ACK response...", end=' ')
                 # Receive any response
-                response = _socket.recv(1024) # TODO: Why 1024?
+                response = _socket.recv(1024)
             except OSError as err:
                 print("NetworkHandler receive error: {0}".format(err))
-                _socket.close()
                 raise err
+            finally:
+                _socket.close()
+
+            decrypted_response = EncryptionHandler.decrypt(response.decode("utf-8"))
 
             # Check response for handshake identifier
-            if response.decode("utf-8") is NetworkHandler.HANDSHAKE_MSG: # TODO: Change handshake message
-                print("Message received with hanshake")
-                _socket.close()
+            if f"{identifier}{REFS.HANDSHAKE_MSG}" in decrypted_response:
+                if NetworkHandler.DEBUG:
+                    print("Success!")
+
+                additional_text = decrypted_response.replace(f"{identifier}{REFS.HANDSHAKE_MSG}", "")
+                if additional_text != "":
+                    print(f"Additional handshake content: '{additional_text}'")
             else:
+                if NetworkHandler.DEBUG:
+                    print("Failed!")
                 # TODO ---> raise error? Resend?
                 pass
+            
+        _socket.close()
 
     @staticmethod
     def send(raw_message, _socket) -> bool:
@@ -160,20 +202,25 @@ class NetworkHandler:
             print("EncryptionHandler not initialized yet. Aborting the receive method.")
             return
 
+        if NetworkHandler.DEBUG:
+            print(f"Sending: '{raw_message}'")
+
         # Encrypt the raw message
         msg = EncryptionHandler.encrypt(raw_message)
 
-        # MSGLEN = len(msg)
-        # msg = f'{len(msg):<{HEADERSIZE}}' + msg
-        totalsent = 0
+        if len(msg) < REFS.MESSAGE_LENGTH:
+            null_bytes = [b'\0' for x in range(REFS.MESSAGE_LENGTH - len(msg))]
+            msg = msg + b''.join(null_bytes)
         
-        # check if the total sent less than msg length
+        totalsent = 0
+
+        # Repeat as long as we haven't sent every message chunk
         while totalsent < REFS.MESSAGE_LENGTH:
             sent = 0
 
             try:
                 # Send as much of the message as possible
-                sent = _socket.send(NetworkHandler.string_to_byte(msg[totalsent:]))
+                sent = _socket.send(msg[totalsent:])
             except OSError as err:
                 print("NetworkHandler send error: {0}".format(err))
                 raise err

@@ -9,7 +9,6 @@ from ContentControl.AddOrderView.meal_details_view import MealDetailsView
 from ContentControl.AddOrderView.current_order_view import CurrentOrderView
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
-from Templates.fonts import Fonts
 
 
 class AddOrderView(ContentTemplate):
@@ -23,9 +22,6 @@ class AddOrderView(ContentTemplate):
             background=background,
             shown=shown
         )
-
-        if REFS.MOBILE:
-            AddOrderView.COLUMNS = 3
 
         self._checkmark_img = IMAGES.create(IMAGES.CHECK_MARK)
         self._add_img = IMAGES.create(IMAGES.ADD)
@@ -54,7 +50,7 @@ class AddOrderView(ContentTemplate):
             master=self._button_container_right,
             text='0',
             foreground='red',
-            font=Fonts.small(bold=True),
+            font=('Helvetica', '16', 'bold'),
             background="#EFEFEF"
         )
         self._label_meal_counter.grid(row=0, column=0, padx=15)
@@ -87,7 +83,7 @@ class AddOrderView(ContentTemplate):
         self._breadcrumb = Label(
             master=self._breadcrumb_container_middle,
             text='<breadcrumb>',
-            font=Fonts.small(),
+            font=('Helvetica', '16'),
             foreground='black',
             background='#EFEFEF'
         )
@@ -227,16 +223,15 @@ class AddOrderView(ContentTemplate):
             meal_tile.grid_propagate(0)
             meal_tile.update()
 
-            has_a_meal = subcat.has_meal()
-
             # Button styles for 'category'-buttons
             foreground = '#646464'
-            largefont = Fonts.xxxxlarge(bold=True, italic=not has_a_meal)
+            largefont = ("Helvetica", "32", "bold italic")
             buttoncmd = partial(self._update_tiles, subcat)
 
-            if has_a_meal:
+            if subcat.has_meal():
                 # Button styles for 'meal'-buttons
                 foreground = '#000000'
+                largefont = ("Helvetica", "32", "bold")
 
             # Replace every space with a new line character
             button_text = f"{subcat.name}"

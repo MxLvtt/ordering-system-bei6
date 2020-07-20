@@ -4,6 +4,7 @@ from functools import partial
 from ContentControl.AddOrderView.added_meal_tile import AddedMealTile
 from EventHandler.Event import Event
 from Templates.radio_button import RadioButton, RadioButtonGroup
+from Templates.fonts import Fonts
 import Templates.references as REFS
 
 
@@ -17,6 +18,8 @@ class CurrentOrderView(Frame):
             cnf={},
             background=background
         )
+
+        CurrentOrderView.NUM_COLUMNS = CurrentOrderView.NUM_COLUMNS - REFS.MOBILE
 
         self._meal_number_changed_event: Event = Event()
         self._meal_number_changed_event.add(self._update_price)
@@ -48,7 +51,7 @@ class CurrentOrderView(Frame):
                 text=form,
                 group=form_radiobutton_group,
                 highlight=REFS.LIGHT_CYAN,
-                font=('Helvetica', '18'),
+                font=Fonts.medium(),
                 command=command,
                 initial_state=self._order_form,
                 height=3
@@ -58,7 +61,7 @@ class CurrentOrderView(Frame):
         self._price_label = Label(
             master=self._info_frame,
             text='<price>',
-            font=('Helvetica', '18'),
+            font=Fonts.medium(),
             background=background
         )
         self._price_label.pack(side=BOTTOM, fill='x', padx=10, pady=10)
@@ -174,9 +177,15 @@ class CurrentOrderView(Frame):
 
                 empty_tile = Frame(
                     master=self._meals_frame,
-                    background=self._background
+                    background=self._meals_frame.cget('background')
                 )
-                empty_tile.grid(row=y, column=col, padx=15, pady=15, sticky='nsew')
+                empty_tile.grid(
+                    row=y,
+                    column=col,
+                    padx=AddedMealTile.PADDING,
+                    pady=AddedMealTile.PADDING,
+                    sticky='nsew'
+                )
 
                 self._meals_frame.grid_columnconfigure(col, weight=1)
 
@@ -186,13 +195,13 @@ class CurrentOrderView(Frame):
             for i_row in range((y + 1), CurrentOrderView.NUM_ROWS):
                 empty_tile = Frame(
                     master=self._meals_frame,
-                    background=self._background
+                    background=self._meals_frame.cget('background')
                 )
                 empty_tile.grid(
                     row=i_row,
                     column=0,
                     columnspan=CurrentOrderView.NUM_COLUMNS,
-                    padx=15, pady=15,
+                    padx=AddedMealTile.PADDING, pady=AddedMealTile.PADDING,
                     sticky='nsew'
                 )
 

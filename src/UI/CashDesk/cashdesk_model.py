@@ -49,8 +49,9 @@ class CashDeskModel():
         # Initialize database handler
         self._database_handler = DatabaseHandler(debug=debug)
 
+        # TODO
         # Initialize network handler
-        self._network_handler = NetworkHandler(main_station = True)
+        self._network_handler = NetworkHandler(main_station = REFS.MAIN_STATION)
         # Start continous receive-loop
         self._network_handler.start_receive_loop()
 

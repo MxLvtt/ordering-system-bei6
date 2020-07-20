@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import font as tkFont
 from functools import partial
+from Templates.fonts import Fonts
 import Templates.references as REFS
 import numpy as np
 import math
@@ -16,11 +17,11 @@ class MealDetailsView(Frame):
 
     SEPARATOR_WIDTH = 10
     SEPARATOR_COLOR = '#696969'  # '#525252'
-    SIZES_FRAME_WIDTH = 250
 
-    INGREDIENTS_LABEL = 'Zutaten'
-    ADDONS_LABEL = 'Extras'
-    SIZES_LABEL = 'Größen'
+    SIZES_FRAME_WIDTH_SMALL = 150
+    SIZES_FRAME_WIDTH_LARGE = 250
+
+    SIZES_FRAME_WIDTH = SIZES_FRAME_WIDTH_LARGE
 
     def __init__(self, parent, background, shown: bool = False):
         super().__init__(
@@ -28,6 +29,10 @@ class MealDetailsView(Frame):
             cnf={},
             background=background
         )
+
+        if REFS.MOBILE:
+            MealDetailsView.SEPARATOR_WIDTH = 3
+            MealDetailsView.SIZES_FRAME_WIDTH = MealDetailsView.SIZES_FRAME_WIDTH_SMALL
 
         # Assure that the frame won't resize with the contained widgets
         self.pack_propagate(0)
@@ -43,14 +48,11 @@ class MealDetailsView(Frame):
         else:
             self.show_view()
 
-        largefont = ('Helvetica', '40', 'bold')
-        bigfont = ('Helvetica', '26', 'bold italic')
-
         # TITLE LABEL
         self._title = Label(
             master=self,
             text="<title>",
-            font=largefont,
+            font=Fonts.xxxxxlarge(bold=True),
             background=background
         )
         self._title.grid(row=0, columnspan=3, sticky='nsew', pady=(10, 10))
@@ -59,7 +61,7 @@ class MealDetailsView(Frame):
         self._price = Label(
             master=self,
             text='<price>',
-            font=bigfont,
+            font=Fonts.xxxlarge(bold=True, italic=True),
             background=background
         )
         self._price.grid(row=0, column=4, sticky='nsew', pady=(10, 10))
@@ -74,8 +76,8 @@ class MealDetailsView(Frame):
         # ZUTATEN LABEL
         self._ingredients_label = Label(
             master=self,
-            text=MealDetailsView.INGREDIENTS_LABEL,
-            font=bigfont,
+            text=REFS.INGREDIENTS_LABEL,
+            font=Fonts.xxxlarge(bold=True, italic=True),
             background=background
         )
         self._ingredients_label.grid(
@@ -84,8 +86,8 @@ class MealDetailsView(Frame):
         # EXTRAS LABEL
         self._extras_label = Label(
             master=self,
-            text=MealDetailsView.ADDONS_LABEL,
-            font=bigfont,
+            text=REFS.ADDONS_LABEL,
+            font=Fonts.xxxlarge(bold=True, italic=True),
             background=background
         )
         self._extras_label.grid(row=2, column=2, sticky='nsew', pady=(10, 0))
@@ -93,8 +95,8 @@ class MealDetailsView(Frame):
         # SIZES LABEL
         self._sizes_label = Label(
             master=self,
-            text=MealDetailsView.SIZES_LABEL,
-            font=bigfont,
+            text=REFS.SIZES_LABEL,
+            font=Fonts.xxxlarge(bold=True, italic=True),
             background=background
         )
         self._sizes_label.grid(row=2, column=4, sticky='nsew', pady=(10, 0))
@@ -254,12 +256,13 @@ class MealDetailsView(Frame):
 
     def _get_button_text(self, name_price_pair_array, show_zero: bool = False) -> []:
         content = []
-
+        separator = ' ' # '\n'
+        
         for pair in name_price_pair_array:
             if not show_zero and pair.price == 0.0:
                 content.append(f"{pair.name}")
             else:
-                content.append(f"{pair.name}\n{pair.price_str}{REFS.CURRENCY}")
+                content.append(f"{pair.name}{separator}{pair.price_str}{REFS.CURRENCY}")
 
         return content
 
@@ -269,8 +272,12 @@ class MealDetailsView(Frame):
                     buttonCommand,
                     default_button_foreground: str = '#000000',
                     cols=3, rows=3):
+        pad_size = (not REFS.MOBILE) * 5
+
         NUM_COLUMNS = cols  # Minimum number of columns
         NUM_ROWS = rows     # Minimum number of rows
+
+        tile_buttons = []
 
         for idx, content in enumerate(button_contents):
             x = idx % NUM_COLUMNS
@@ -289,24 +296,27 @@ class MealDetailsView(Frame):
 
             container_tile = Frame(self.row_container,
                                    background=self._background, borderwidth=2)
-            container_tile.pack(padx=5, pady=(0, 5), side=LEFT,
+            container_tile.pack(padx=pad_size, pady=(0, pad_size), side=LEFT,
                                 fill="both", expand=1)
             container_tile.pack_propagate(0)
             container_tile.update()
 
             foreground = default_button_foreground
-            largefont = ("Helvetica", MealDetailsView.BUTTON_FONT_SIZE, "bold")
+
+            wrap_length = 100 + (not REFS.MOBILE) * 120
 
             tile_button = Button(container_tile,
                                  text=content,
                                  foreground=foreground,
-                                 font=largefont,
-                                 wraplength=220
+                                 font=Fonts.medium(bold=True),
+                                 wraplength=wrap_length
                                  )
             tile_button.pack(fill="both", expand=1)
             tile_button.config(command=partial(buttonCommand,
                                                tile_button,
                                                idx))
+            
+            tile_buttons.append(tile_button)
 
             if MealDetailsView.BUTTON_DEFAULT_BACKGROUND == None:
                 MealDetailsView.BUTTON_DEFAULT_BACKGROUND = tile_button.cget(
@@ -321,7 +331,7 @@ class MealDetailsView(Frame):
             for i in range(0, empty):
                 empty_tile = Frame(self.row_container,
                                    background=self._background, borderwidth=2)
-                empty_tile.pack(padx=5, pady=(0, 5), side=LEFT,
+                empty_tile.pack(padx=pad_size, pady=(0, pad_size), side=LEFT,
                                 fill="both", expand=1)
 
         # -- Fill space with empty rows if necessary -- #
@@ -336,7 +346,7 @@ class MealDetailsView(Frame):
 
                 empty_tile = Frame(self.empty_row,
                                    background=self._background, borderwidth=2)
-                empty_tile.pack(padx=5, pady=(0, 5), side=LEFT,
+                empty_tile.pack(padx=pad_size, pady=(0, pad_size), side=LEFT,
                                 fill="both", expand=1)
 
     def _clicked_ingredients_button(self, button: Button, index: int):

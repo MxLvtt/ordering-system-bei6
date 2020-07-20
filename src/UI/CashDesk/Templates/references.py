@@ -1,3 +1,8 @@
+import math
+
+MOBILE = False
+MAIN_STATION = True
+
 # NETWORK
 CASH_DESK_IP = "192.168.2.115"              # set as static ip of raspberry
 CASH_DESK_DB_PORT = "8457"                  # port on which to access the database remotely
@@ -9,14 +14,21 @@ CASH_DESK_DB_NAME = "ordsys"                # name of the database
 
 PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
 
-CASHDESK_SERVER_IP = "0.0.0.0" # CASH_DESK_IP
-CASHDESK_SERVER_PORT = "0000"
+CASHDESK_SERVER_IP = "127.0.0.1" # CASH_DESK_IP
+CASHDESK_SERVER_PORT = 1489
 
-KITCHEN_SERVER_IP = "0.0.0.0"
-KITCHEN_SERVER_PORT = "0000"
+KITCHEN_SERVER_IP = "127.0.0.1"
+KITCHEN_SERVER_PORT = 1487
 
 MESSAGE_LENGTH = 200                        # Length of a message in bytes
-RECEIVE_REFRESH_DELAY = 500                 # Refresh delay in milliseconds
+RECEIVE_REFRESH_DELAY = 1000                # Refresh delay in milliseconds
+
+HANDSHAKE_MSG = "ACKNOWLEDGEMENT"
+
+IDENTIFIER_LENGTH = 5
+MAX_IDENTIFIER = int(math.pow(10,IDENTIFIER_LENGTH) - 1)
+FORMAT_STRING = "{:0" + str(IDENTIFIER_LENGTH) + "d}"
+IDENTIFIER_DELIMITER = "#"
 
 # MEALS
 MEALS_TABLE_NAME = "meals"                  # name of the table containing all available meals
@@ -37,6 +49,11 @@ MEAL_PRICE_DELIMITER = "@"
 MEALS_BASE_PRICE = "Basispreis"
 
 CURRENCY = "€"
+
+INGREDIENTS_LABEL = 'Zutaten'
+ADDONS_LABEL = 'Extras'
+SIZES_LABEL = 'Größen'
+SIZE_LABEL = 'Größe'
 
 # ORDERS # TODO
 ORDERS_TABLE_NAME = "orders"

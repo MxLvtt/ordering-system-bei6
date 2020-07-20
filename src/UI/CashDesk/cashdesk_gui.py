@@ -4,16 +4,29 @@ from ContentControl.add_order_view import AddOrderView
 from ContentControl.content_panel import ContentPanel
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
+import Templates.references as REFS
 
 class CashDeskGUI():
     DEBUG = True
 
-    def __init__(self):
+    def __init__(self, mobile_view: bool = False, main_station: bool = True):
+        REFS.MOBILE = mobile_view
+        REFS.MAIN_STATION = main_station
+
         # Initializing the main window
         root = Tk()
-        # root.attributes('-fullscreen', True)
-        root.wm_title("GUI Kasse")
-        root.config(width=1450, height=850, background="#696969")
+        root.resizable(False, False)
+
+        if mobile_view:
+            root.wm_title('Ordering System - Mobile View (7")')
+            # root.attributes('-fullscreen', True)
+            # Window Size: approx. 7 in
+            root.config(width=866, height=487, background="#696969")
+        else:
+            root.wm_title('Ordering System - Fullscreen')
+            root.attributes('-fullscreen', True)
+            root.config(width=1650, height=928, background="#696969")
+
         root.update()
 
         root.pack_propagate(0)
@@ -21,7 +34,13 @@ class CashDeskGUI():
         self._root = root
 
         # The default font for the labels
-        helv18 = ('Helvetica', '18')
+        def_font = ('Helvetica', '18')
+        paddings = (5,5)
+
+        if mobile_view:
+            # The default font for the labels
+            def_font = ('Helvetica', '12')
+            paddings = (0,0)
 
         # Declaring the cash desk's model object
         self.model = CashDeskModel(root)
@@ -29,7 +48,7 @@ class CashDeskGUI():
         ## -------- HEADER STUFF -------- ##
 
         self._headercontainer = Frame(root, background="#EFEFEF")
-        self._headercontainer.pack(side=TOP, fill='x', padx=5, pady=5)
+        self._headercontainer.pack(side=TOP, fill='x', padx=paddings, pady=paddings)
 
         # TODO: Move all of this into the add order view and finish the 
         # TODO: generic toolbar system (where the toolbar is chosen form the active view)
@@ -40,29 +59,32 @@ class CashDeskGUI():
         # header.grid(row=0, column=0, sticky='nsew')
 
         ## -------- FOOTER STUFF -------- ##
-
+        
         # The frame at the bottom of the window that acts as a container for all the elements
         footerContainer = Frame(root, background="#EFEFEF")
-        footerContainer.pack(side=BOTTOM, fill='x', padx=5, pady=5)
+
+        if not mobile_view:
+            footerContainer.pack(side=BOTTOM, fill='x', padx=paddings, pady=paddings)
 
         # The frame within the container holding all the buttons
         footer = Frame(footerContainer, height=100, background="#EFEFEF")
         footer.pack(side=LEFT)
 
-        # The label within the container with the title of the currently active view
-        self._footer_title = Label(
-            master=footerContainer,
-            text="<Current Content View>",
-            font=helv18,
-            padx=10
-        )
-        self._footer_title.pack(side=LEFT)
+        if not mobile_view:
+            # The label within the container with the title of the currently active view
+            self._footer_title = Label(
+                master=footerContainer,
+                text="<Current Content View>",
+                font=def_font,
+                padx=10
+            )
+            self._footer_title.pack(side=LEFT)
 
         # The label within the container with the current timestamp
         self._footer_clock = Label(
             master=footerContainer,
             text="<CURRENT_TIME>",
-            font=helv18,
+            font=def_font,
             padx=10
         )
         self._footer_clock.pack(side=RIGHT)
@@ -80,16 +102,17 @@ class CashDeskGUI():
             row=0, column=0
         )
 
-        self.add_order_view_img = IMAGES.create(IMAGES.BURGER_DARK)
+        if REFS.MAIN_STATION:
+            self.add_order_view_img = IMAGES.create(IMAGES.BURGER_DARK)
 
-        # The button to bring up the add order view
-        self._add_order_view_button = CButton(
-            parent=footer,
-            image=self.add_order_view_img,
-            command=self.show_add_order,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=1
-        )
+            # The button to bring up the add order view
+            self._add_order_view_button = CButton(
+                parent=footer,
+                image=self.add_order_view_img,
+                command=self.show_add_order,
+                fg=CButton.DARK, bg=CButton.LIGHT,
+                row=0, column=1
+            )
 
         self.in_progress_img = IMAGES.create(IMAGES.IN_PROGRESS)
 
@@ -114,31 +137,34 @@ class CashDeskGUI():
             row=0, column=3
         )
 
-        self.settings_img = IMAGES.create(IMAGES.SETTINGS)
+        if REFS.MAIN_STATION:
+            self.settings_img = IMAGES.create(IMAGES.SETTINGS)
 
-        # The button to bring up the settings view
-        self._settings_button = CButton(
-            parent=footer,
-            image=self.settings_img,
-            spaceX=(0.0,1.0),
-            command=self.show_settings,
-            fg=CButton.DARK, bg=CButton.LIGHT,
-            row=0, column=4
-        )
+            # The button to bring up the settings view
+            self._settings_button = CButton(
+                parent=footer,
+                image=self.settings_img,
+                spaceX=(0.0,1.0),
+                command=self.show_settings,
+                fg=CButton.DARK, bg=CButton.LIGHT,
+                row=0, column=4
+            )
 
         ## -------- BODY STUFF -------- ##
 
         # The content panel (container) in the middle of the window
         self.body = ContentPanel(root, self._headercontainer) #self.model.body_content_changed_event)
-        self.body.pack(side=TOP, expand=1, fill='both', padx=5)
+        self.body.pack(side=TOP, expand=1, fill='both', padx=paddings)
         # Lowered to the minimum z-Layer, so that the notification toasts are visible
         self.body.lower()
 
         ## -------- ADDITIONAL STUFF -------- ##
 
         # Add callback functions that are called as soon as the database connection is established
-        # TODO: temp exluce
-        self.model.db_connection_ready_event.add(self.body.add_order_view.initialize)
+        if REFS.MAIN_STATION:
+            self.model.db_connection_ready_event.add(self.body.add_order_view.initialize)
+        else:
+            self.model.db_connection_ready_event.add(self.body.active_orders_view.update_view_and_database_content)
         # self.body.add_order_view.initialize()
 
         # Initializing the model after the GUI has finished the init process
