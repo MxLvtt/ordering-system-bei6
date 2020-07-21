@@ -357,8 +357,17 @@ class AddOrderView(ContentTemplate):
         meals_list = self._current_order_view.added_meals
         order_form = self._current_order_view.order_form
 
-        OrdersService.create_new_order(meals_list, order_form)
+        try:
+            new_order = OrdersService.create_new_order(meals_list, order_form)
+        except:
+            print("Creating new order failed.")
+            raise
 
-        # TODO: Only reset, if every step before succeeded!
+        if new_order == None:
+            return
+
+        # Send Message to other station about order creation
+        # TODO: Call Service
+
         # Reset Current Order View
         self._current_order_view.remove_all()

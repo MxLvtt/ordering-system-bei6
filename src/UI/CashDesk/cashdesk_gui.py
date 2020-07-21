@@ -2,6 +2,7 @@ from tkinter import *
 from cashdesk_model import CashDeskModel
 from ContentControl.add_order_view import AddOrderView
 from ContentControl.content_panel import ContentPanel
+from Handlers.network_handler import NetworkHandler
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
 from Templates.fonts import Fonts
@@ -126,10 +127,21 @@ class CashDeskGUI():
             padx=10
         )
 
+        self.connection_image = IMAGES.create(IMAGES.CONNECTION)
+        self.connection_lost_image = IMAGES.create(IMAGES.CONNECTION_LOST)
+        self.connection_ready_image = IMAGES.create(IMAGES.CONNECTION_READY)
+
+        self._connection_symbol = Label(
+            master=footerContainer,
+            image=self.connection_image,
+            padx=5, pady=5
+        )
+
         if mobile_view:
             footer.pack(side=BOTTOM)
 
             self._footer_clock.pack(side=TOP)
+            self._connection_symbol.pack(side=TOP)
         else:
             footer.pack(side=LEFT)
 
@@ -143,6 +155,7 @@ class CashDeskGUI():
             self._footer_title.pack(side=LEFT)
 
             self._footer_clock.pack(side=RIGHT)
+            self._connection_symbol.pack(side=RIGHT)
 
         spaceX = (0.0,1.0)
         spaceY = (0.0,0.0)
@@ -159,7 +172,7 @@ class CashDeskGUI():
             image=self._exit_img,
             width=1 - 2 * mobile_view,
             vertical=mobile_view,
-            spaceX=spaceX,
+            spaceX=spaceX, spaceY=(spaceY[1], spaceY[0]),
             command=self.terminate,
             fg=CButton.WHITE, bg=CButton.DARK_RED,
             row=0, column=0 + 5 * mobile_view,
@@ -200,7 +213,7 @@ class CashDeskGUI():
             parent=footer,
             image=self.history_img,
             vertical=mobile_view,
-            spaceX=spaceX, spaceY=spaceY,
+            spaceX=spaceX,
             command=self.show_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
             row=0, column=3,
@@ -215,7 +228,7 @@ class CashDeskGUI():
                 parent=footer,
                 image=self.settings_img,
                 vertical=mobile_view,
-                spaceX=spaceX, spaceY=spaceY,
+                spaceX=spaceX,
                 command=self.show_settings,
                 fg=CButton.DARK, bg=CButton.LIGHT,
                 row=0, column=4,
@@ -295,6 +308,12 @@ class CashDeskGUI():
         """
         # UPDATE CURRENT TIME
         self._footer_clock.config(text=self.model.current_time)
+
+        # UPDATE CONNECTION SYMBOL
+        if NetworkHandler.CONNECTION_READY:
+            self._connection_symbol.config(image=self.connection_ready_image)
+        else:
+            self._connection_symbol.config(image=self.connection_lost_image)
 
         # UPDATE CONTENT TITLE
         curr_title = self._footer_title.cget("text")

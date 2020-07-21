@@ -36,6 +36,10 @@ class IMAGES():
     CLOSE_LIGHT = f"{BASE_PATH}close_light.png"
     CLOSE_DARK = f"{BASE_PATH}close_dark.png"
 
+    CONNECTION = f"{BASE_PATH}connection.png"
+    CONNECTION_READY = f"{BASE_PATH}connection_ready.png"
+    CONNECTION_LOST = f"{BASE_PATH}connection_lost.png"
+
     def __init__(self):
         pass
 

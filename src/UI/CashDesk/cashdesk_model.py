@@ -16,11 +16,14 @@ import Templates.references as REFS
  
 class CashDeskModel():
     # PUBLIC STATIC VARIABLES
-    INTERVAL=0.2
+    MAIN_CYCLE_INTERVAL=0.2
+    CONNECTION_CHECK_INTERVAL=5.0
 
     def __init__(self, root):
         # Timer to trigger the main periodical thread
         self._main_cycle_timer: Timer
+        self._secondary_cycle_timer: Timer
+
         # Event that is triggered on every execution of the main cycle
         self._on_cycle_event: Event = Event()
         
@@ -49,11 +52,12 @@ class CashDeskModel():
         # Initialize database handler
         self._database_handler = DatabaseHandler(debug=debug)
 
-        # TODO
         # Initialize network handler
         self._network_handler = NetworkHandler(main_station = REFS.MAIN_STATION)
         # Start continous receive-loop
         self._network_handler.start_receive_loop()
+
+        self._secondary_cycle_thread()
 
         ##### Service Registration
 
@@ -113,6 +117,7 @@ class CashDeskModel():
         """ Private function to stop the main cyclic thread.
         """
         self._main_cycle_timer.cancel()
+        self._secondary_cycle_timer.cancel()
 
     def _main_cycle_thread(self, curtime='', *args, **kwargs):
         """ Private function that is called periodically on a separate thread.
@@ -140,8 +145,19 @@ class CashDeskModel():
             pass
         finally:
             # REPEAT
-            self._main_cycle_timer = Timer(self.INTERVAL, self._main_cycle_thread, curtime)
+            self._main_cycle_timer = Timer(CashDeskModel.MAIN_CYCLE_INTERVAL, self._main_cycle_thread, curtime)
             self._main_cycle_timer.start()
+
+    def _secondary_cycle_thread(self):
+        try:
+            # Check if the connection to the other station is ready
+            self._network_handler.check_connection_ready()
+        except:
+            pass
+        finally:
+            # REPEAT
+            self._secondary_cycle_timer = Timer(CashDeskModel.CONNECTION_CHECK_INTERVAL, self._secondary_cycle_thread)
+            self._secondary_cycle_timer.start()
 
     def _show_toast(self, text="Notification Toast"):
         """ TODO: TEMP """

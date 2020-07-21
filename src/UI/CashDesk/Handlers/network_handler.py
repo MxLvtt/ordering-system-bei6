@@ -5,6 +5,7 @@ import sys
 import random
 import math
 
+from tkinter import messagebox
 # References file contains all the global information
 import Templates.references as REFS
 
@@ -15,6 +16,8 @@ from Handlers.encryption_handler import EncryptionHandler
 class NetworkHandler:
     DEBUG = True
     initialized = False
+
+    CONNECTION_READY = False
 
     HEADERSIZE = 5
 
@@ -38,11 +41,38 @@ class NetworkHandler:
             NetworkHandler.IP_CONFIG = NetworkHandler.KITCHEN_IP_CONFIG
             NetworkHandler.IP_CONFIG_PARTNER = NetworkHandler.CASHDESK_IP_CONFIG
 
-        NetworkHandler.SERVER_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        NetworkHandler.SERVER_SOCKET.bind(NetworkHandler.IP_CONFIG)
-        NetworkHandler.SERVER_SOCKET.listen()
+        NetworkHandler.setup_server_connection()
 
-        NetworkHandler.initialized = True
+    @staticmethod
+    def setup_server_connection():
+        try:
+            NetworkHandler.SERVER_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            NetworkHandler.SERVER_SOCKET.bind(NetworkHandler.IP_CONFIG)
+            NetworkHandler.SERVER_SOCKET.listen()
+
+            NetworkHandler.initialized = True
+        except OSError as err:
+            messagebox.showerror(
+                title="TCP/IP server socket failed",
+                message="Setting up a TCP/IP server socket for this station failed. Make sure the other station is reachable over WIFI.\n\nError message: " + err.strerror
+            )
+
+    def check_connection_ready(self) -> bool:
+        try:
+            s = NetworkHandler.connect(suppress_error=True)
+
+            if s == None:
+                NetworkHandler.CONNECTION_READY = False
+                return False
+            
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
+            
+            NetworkHandler.CONNECTION_READY = True
+            return True
+        except:
+            NetworkHandler.CONNECTION_READY = False
+            return False
 
 
 ######################################  SERVER METHODES (RECEIVING DATA) ######################################
@@ -54,6 +84,10 @@ class NetworkHandler:
 
     @staticmethod
     def receive(socket):
+        if not NetworkHandler.initialized:
+            print("NetworkHandler not initialized yet. Aborting the receive method.")
+            return
+
         if not EncryptionHandler.initialized:
             print("EncryptionHandler not initialized yet. Aborting the receive method.")
             return
@@ -96,7 +130,10 @@ class NetworkHandler:
         """
         try:
             if not NetworkHandler.initialized:
-                raise RuntimeError("NetworkHandler has not been initialized yet.")
+                if NetworkHandler.DEBUG:
+                    print("NetworkHandler has not been initialized yet. Skipping the receive loop.")
+                return
+                # raise RuntimeError("NetworkHandler has not been initialized yet.")
 
             read_list = [NetworkHandler.SERVER_SOCKET]
             write_list = [NetworkHandler.SERVER_SOCKET]
@@ -108,8 +145,11 @@ class NetworkHandler:
                     # Waits for client to connect
                     (clientsocket, address) = NetworkHandler.SERVER_SOCKET.accept()
 
-                    # Receiving data from client
-                    received_msg = NetworkHandler.receive(clientsocket)
+                    try:
+                        # Receiving data from client
+                        received_msg = NetworkHandler.receive(clientsocket)
+                    except:
+                        raise RuntimeError("Receive failed")
 
                     print(f"Received: '{received_msg}'")
 
@@ -131,8 +171,10 @@ class NetworkHandler:
                     except OSError as err:
                         print("NetworkHandler send error: {0}".format(err))
                         raise err
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
+        except RuntimeError:
+            pass
+        except OSError as err:
+            print("Unexpected error:", err)
             raise
         finally:
             # Run this function again after <delay_ms> milliseconds
@@ -148,6 +190,14 @@ class NetworkHandler:
 
     @staticmethod
     def send_with_handshake(raw_message):
+        if not NetworkHandler.initialized:
+            print("NetworkHandler has not been initialized yet. Skipping the send process.")
+            return
+            
+        if not EncryptionHandler.initialized:
+            print("EncryptionHandler has not been initialized yet. Skipping the send process.")
+            return
+
         identifier = REFS.FORMAT_STRING.format(random.randint(0, REFS.MAX_IDENTIFIER))
 
         raw_message = identifier + raw_message
@@ -190,8 +240,12 @@ class NetworkHandler:
 
     @staticmethod
     def send(raw_message, _socket) -> bool:
+        if not NetworkHandler.initialized:
+            print("NetworkHandler has not been initialized yet. Skipping the send process.")
+            return
+            
         if not EncryptionHandler.initialized:
-            print("EncryptionHandler not initialized yet. Aborting the receive method.")
+            print("EncryptionHandler has not been initialized yet. Skipping the send process.")
             return
 
         if NetworkHandler.DEBUG:
@@ -235,13 +289,20 @@ class NetworkHandler:
         return False
 
     @staticmethod
-    def connect():
+    def connect(suppress_error: bool = False):
+        if not NetworkHandler.initialized:
+            print("NetworkHandler has not been initialized yet. Skipping the connection process.")
+            return None
+
         _socket = None
 
         try:
             _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             _socket.connect(NetworkHandler.IP_CONFIG_PARTNER)
         except OSError as err:
+            if suppress_error:
+                return None
+
             print("NetworkHandler connect error: {0}".format(err))
             raise err
 
