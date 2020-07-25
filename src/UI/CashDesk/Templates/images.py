@@ -1,8 +1,9 @@
 from tkinter import PhotoImage
+from PIL import ImageTk, Image
 import Templates.references as REFS
 
 class IMAGES():
-    BASE_PATH = REFS.BASEPATH + r"\img\\"
+    BASE_PATH = REFS.BASEPATH + r"/img/"
 
     CHECK_MARK = f"{BASE_PATH}checkmark.png"
     CHECK_MARK_DARK = f"{BASE_PATH}checkmark_dark.png"
@@ -45,9 +46,15 @@ class IMAGES():
 
     @staticmethod
     def create(filename: str):
-        img = PhotoImage(file=filename)
+        img_src = Image.open(filename)
 
         if REFS.MOBILE:
-            img = img.subsample(2,2)
+            #img = img.subsample(2,2)
+            width = img_src.width
+            height = img_src.height
+
+            img_src = img_src.resize((int(width/2), int(height/2)), Image.ANTIALIAS)
+        
+        img = ImageTk.PhotoImage(img_src)
 
         return img
