@@ -30,6 +30,9 @@ class TimerHandler():
 
     @staticmethod
     def cancel_timer(timer_id):
+        if timer_id == -1:
+            return
+
         if TimerHandler.ROOT_OBJECT == None:
             raise RuntimeError("Timer could not be started. Root object in References is Nonetype.")
 
@@ -44,3 +47,11 @@ class TimerHandler():
         
         if TimerHandler.DEBUG:
             print(f"Canceled timer #{timer_id}")
+
+    @staticmethod
+    def cancel_all_timers():
+        for tid in TimerHandler.TIMER_IDS:
+            try:
+                TimerHandler.cancel_timer(tid)
+            except:
+                pass

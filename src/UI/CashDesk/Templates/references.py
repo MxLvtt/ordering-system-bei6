@@ -1,5 +1,7 @@
 import math
 
+BASEPATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk"
+
 MOBILE = False
 MAIN_STATION = True
 
@@ -105,6 +107,7 @@ LIGHTEST_GREEN = "#BBFF9E"
 ADDORDERVIEW_TITLE = "Neue Bestellung aufnehmen"    # displayed title for the AddOrderView
 ACTIVEORDERSVIEW_TITLE = "Aktive Bestellungen"      # displayed title for the ActiveOrdersView
 CURRENT_ORDER_TITLE = "Aktuelle Bestellung"         # displayed title for the CurrentOrderView
+RECEIPT_TITLE = "Kassenzettel"                      # displayed title for the ReceiptView
 SETTINGSVIEW_TITLE = "Einstellungen"                # displayed title for the SettingsView
 HISTORYVIEW_TITLE = "Bestellverlauf"                # displayed title for the HistoryView
 
@@ -141,3 +144,15 @@ EAT_IN=0                                            # indices for the order form
 TAKEAWAY=1
 
 DEFAULT_FORM = EAT_IN
+
+# MESSAGE PREFIXES
+
+DB_CHANGED_PREFIX = "C"
+ORDER_CREATED_PREFIX = "N"
+
+# TOAST NOTIFICATIONS
+
+ORDER_CREATED_TOAST = (
+    "Neue Bestellung",
+    "Bestellnummer: {0}\nZeitstempel: {1}"
+)

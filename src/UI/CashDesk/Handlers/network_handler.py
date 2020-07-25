@@ -8,6 +8,7 @@ import math
 from tkinter import messagebox
 # References file contains all the global information
 import Templates.references as REFS
+from EventHandler.Event import Event
 
 from Handlers.timer_handler import TimerHandler
 from Handlers.encryption_handler import EncryptionHandler
@@ -28,6 +29,8 @@ class NetworkHandler:
     CASHDESK_IP_CONFIG = (REFS.CASHDESK_SERVER_IP, REFS.CASHDESK_SERVER_PORT)
 
     SERVER_SOCKET = None
+
+    on_message_received_event: Event = Event()
 
     def __init__(self, main_station: bool):
         """ Initializes the network handler.
@@ -153,12 +156,13 @@ class NetworkHandler:
 
                     print(f"Received: '{received_msg}'")
 
-                    service_response = ""
-
                     # TODO: call event and give along the received message
                     # TODO: if event returns anything, attach it to the handshake
 
-                    service_response = "M12OK"
+                    service_response = NetworkHandler.on_message_received_event(received_msg)
+
+                    if service_response == None:
+                        service_response = ""
 
                     try:
                         recved_id = received_msg[0:REFS.IDENTIFIER_LENGTH]
@@ -189,14 +193,16 @@ class NetworkHandler:
 
 
     @staticmethod
-    def send_with_handshake(raw_message):
+    def send_with_handshake(raw_message) -> bool:
         if not NetworkHandler.initialized:
             print("NetworkHandler has not been initialized yet. Skipping the send process.")
-            return
+            return False
             
         if not EncryptionHandler.initialized:
             print("EncryptionHandler has not been initialized yet. Skipping the send process.")
-            return
+            return False
+
+        success = True
 
         identifier = REFS.FORMAT_STRING.format(random.randint(0, REFS.MAX_IDENTIFIER))
 
@@ -216,9 +222,15 @@ class NetworkHandler:
                 response = _socket.recv(1024)
             except OSError as err:
                 print("NetworkHandler receive error: {0}".format(err))
-                raise err
-            finally:
                 _socket.close()
+                success = False
+                return False
+            #     raise err
+            # finally:
+            #     _socket.close()
+
+            #     if not success:
+            #         return False
 
             decrypted_response = EncryptionHandler.decrypt(response.decode("utf-8"))
 
@@ -234,9 +246,11 @@ class NetworkHandler:
                 if NetworkHandler.DEBUG:
                     print("Failed!")
                 # TODO ---> raise error? Resend?
-                pass
+                success = False
             
         _socket.close()
+
+        return success
 
     @staticmethod
     def send(raw_message, _socket) -> bool:
@@ -307,3 +321,17 @@ class NetworkHandler:
             raise err
 
         return _socket
+
+    @staticmethod
+    def get_message_components(message) -> (str, str):
+        """ Splits the given message into its main components:
+        The identifier and the raw message body
+        """
+        if len(message) < REFS.IDENTIFIER_LENGTH:
+            return "", ""
+
+        identifier = message[0:REFS.IDENTIFIER_LENGTH]
+        body = message[REFS.IDENTIFIER_LENGTH:]
+
+        return identifier, body
+        

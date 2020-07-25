@@ -3,10 +3,13 @@ from tkinter import *
 from functools import partial
 from cashdesk_model import CashDeskModel
 from ContentControl.content_template import ContentTemplate
+from Notification.notification_service import NotificationService
 from Services.meals_service import MealsService
 from Services.orders_service import OrdersService
+from Services.Messengers.order_messaging_service import OrderMessagingService
 from ContentControl.AddOrderView.meal_details_view import MealDetailsView
 from ContentControl.AddOrderView.current_order_view import CurrentOrderView
+from ContentControl.AddOrderView.receipt_view import ReceiptView
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
 from Templates.fonts import Fonts
@@ -28,6 +31,7 @@ class AddOrderView(ContentTemplate):
             AddOrderView.COLUMNS = 3
 
         self._checkmark_img = IMAGES.create(IMAGES.CHECK_MARK)
+        self._close_light_img = IMAGES.create(IMAGES.CLOSE_LIGHT)
         self._add_img = IMAGES.create(IMAGES.ADD)
         self._back_img = IMAGES.create(IMAGES.BACK)
         self._trashcan_img = IMAGES.create(IMAGES.TRASH_CAN)
@@ -37,8 +41,20 @@ class AddOrderView(ContentTemplate):
         self._root_category = None
         self._current_category = None
 
+        self._views = []
+
         self._meal_details_view = MealDetailsView(self, background, False)
+        self._views.append(self._meal_details_view)
+
         self._current_order_view = CurrentOrderView(self, background, False)
+        self._views.append(self._current_order_view)
+
+        self._receipt_view = ReceiptView(
+            parent=self,
+            background=background,
+            shown=False
+        )
+        self._views.append(self._receipt_view)
 
         self._current_order_view.meal_number_changed_event.add(
             self._added_meal_number_changed)
@@ -69,6 +85,16 @@ class AddOrderView(ContentTemplate):
         )
         self._finish_order_button._hide()
         self._finish_order_button._disable()
+
+        # Button: Finish current order
+        self._close_receipt_button = CButton(
+            parent=self._button_container_right,
+            image=self._close_light_img,
+            command=self.close_receipt,
+            fg=CButton.WHITE, bg=REFS.LIGHT_RED,
+            row=0, column=1
+        )
+        self._close_receipt_button._hide()
 
         # Button: Show current order
         self._current_order_button = CButton(
@@ -156,9 +182,14 @@ class AddOrderView(ContentTemplate):
 
     def go_back(self):
         # If we are in the CurrentOrderView: close it and go back to current category
-        if self._current_order_view.is_shown:
-            self._update_tiles(self._current_category)
-            return
+        for view in self._views:
+            if view != self._meal_details_view:
+                if view.is_shown:
+                    self._update_tiles(self._current_category)
+                    return
+        # if self._current_order_view.is_shown or self._receipt_view.is_shown:
+        #     self._update_tiles(self._current_category)
+        #     return
 
         if self._current_category != self._root_category:
             prev_category = self._current_category.parent
@@ -170,9 +201,14 @@ class AddOrderView(ContentTemplate):
 
     def reset(self):
         # If we are in the CurrentOrderView: close it and go to root category
-        if self._current_order_view.is_shown:
-            self._update_tiles(self._root_category)
-            return
+        for view in self._views:
+            if view != self._meal_details_view:
+                if view.is_shown:
+                    self._update_tiles(self._root_category)
+                    return
+        # if self._current_order_view.is_shown or self._receipt_view.is_shown:
+        #     self._update_tiles(self._root_category)
+        #     return
 
         if self._current_category != self._root_category:
             self._update_tiles(self._root_category)
@@ -188,7 +224,12 @@ class AddOrderView(ContentTemplate):
         self._clear_frame()
         self._meal_details_view.hide_view()
         self._current_order_view.hide_view()
+
+        if self._receipt_view.is_shown:
+            self.close_receipt(update=False)
+
         self._finish_order_button._hide()
+        self._close_receipt_button._hide()
         self._label_meal_counter.grid()
 
         self._current_category = root_category
@@ -258,7 +299,7 @@ class AddOrderView(ContentTemplate):
 
     def _clear_frame(self):
         for child in self.winfo_children():
-            if child != self._meal_details_view and child != self._current_order_view:
+            if not (child in self._views):
                 child.destroy()
 
     def _update_breadcrumb(self, category):
@@ -338,6 +379,9 @@ class AddOrderView(ContentTemplate):
         if not self._current_order_view.is_shown:
             if self._meal_details_view.is_shown:
                 self._meal_details_view.hide_view()
+            elif self._receipt_view.is_shown:
+                self._receipt_view.hide_view()
+                self._close_receipt_button._hide()
             else:
                 self._clear_frame()
 
@@ -350,9 +394,28 @@ class AddOrderView(ContentTemplate):
         else:
             self.go_back()
 
+    def show_receipt(self, order):
+        """ Can and must only be called, when the current order view is active!
+        """
+        self._set_breadcrumb_text(REFS.RECEIPT_TITLE)
+
+        self._receipt_view.show_view(order=order)
+        self._current_order_view.hide_view()
+        self._close_receipt_button._show()
+
+    def close_receipt(self, update: bool = True):
+        """ Closes the receipt and opens the root category
+        """
+        self._receipt_view.hide_view()
+
+        if update:
+            self._update_tiles(self._root_category)
+
     def finish_current_order(self):
         """ Finished the current order
         """
+        new_order = None
+        
         # Grab the list of added meals from the Current Order View
         meals_list = self._current_order_view.added_meals
         order_form = self._current_order_view.order_form
@@ -366,8 +429,10 @@ class AddOrderView(ContentTemplate):
         if new_order == None:
             return
 
-        # Send Message to other station about order creation
-        # TODO: Call Service
+        self.show_receipt(order=new_order)
+        
+        # Send Message to other station about order creation (fire and forget)
+        OrderMessagingService.notify_of_changes(new_order)
 
         # Reset Current Order View
         self._current_order_view.remove_all()

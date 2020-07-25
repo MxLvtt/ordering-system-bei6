@@ -9,6 +9,7 @@ from Templates.images import IMAGES
 from Templates.order import Order
 from Templates.page_system import PageSystem
 from Services.orders_service import OrdersService
+from Services.Messengers.order_messaging_service import OrderMessagingService
 
 
 class ActiveOrdersView(ContentTemplate):
@@ -38,7 +39,12 @@ class ActiveOrdersView(ContentTemplate):
         self._background = background
 
         # OrdersService.on_order_created_event.add(self._order_created_event)
-        OrdersService.on_orders_changed.add(self.update_view_and_database_content)
+        OrdersService.on_orders_changed.add(
+            self.update_view_and_database_content
+        )
+        OrderMessagingService.on_database_changed_event.add(
+            self.update_view_and_database_content
+        )
 
         self._mark_mode = ActiveOrdersView.MARK_OFF
         

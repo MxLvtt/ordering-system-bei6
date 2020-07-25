@@ -6,8 +6,10 @@ from Handlers.timer_handler import TimerHandler
 from Handlers.database_handler import DatabaseHandler
 from Handlers.network_handler import NetworkHandler
 from Handlers.encryption_handler import EncryptionHandler
+from Notification.notification_service import NotificationService
 from Services.meals_service import MealsService
 from Services.orders_service import OrdersService
+from Services.Messengers.order_messaging_service import OrderMessagingService
 from EventHandler.Event import Event
 from Notification.toast import Toast
 from Templates.cbutton import CButton
@@ -29,6 +31,8 @@ class CashDeskModel():
         
         # Initializing the timer handler
         self.timer_handler = TimerHandler(root_object=root)
+
+        self._notification_service = NotificationService(root=root)
 
         # Event that is triggered, when the MealsHandler established the connection to the database
         self._db_connection_ready_event: Event = Event()
@@ -64,6 +68,7 @@ class CashDeskModel():
         # Initialize meals service (which is using the database handler)
         self._meals_service = MealsService()
         self._orders_service = OrdersService()
+        self._order_messaging_service = OrderMessagingService()
 
         # If the db connection has been established: trigger the event
         if self._database_handler.CONNECTION_READY:
@@ -92,7 +97,7 @@ class CashDeskModel():
     def clear_form(self):
         """ Resets all widgets in the AddOrderView to their default values.
         """
-        self._show_toast("Cleared form")
+        # self._show_toast("Cleared form")
         pass
 
     def add_order(self):
@@ -100,7 +105,8 @@ class CashDeskModel():
         """
         # TODO: Save order details
             
-        self._show_toast("Added new order")
+        #self._show_toast("Added new order")
+        pass
 
     ### ------------------- HELPER METHODS ------------------- ###
 
@@ -126,13 +132,14 @@ class CashDeskModel():
             res: float = random()
 
             if res < 0.01:
-                self._show_toast("Order updated")
+                # self._show_toast("Order updated")
+                pass
 
             # UPDATE CLOCK
             time_format = "%a, %d-%m-%Y\n%H:%M:%S"
 
             if REFS.MOBILE:
-                time_format = "%A\n%d-%m-%y\n%H:%M:%S"
+                time_format = "%a\n%d-%m-%y\n%H:%M:%S"
 
             newtime = time.strftime(time_format)
             if newtime != curtime:

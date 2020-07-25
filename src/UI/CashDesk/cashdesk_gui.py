@@ -1,8 +1,10 @@
+import sys, os
 from tkinter import *
 from cashdesk_model import CashDeskModel
 from ContentControl.add_order_view import AddOrderView
 from ContentControl.content_panel import ContentPanel
 from Handlers.network_handler import NetworkHandler
+from Notification.notification_service import NotificationService
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
 from Templates.fonts import Fonts
@@ -11,8 +13,17 @@ import Templates.references as REFS
 class CashDeskGUI():
     DEBUG = False
 
-    def __init__(self, mobile_view: bool = False, main_station: bool = True, debug: bool = False):
+    def __init__(
+        self,
+        mobile_view: bool = False,
+        main_station: bool = True,
+        debug: bool = False,
+        suppress_logs: bool = False
+    ):
         CashDeskGUI.DEBUG = debug
+
+        if not debug or suppress_logs:
+            sys.stdout = open(os.devnull, 'w')
 
         REFS.MOBILE = mobile_view
         REFS.MAIN_STATION = main_station
@@ -324,7 +335,9 @@ class CashDeskGUI():
     def terminate(self):
         """ Exits the program properly.
         """
+        self.model._notification_service.remove_all_toasts()
         self.model._cancel_timer()
+        self.model.timer_handler.cancel_all_timers()
         self._root.destroy()
 
     def open_side_bar(self):

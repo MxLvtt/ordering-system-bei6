@@ -1,65 +1,64 @@
-import pyautogui
-from threading import Timer
+from functools import partial
 from tkinter import *
 from tkinter import font as tkFont
 from Templates.cbutton import CButton
 from Templates.images import IMAGES
+from EventHandler.Event import Event
+from Templates.fonts import Fonts
+import Templates.references as REFS
 
 class Toast():
-    GLOBAL_DEACTIVATION=True
+    WIDTH = 500
+    HEIGHT = 220
 
-    WIDTH=500
-    HEIGHT=220
-    TIME_TILL_FADEOUT=7
-
-    INITIAL_ALPHA = 0.7
+    FADEOUT_DELAY = 7000
+    INITIAL_ALPHA = 0.8
 
     BACKGROUND=CButton.LIGHT
     
-    # STATIC VARIABLES
-    MAX_NUMBER_OF_DISPLAYED_TOASTS=3
-    COUNT_TOASTS=0
-    TOASTS=[]
-
     def __init__(
         self,
         title,
-        summary
+        summary,
+        id,
+        remove_cb,
+        remove_all_cb,
+        origin = (0,0),
+        margin = (15,15),
+        keep_alive = False # If True, the toast won't fade out
     ):
-        if Toast.GLOBAL_DEACTIVATION:
-            return
+        self._timer_id = -1
+        self._fade_timer_id = -1
+        self._id = id
 
-        screen_width, screen_height = pyautogui.size()
-
-        self._pos=(25, screen_height-self.HEIGHT-110)
-
-        helv22b = tkFont.Font(family='Helvetica', size=22, weight=tkFont.BOLD)
-        helv18 = tkFont.Font(family='Helvetica', size=18)
-
-        # TODO: Should only be displayed, if position is within the boundaries
+        self._keep_alive = keep_alive
 
         self._visible = True
         self._stop_checking = False
 
-        self._id = Toast.COUNT_TOASTS
         self._title = title
         self._summary = summary
 
-        self._dest_x = self._pos[0]
-        self._dest_y = self._pos[1]
+        self._dest_x = origin[0]
+        self._dest_y = origin[1]
+        self._margin = margin
 
         window = Toplevel()
-        window.geometry(f"{self.WIDTH}x{self.HEIGHT}+{self._dest_x}+{self._dest_y - self._id * (self.HEIGHT + 15)}")
+
         window.overrideredirect(1)
         window.attributes('-topmost', 1)
         window.config(background=self.BACKGROUND)
         window.attributes("-alpha", self.INITIAL_ALPHA)
 
+        if keep_alive:
+            window.config(highlightbackground=REFS.LIGHT_YELLOW)
+            window.config(highlightthickness=4)
+        
         window.update()
 
         self._window = window
 
-        Toast.COUNT_TOASTS += 1
+        self.update_window_geometry()
 
         self._header_frame = Frame(
             master=window,
@@ -70,7 +69,7 @@ class Toast():
         self._title_label = Label(
             master=self._header_frame,
             text=self._title,
-            font=helv22b,
+            font=Fonts.xlarge(bold=True),
             anchor="nw",
             justify="left",
             bg=self.BACKGROUND
@@ -83,14 +82,19 @@ class Toast():
         )
         self._button_frame.pack(side=RIGHT)
 
-        self.close_img = PhotoImage(file=IMAGES.CLOSE)
-        self.close_all_img = PhotoImage(file=IMAGES.CLOSE_ALL)
+        self.close_img = IMAGES.create(IMAGES.CLOSE)
+        self.close_all_img = IMAGES.create(IMAGES.CLOSE_ALL)
+
+        std_button_width = 20 + 20 * (not REFS.MOBILE)
+
+        self.remove_self = partial(remove_cb, self)
 
         self._close_button = Button(
             master=self._button_frame,
             image=self.close_img,
-            command=self._remove_toast,
-            width=40, height=40,
+            command=self.remove_self,
+            width=std_button_width,
+            height=std_button_width,
             bg=self.BACKGROUND
         )
         self._close_button.pack(side=RIGHT, padx=(5,0))
@@ -98,8 +102,9 @@ class Toast():
         self._close_all_button = Button(
             master=self._button_frame,
             image=self.close_all_img,
-            command=self._remove_all,
-            width=40, height=40,
+            command=remove_all_cb,
+            width=std_button_width,
+            height=std_button_width,
             bg=self.BACKGROUND
         )
         self._close_all_button.pack(side=RIGHT, padx=5)
@@ -107,21 +112,32 @@ class Toast():
         self._summary_label = Label(
             master=window,
             text=self._summary,
-            font=helv18,
+            font=Fonts.medium(),
             anchor="nw",
             justify="left",
             bg=self.BACKGROUND
         )
         self._summary_label.pack(side=TOP, fill='both', padx=5, pady=5)
 
-        self.TOASTS.append(self)
+    @property
+    def keep_alive(self) -> bool:
+        return self._keep_alive
 
-        self._timeout_timer = Timer(self.TIME_TILL_FADEOUT, self._fade_out)
+    @property
+    def id(self):
+        return self._id
 
-        if self._id < self.MAX_NUMBER_OF_DISPLAYED_TOASTS:
-            self._timeout_timer.start()
+    @id.setter
+    def id(self, id):
+        self._id = id
 
-        self._check_toast_count()
+    @property
+    def visible(self) -> bool:
+        return self._visible
+
+    @property
+    def stop_checking(self) -> bool:
+        return self._stop_checking
 
     @property
     def title(self) -> str:
@@ -131,55 +147,44 @@ class Toast():
     def summary(self) -> str:
         return self._summary
 
-    def _animate(self, xpos: int):
-        xpos = xpos + 2
-        if xpos < self._dest_x:
-            self._window.geometry(f"{self.WIDTH}x{self.HEIGHT}+{xpos}+{self._dest_y}")
-            self._window.after(1, self._animate, xpos)
-        else:
-            self._window.geometry(f"{self.WIDTH}x{self.HEIGHT}+{self._dest_x}+{self._dest_y}")
-            # Timer(self.TIME_TILL_FADEOUT, self._fade_out).start()
+    @property
+    def timer_id(self):
+        return self._timer_id
 
-    def _fade_out(self):
-        alpha = self._window.attributes("-alpha")
-        if alpha > 0:
-            alpha -= .1
-            self._window.attributes("-alpha", alpha)
-            self._window.after(100, self._fade_out)
-        else:
-            self._remove_toast()
+    @timer_id.setter
+    def timer_id(self, tid):
+        if self._timer_id == -1:
+            self._timer_id = tid
 
-    def _check_toast_count(self):
-        if self._id != self.TOASTS.index(self):
-            self._id = self.TOASTS.index(self)
-            self._window.geometry(
-                f"{self.WIDTH}x{self.HEIGHT}+{self._dest_x}+{self._dest_y - self._id * (self.HEIGHT + 15)}"
-            )
+    def hide(self):
+        self._window.withdraw()
+        self._visible = False
 
-        if self._id >= self.MAX_NUMBER_OF_DISPLAYED_TOASTS:
-            self._window.withdraw()
-            self._visible = False
-        elif not self._visible:
-            self._window.update()
-            self._window.deiconify()
-            self._visible = True
-            self._timeout_timer.start()
+    def show(self):
+        self._window.update()
+        self._window.deiconify()
+        self._visible = True
 
-        if not self._stop_checking:
-            self._window.after(300, self._check_toast_count)
+    def fade_out(self):
+        try:
+            alpha = self._window.attributes("-alpha")
+            if alpha > 0:
+                alpha -= .1
+                self._window.attributes("-alpha", alpha)
+                self._fade_timer_id = self._window.after(100, self.fade_out)
+            else:
+                # self.remove_toast()
+                self.remove_self()
+        except:
+            pass
 
-    def _remove_toast(self, remove_all: bool = False):
+    def update_window_geometry(self):
+        y_position = self._dest_y - self._id * (Toast.HEIGHT + self._margin[1])
+        self._window.geometry(f"{Toast.WIDTH}x{Toast.HEIGHT}+{self._dest_x}+{y_position}")
+
+    def remove_toast(self):
+        if self._fade_timer_id != -1:
+            self._window.after_cancel(self._fade_timer_id)
+        
         self._stop_checking = True
-        if self._timeout_timer.is_alive():
-            self._timeout_timer.cancel()
-        Toast.COUNT_TOASTS -= 1
-        if Toast.COUNT_TOASTS < 0:
-            Toast.COUNT_TOASTS = 0
-        if not remove_all:
-            self.TOASTS.remove(self)
         self._window.destroy()
-
-    def _remove_all(self):
-        for toast in self.TOASTS:
-            toast._remove_toast(True)
-        self.TOASTS.clear()

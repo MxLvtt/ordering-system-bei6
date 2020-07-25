@@ -2,7 +2,7 @@ from tkinter import PhotoImage
 import Templates.references as REFS
 
 class IMAGES():
-    BASE_PATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk\img\\"
+    BASE_PATH = REFS.BASEPATH + r"\img\\"
 
     CHECK_MARK = f"{BASE_PATH}checkmark.png"
     CHECK_MARK_DARK = f"{BASE_PATH}checkmark_dark.png"

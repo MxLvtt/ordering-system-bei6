@@ -152,14 +152,15 @@ class OrdersService():
         return confirmed
 
     @staticmethod
-    def get_orders(order_by: str = "", row_filter: str = "") -> []:
+    def get_orders(order_by: str = "", row_filter: str = "", columns: [] = []) -> []:
         if not OrdersService.initialized:
             return None
 
         return DatabaseHandler.select_from_table(
             table_name=REFS.ORDERS_TABLE_NAME,
             order_by=order_by,
-            row_filter=row_filter
+            row_filter=row_filter,
+            columns=columns
         )
 
     @staticmethod
@@ -269,7 +270,7 @@ class OrdersService():
         )
 
         # Set the order's internal id property to the id value of the database
-        new_order.id = highest_id
+        new_order.id = int(highest_id[0][0])
 
         # Increment counter of added orders
         OrdersService.counter = OrdersService.counter + 1
