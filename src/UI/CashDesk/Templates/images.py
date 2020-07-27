@@ -12,6 +12,7 @@ class IMAGES():
     NAVIGATION = f"{BASE_PATH}nav.png"
     
     ADD = f"{BASE_PATH}add.png"
+    EXPORT = f"{BASE_PATH}export.png"
     EDIT = f"{BASE_PATH}edit.png"
     
     BURGER = f"{BASE_PATH}burger.png"

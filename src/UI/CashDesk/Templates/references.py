@@ -3,7 +3,7 @@ import math
 WIN_PATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk"
 MAC_PATH = r"/Users/mxrcel/Development/OrderingSystem/src/UI/CashDesk"
 
-BASEPATH = MAC_PATH
+BASEPATH = WIN_PATH
 
 MOBILE = False
 MAIN_STATION = True
@@ -52,8 +52,16 @@ MEAL_CODES_DELIMITER = "|"
 MEAL_PRICE_DELIMITER = "@"
 
 MEALS_BASE_PRICE = "Basispreis"
+MEALS_BASE_PRICE_SHORT = "BASIS"
+MEALS_TOTAL_PRICE_SHORT = "GESAMT"
+MEALS_SINGLE_PRICE_SHORT = "EINZEL"
+MEALS_NETTO_PRICE_SHORT = "NETTO"
 
 CURRENCY = "€"
+
+MWST_PROZENT = 19.0
+MWST_TEXT_RECEIPT = "davon {0}% MWST"
+RECEIPTS_FOLDER_NAME = "__receipts"
 
 INGREDIENTS_LABEL = 'Zutaten'
 ADDONS_LABEL = 'Extras'
@@ -147,6 +155,10 @@ EAT_IN=0                                            # indices for the order form
 TAKEAWAY=1
 
 DEFAULT_FORM = EAT_IN
+
+# RECEIPT
+RESTAURANT_NAME = "RestaurantXYZ"
+EMPLOYEE_NAME = "MitarbeiterABC"
 
 # MESSAGE PREFIXES
 

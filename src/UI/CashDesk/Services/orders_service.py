@@ -11,7 +11,7 @@ from datetime import datetime
 
 class OrdersService():
     TIMESTAMP_FORMAT="%H:%M:%S"
-    TIMESTAMP_FORMAT_EXTENDED="%d.%m.%Y %H:%M:%S"
+    TIMESTAMP_FORMAT_EXTENDED="%d.%m.%Y, %H:%M:%S"
 
     COLUMN_NAMES=None
 

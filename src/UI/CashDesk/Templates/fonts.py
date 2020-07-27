@@ -1,9 +1,12 @@
 import Templates.references as REFS
 
 class Fonts():
-    FAMILY = "Helvetica"
+    DEFAULT_FAMILY = "Helvetica"
+    FAMILY = DEFAULT_FAMILY
     BOLD = "bold"
     ITALIC = "italic"
+
+    SUSTAIN = False
 
     SIZES = [
         "8",  # XXXXS
@@ -69,7 +72,17 @@ class Fonts():
         return Fonts._get_font(11, bold, italic, decrement)
 
     @staticmethod
+    def family(family: str, sustain: bool):
+        Fonts.FAMILY = family
+        Fonts.SUSTAIN = sustain
+
+    @staticmethod
     def _get_font(size_index: int, bold: bool = False, italic: bool = False, decrement: int = 3):
+        _family = Fonts.FAMILY
+        
+        if not Fonts.SUSTAIN:
+            Fonts.FAMILY = Fonts.DEFAULT_FAMILY
+        
         if REFS.MOBILE:
             size_index = size_index - decrement
 
@@ -87,6 +100,6 @@ class Fonts():
                 style = style + "italic"
 
         if style == "":
-            return (Fonts.FAMILY, Fonts.SIZES[size_index])
+            return (_family, Fonts.SIZES[size_index])
         else:
-            return (Fonts.FAMILY, Fonts.SIZES[size_index], style)
+            return (_family, Fonts.SIZES[size_index], style)

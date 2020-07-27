@@ -183,8 +183,8 @@ class Meal(object):
 
     def copy(self) -> 'Meal':
         return Meal(self.database_content, Meal.DB_COLUMN_NAMES)
-
-    def calculate_whole_price(self) -> float:
+    
+    def calculate_single_price(self) -> float:
         base_price = self.price
 
         if len(self._sizes) != 0 and self._sizes[0] != '':
@@ -203,8 +203,15 @@ class Meal(object):
             if addon != '':
                 addon_price = addon_price + self.addon_objects[idx].price
 
-        return (base_price + addon_price - ingr_price) * self.amount
+        return (base_price + addon_price - ingr_price)
 
+    def calculate_whole_price(self) -> float:
+        return self.calculate_single_price() * self.amount
+
+    @property
+    def formatted_single_price(self) -> str:
+        return "{:.2f}".format(self.calculate_single_price())
+        
     @property
     def formatted_whole_price(self) -> str:
         return "{:.2f}".format(self.calculate_whole_price())
