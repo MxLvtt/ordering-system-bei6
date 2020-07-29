@@ -31,6 +31,7 @@ class IMAGES():
     SETTINGS = f"{BASE_PATH}settings.png"
     
     TRASH_CAN = f"{BASE_PATH}trashcan.png"
+    TRASH_CAN_LIGHT = f"{BASE_PATH}trashcan_light.png"
     ORDER = f"{BASE_PATH}order.png"
 
     CLOSE = f"{BASE_PATH}close.png"

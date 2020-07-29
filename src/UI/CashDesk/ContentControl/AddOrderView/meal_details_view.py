@@ -222,7 +222,12 @@ class MealDetailsView(Frame):
         self._sizes_states.fill(0)
 
         if len(meal.sizes) > 0:
-            self._sizes_states[0] = 1
+            found = False
+            for index, size_obj in enumerate(meal.size_objects):
+                if not found:
+                    if size_obj.price == 0.0 or size_obj.price == meal.price:
+                        self._sizes_states[index] = 1
+                        found = True
 
         ingredient_content = self._get_button_text(meal.ingredient_objects)
 

@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import Templates.references as REFS
 from Templates.meals import Category, Meal
 from Handlers.database_handler import DatabaseHandler
@@ -11,10 +12,14 @@ class MealsService:
     COLUMN_NAMES = []
     NUM_COLUMNS = 0
 
+    initialized = False
+
     def __init__(self):
         # Getting the column information for the 'meals' table
         (MealsService.NUM_COLUMNS, MealsService.COLUMN_NAMES) = DatabaseHandler.get_table_information(
             table_name=REFS.MEALS_TABLE_NAME)
+
+        MealsService.initialized = True
     
     @staticmethod
     def meal_content_to_text(meal: Meal, indent: str = "    ") -> (str,str):
@@ -48,6 +53,67 @@ class MealsService:
             meal_text = meal_text[0:-1]
 
         return (meal_title, meal_text)
+
+    @staticmethod
+    def create_new_meal(category: str, name: str, base_price: float, ingredients: [], addons: [], sizes: []):
+        """ ingredients, addons and sizes must be arrays of type "NamePricePair"
+        """
+        if not MealsService.initialized:
+            return None
+
+        # Defining sql query contents
+        columns = [
+            REFS.MEALS_TABLE_KATEGORIE_COLUMN,
+            REFS.MEALS_TABLE_NAME_COLUMN,
+            REFS.MEALS_TABLE_ZUTATEN_COLUMN,
+            REFS.MEALS_TABLE_ADDONS_COLUMN,
+            REFS.MEALS_TABLE_GROESSEN_COLUMN,
+            REFS.MEALS_TABLE_PRICE_COLUMN
+        ]
+
+        # TODO
+        ingredients_string = "NULL"
+        addons_string = "NULL"
+        sizes_string = "NULL"
+
+        values = [
+            f"'{category}'",
+            f"'{name}'",
+            f"'{ingredients_string}'", 
+            f"'{addons_string}'",
+            f"'{sizes_string}'",
+            f"{base_price}"
+        ]
+
+        # Insert new order into the database table
+        DatabaseHandler.insert_into_table(
+            table_name=REFS.MEALS_TABLE_NAME,
+            columns=columns, 
+            values=values)
+
+    @staticmethod
+    def delete_from_table(condition: str = "", confirm: bool = True) -> bool:
+        if not MealsService.initialized:
+            return None
+
+        confirmed = True
+
+        if confirm:
+            confirmed = messagebox.askyesno(
+                title="Delete meal",
+                message="Are you sure you want to delete this meal?",
+                default='no'
+            )
+
+        if confirmed:
+            DatabaseHandler.delete_from_table(
+                table_name=REFS.MEALS_TABLE_NAME,
+                row_filter=condition
+            )
+        else:
+            print(f"Deleting from table '{REFS.ORDERS_TABLE_NAME}' canceled.")
+            
+        return confirmed
 
     @staticmethod
     def get_meal_by_name(name: str):

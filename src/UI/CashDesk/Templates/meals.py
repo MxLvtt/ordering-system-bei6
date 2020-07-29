@@ -267,17 +267,28 @@ class Meal(object):
 
 
 class NamePricePair():
-    def __init__(self, raw: str):
-        result: [] = raw.split(REFS.MEAL_PRICE_DELIMITER)
+    def __init__(self, raw: str, price: float = None):
+        if price != None:
+            self._name: str = raw
+            self._price: float = price
+        else:
+            result: [] = raw.split(REFS.MEAL_PRICE_DELIMITER)
 
-        if result == None or len(result) == 0:
-            raise RuntimeError("Creating name price pair failed.") 
+            if result == None or len(result) == 0:
+                raise RuntimeError("Creating name price pair failed.") 
 
-        self._name: str = result[0]
-        self._price: float = 0.0
+            self._name: str = result[0]
+            self._price: float = 0.0
 
-        if len(result) == 2:
-            self._price = float(result[1])
+            if len(result) == 2:
+                self._price = float(result[1])
+
+    @property
+    def formatted(self) -> str:
+        if self._price != 0.0:
+            return f"{self._name}{REFS.MEAL_PRICE_DELIMITER}{self._price}"
+        else:
+            return self._name
 
     @property
     def name(self) -> str:

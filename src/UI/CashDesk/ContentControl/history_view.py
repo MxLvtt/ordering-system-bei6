@@ -29,6 +29,8 @@ class HistoryView(ContentTemplate):
 
     ITEMS_PER_PAGE = 16
 
+    PADDING = 30
+
     def __init__(self, parent, toolbar_container: Frame, background='white', shown: bool = False):
         super().__init__(
             parent=parent,
@@ -40,7 +42,7 @@ class HistoryView(ContentTemplate):
 
         if REFS.MOBILE:
             HistoryView.SPACING = 2
-            HistoryView.PADX_COL = 10
+            HistoryView.PADX_COL = 15
             
             HistoryItem.HEIGHT=80 - 40 * REFS.MOBILE
             HistoryItem.EXPAND_HEIGHT=600 - 300 * REFS.MOBILE
