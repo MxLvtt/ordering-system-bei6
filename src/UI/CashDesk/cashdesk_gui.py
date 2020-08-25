@@ -37,7 +37,8 @@ class CashDeskGUI():
 
         # Window Size: approx. 7 in
         root_bg = "#696969"
-        root.config(width=866, height=487, background=root_bg)
+        # root.config(width=866, height=487, background=root_bg)
+        root.config(width=800, height=480, background=root_bg)
 
         station = 'Küche'
 

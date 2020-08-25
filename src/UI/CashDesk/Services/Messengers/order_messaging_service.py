@@ -44,39 +44,55 @@ class OrderMessagingService(Messenger):
         """
         # Message says: DB content has changed
         if message.startswith(REFS.DB_CHANGED_PREFIX):
-            order_id = message[2:]
+            if not message[1:].startswith(REFS.SILENT_PREFIX):
+                order_id = message[2:]
 
-            toast_title = "DB CHANGED"
-            toast_text = "<text>"
+                toast_title = "DB CHANGED"
+                toast_text = "<text>"
 
-            # More precise: a new order has been created
-            if message[1:].startswith(REFS.ORDER_CREATED_PREFIX):
-                order_timestamp = OrdersService.get_orders(
-                    row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
-                    columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}"]
-                )[0][0]
-                order_timestamp = OrdersService.convert_timestamp(order_timestamp)
-                
-                toast_title = REFS.ORDER_CREATED_TOAST[0]
-                toast_text = REFS.ORDER_CREATED_TOAST[1].format(order_id, order_timestamp)
+                # More precise: a new order has been created
+                if message[1:].startswith(REFS.ORDER_CREATED_PREFIX):
+                    order_timestamp = OrdersService.get_orders(
+                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
+                        columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}"]
+                    )[0][0]
+                    order_timestamp = OrdersService.convert_timestamp(order_timestamp)
+                    
+                    toast_title = REFS.ORDER_CREATED_TOAST[0]
+                    toast_text = REFS.ORDER_CREATED_TOAST[1].format(order_id, order_timestamp)
+                # More precise: a new order has been changed
+                elif message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):
+                    order_details = OrdersService.get_orders(
+                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
+                        columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}", f"{REFS.ORDERS_TABLE_STATE}"]
+                    )[0]
+                    order_timestamp = OrdersService.convert_timestamp(order_details[0])
 
-            NotificationService.show_toast(
-                title=toast_title,
-                text=toast_text,
-                keep_alive=False
-            )
+                    order_change = f"Status > {REFS.ORDER_STATES[int(order_details[1])]}"
+                    
+                    toast_title = REFS.ORDER_CHANGED_TOAST[0]
+                    toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
+                        order_id,
+                        order_timestamp,
+                        order_change)
+
+                NotificationService.show_toast(
+                    title=toast_title,
+                    text=toast_text,
+                    keep_alive=False
+                )
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
 
     @staticmethod
-    def notify_of_changes(changed_order: Order) -> bool:
+    def notify_of_changes(changed_order: Order, prefix: str) -> bool:
         if not NetworkHandler.CONNECTION_READY:
             return False
         
         # CONSTRUCT MESSAGE BODY
         message_body = f"{REFS.DB_CHANGED_PREFIX}" \
-            f"{REFS.ORDER_CREATED_PREFIX}" \
+            f"{prefix}" \
             f"{changed_order.id}"
 
         message_body = Messenger.attach_service_id(

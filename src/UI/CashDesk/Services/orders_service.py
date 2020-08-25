@@ -24,7 +24,6 @@ class OrdersService():
 
     def __init__(self):
         # TODO: ?
-
         OrdersService.initialized = True
 
     @staticmethod

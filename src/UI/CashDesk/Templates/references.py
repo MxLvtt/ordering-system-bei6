@@ -163,11 +163,18 @@ EMPLOYEE_NAME = "MitarbeiterABC"
 # MESSAGE PREFIXES
 
 DB_CHANGED_PREFIX = "C"
+SILENT_PREFIX = "S"
 ORDER_CREATED_PREFIX = "N"
+ORDER_CHANGED_PREFIX = "M"
 
 # TOAST NOTIFICATIONS
 
 ORDER_CREATED_TOAST = (
     "Neue Bestellung",
     "Bestellnummer: {0}\nZeitstempel: {1}"
+)
+
+ORDER_CHANGED_TOAST = (
+    "Bestellung geändert",
+    "Bestellnummer: {0}\nZeitstempel: {1}\nÄnderung: {2}"
 )

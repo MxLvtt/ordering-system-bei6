@@ -16,7 +16,7 @@ from Templates.fonts import Fonts
 
 
 class AddOrderView(ContentTemplate):
-    COLUMNS = 4
+    COLUMNS = 2 # 4
 
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
@@ -432,7 +432,9 @@ class AddOrderView(ContentTemplate):
         self.show_receipt(order=new_order)
         
         # Send Message to other station about order creation (fire and forget)
-        OrderMessagingService.notify_of_changes(new_order)
+        OrderMessagingService.notify_of_changes(
+            changed_order=new_order,
+            prefix=REFS.ORDER_CREATED_PREFIX)
 
         # Reset Current Order View
         self._current_order_view.remove_all()

@@ -161,7 +161,7 @@ class ActiveOrdersView(ContentTemplate):
     def update_view_and_database_content(self):
         all_active_orders = OrdersService.get_orders(
             # Ordered by timestamp (newest first)
-            order_by=f"{REFS.ORDERS_TABLE_TIMESTAMP} DESC",
+            order_by=f"{REFS.ORDERS_TABLE_TIMESTAMP} ASC",
             # Only orders that are active (column 'active' = 'Y')
             row_filter=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_TRUE}'"
         )
@@ -226,7 +226,7 @@ class ActiveOrdersView(ContentTemplate):
         #         empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
 
     def on_tile_clicked(self, clicked_order_tile, event = None):
-        if self._mark_mode == ActiveOrdersView.MARK_OFF:
+        if self._mark_mode == ActiveOrdersView.MARK_OFF or clicked_order_tile.order == None:
             return
 
         prev_state = clicked_order_tile.order.state
@@ -246,6 +246,11 @@ class ActiveOrdersView(ContentTemplate):
             OrdersService.update_order(clicked_order_tile.order, active=True)
             # If we are in Kitchen:
             # TODO: Send message via NetworkHandler to CashDesk station
+
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=clicked_order_tile.order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
 
             self.show_view()
 
