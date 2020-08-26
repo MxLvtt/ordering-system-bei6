@@ -1,9 +1,11 @@
 from tkinter import messagebox
 import threading
 import Templates.references as REFS
+from functools import partial
 from EventHandler.Event import Event
 from Templates.order import Order
 from Templates.meals import Meal
+from Templates.custom_thread import CustomThread
 from Handlers.database_handler import DatabaseHandler
 from Handlers.network_handler import NetworkHandler
 from Handlers.timer_handler import TimerHandler
@@ -89,7 +91,7 @@ class OrderMessagingService(Messenger):
     def notify_of_changes(changed_order: Order, prefix: str) -> bool:
         if not NetworkHandler.CONNECTION_READY:
             return False
-        
+            
         # CONSTRUCT MESSAGE BODY
         message_body = f"{REFS.DB_CHANGED_PREFIX}" \
             f"{prefix}" \
@@ -100,7 +102,14 @@ class OrderMessagingService(Messenger):
             message = message_body
         )
 
-        return NetworkHandler.send_with_handshake(message_body)
+        new_thread = CustomThread(2, "MessangerThread-2", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
+
+    @staticmethod
+    def _send(message):
+        NetworkHandler.send_with_handshake(message)
 
 
 

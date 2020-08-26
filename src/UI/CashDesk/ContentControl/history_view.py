@@ -59,6 +59,7 @@ class HistoryView(ContentTemplate):
         
         self._back_img = IMAGES.create(IMAGES.BACK)
         self._next_img = IMAGES.create(IMAGES.NEXT)
+        self._reset_i_img = IMAGES.create(IMAGES.RESET_I)
         self._trashcan_img = IMAGES.create(IMAGES.TRASH_CAN)
 
         ######## Setting toolbar content ########
@@ -67,6 +68,16 @@ class HistoryView(ContentTemplate):
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
 
+        # Button: Reset history
+        self._reset_i_button = CButton(
+            parent=self._button_container_right,
+            image=self._reset_i_img,
+            command=self.reset_order_counter,
+            fg=CButton.DARK, bg=CButton.LIGHT,
+            width=1.0,
+            row=0, column=0
+        )
+
         # Button: Clear history
         self._clear_button = CButton(
             parent=self._button_container_right,
@@ -74,7 +85,7 @@ class HistoryView(ContentTemplate):
             command=self.clear_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
             width=1.0,
-            row=0, column=0
+            row=0, column=1
         )
 
         #### Page System
@@ -191,6 +202,10 @@ class HistoryView(ContentTemplate):
         self.table.pack(side=TOP, fill='both', expand=1)
 
         self.scrolllist = ScrollList(parent=self.table, spacing=HistoryView.SPACING, background='#696969')
+
+    def reset_order_counter(self):
+        if OrdersService.truncate_table():
+            self.show_view()
 
     def clear_history(self):
         if OrdersService.delete_from_table(

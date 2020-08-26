@@ -23,6 +23,8 @@ class IMAGES():
     DOWN = f"{BASE_PATH}down.png"
     UP = f"{BASE_PATH}up.png"
 
+    RESET_I = f"{BASE_PATH}reset_i.png"
+
     UNDO = f"{BASE_PATH}undo.png"
     UNDO_LIGHT = f"{BASE_PATH}undo_light.png"
 

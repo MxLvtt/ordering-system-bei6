@@ -12,8 +12,8 @@ import Templates.references as REFS
 
 class MealsSettingsView(Frame):
     INDEX_WIDTH = 4
-    CATEGORY_WIDTH = 32
-    NAME_WIDTH = 12
+    CATEGORY_WIDTH = 10 # 32
+    NAME_WIDTH = 32
     PRICE_WIDTH = 8
 
     EDIT_HEADER_WIDTH = 0
@@ -286,6 +286,7 @@ class MealItem(Scrollable):
             command=self.expand_button_command
         )
         self.expand.place(relx=0.5, rely=0.5, anchor="center")
+        self.expand.config(state="disabled")
 
         ##### BASE PRICE #####
 
@@ -516,12 +517,12 @@ class AddMealItem(Scrollable):
         )
         self.expand_container.pack(side=RIGHT, padx=(MealsSettingsView.PADDING,0))
 
-        self.expand = Button(
-            master=self.expand_container,
-            image=self._down_img,
-            command=self.expand_button_command
-        )
-        self.expand.place(relx=0.5, rely=0.5, anchor="center")
+        # self.expand = Button(
+        #     master=self.expand_container,
+        #     image=self._down_img,
+        #     command=self.expand_button_command
+        # )
+        # self.expand.place(relx=0.5, rely=0.5, anchor="center")
 
         ##### BASE PRICE #####
 

@@ -1,6 +1,7 @@
 import Templates.references as REFS
 from tkinter import *
 from random import *
+from functools import partial
 from ContentControl.content_template import ContentTemplate
 from ContentControl.ActiveOrders.order_tile_gui import OrderTileGUI
 from Templates.cbutton import CButton
@@ -8,13 +9,14 @@ from Templates.toggle_button import ToggleButton, ToggleButtonGroup
 from Templates.images import IMAGES
 from Templates.order import Order
 from Templates.page_system import PageSystem
+from Templates.custom_thread import CustomThread
 from Services.orders_service import OrdersService
 from Services.Messengers.order_messaging_service import OrderMessagingService
 
 
 class ActiveOrdersView(ContentTemplate):
-    NUM_COLUMNS = 5
-    NUM_ROWS = 2
+    NUM_COLUMNS = 4 # 5
+    NUM_ROWS = 3 # 2
 
     MARK_OFF = -1
     MARK_DONE = 0
@@ -244,8 +246,6 @@ class ActiveOrdersView(ContentTemplate):
 
             # If we are in CashDesk:
             OrdersService.update_order(clicked_order_tile.order, active=True)
-            # If we are in Kitchen:
-            # TODO: Send message via NetworkHandler to CashDesk station
 
             # Send Message to other station about order creation (fire and forget)
             OrderMessagingService.notify_of_changes(
@@ -280,8 +280,10 @@ class ActiveOrdersView(ContentTemplate):
         x_pos = 0
         y_pos = 0
 
-        pady = 10
-        padx = (0, 10)
+        std_pad = 20
+
+        pady = std_pad
+        padx = (0, std_pad)
 
         # Place each order tile on this frame in a 2 dimensional grid
         for idx in range(0, ActiveOrdersView.NUM_COLUMNS * ActiveOrdersView.NUM_ROWS):
@@ -294,13 +296,13 @@ class ActiveOrdersView(ContentTemplate):
                 order=None
             )
 
-            pady = 10
-            padx = (0, 10)
+            pady = std_pad
+            padx = (0, std_pad)
 
-            if y_pos == 1:
-                pady = (0, 10)
+            if y_pos >= 1:
+                pady = (0, std_pad)
             if x_pos == 0:
-                padx = 10
+                padx = std_pad
 
             # Place OrderTileGUI on this frame
             order_tile.grid(row=y_pos, column=x_pos, padx=padx, pady=pady, sticky='news')

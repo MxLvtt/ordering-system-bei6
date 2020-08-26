@@ -25,8 +25,8 @@ class OrderTileGUI(Frame):
         # self._order.on_state_changed.add(self._state_changed_cb)
 
         self._font_S = Fonts.xxxsmall(decrement = 1)
-        self._font =  Fonts.xxsmall(decrement = 1)
-        self._font_bold = Fonts.xxsmall(bold = True, decrement = 1)
+        self._font =  Fonts.medium(decrement = 1) # xxsmall
+        self._font_bold = Fonts.medium(bold = True, decrement = 1) # xxsmall
 
         ### Header
 
@@ -89,18 +89,18 @@ class OrderTileGUI(Frame):
         self._form_label = Label(
             master=self._footer_container,
             background=background,
-            font=self._font,
+            font=self._font_bold,
             text="<form>"
         )
-        self._form_label.pack(side=LEFT, padx=2, pady=2)
+        self._form_label.pack(side=RIGHT, padx=2, pady=2)
 
         self._state_label = Label(
             master=self._footer_container,
             background=background,
-            font=self._font_bold,
+            font=self._font,
             text="<state>"
         )
-        self._state_label.pack(side=RIGHT, padx=2, pady=2)
+        self._state_label.pack(side=LEFT, padx=2, pady=2)
         
         self._update_content()
 

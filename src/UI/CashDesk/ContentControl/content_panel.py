@@ -1,6 +1,7 @@
 from tkinter import *
 from ContentControl.content_template import ContentTemplate
 from ContentControl.add_order_view import AddOrderView
+from ContentControl.quick_order_view import QuickOrderView
 from ContentControl.active_orders_view import ActiveOrdersView
 from ContentControl.settings_view import SettingsView
 from ContentControl.history_view import HistoryView
@@ -32,12 +33,21 @@ class ContentPanel(Frame):
         if REFS.MAIN_STATION:
             ## ------- ADD ORDER VIEW ------- ##
 
-            self.add_order_content: AddOrderView = AddOrderView(
-                parent=self,
-                toolbar_container=toolbar_container,
-                background=CButton.WHITE,
-                shown=True  # Set this view to be shown at the beginning
-            )
+            if REFS.NEW_VERSION:
+                self.add_order_content: QuickOrderView = QuickOrderView(
+                    parent=self,
+                    toolbar_container=toolbar_container,
+                    background=CButton.WHITE,
+                    shown=True
+                )
+            else:
+                self.add_order_content: AddOrderView = AddOrderView(
+                    parent=self,
+                    toolbar_container=toolbar_container,
+                    background=CButton.WHITE,
+                    shown=True  # Set this view to be shown at the beginning
+                )
+
             # Add the view to the list
             self.VIEWS.append(self.add_order_content)
 

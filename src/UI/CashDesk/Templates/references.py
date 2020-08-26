@@ -7,6 +7,7 @@ BASEPATH = WIN_PATH
 
 MOBILE = False
 MAIN_STATION = True
+NEW_VERSION = True
 
 # NETWORK
 CASH_DESK_IP = "192.168.2.115"              # set as static ip of raspberry
@@ -148,8 +149,8 @@ ORDER_STATE_COLORS_BGD=[
 ]
 
 ORDER_FORMS=[                                       # names of the different forms of orders
-    "Hier essen",
-    "Mitnehmen"
+    "Im Haus", # "Hier essen",
+    "To Go"    # "Mitnehmen"
 ]
 EAT_IN=0                                            # indices for the order forms array
 TAKEAWAY=1
@@ -177,4 +178,9 @@ ORDER_CREATED_TOAST = (
 ORDER_CHANGED_TOAST = (
     "Bestellung geändert",
     "Bestellnummer: {0}\nZeitstempel: {1}\nÄnderung: {2}"
+)
+
+ORDER_SUMMARY_TOAST = (
+    "Bestellung erstellt",
+    "Bestellnummer: {0}\nMahlzeit: {1}\nPreis: {2}"
 )

@@ -115,7 +115,7 @@ class OrdersService():
         if confirm:
             confirmed = messagebox.askyesno(
                 title="Clear order history",
-                message="Are you sure you want to clear the order history?\n\nThis will delete all inactive orders.",
+                message="Are you sure you want to clear the order history? This will delete all inactive orders.\n\nNOTE: This will not reset the counter for the order number!",
                 default='no'
             )
 
@@ -139,7 +139,7 @@ class OrdersService():
         if confirm:
             confirmed = messagebox.askyesno(
                 title="Clear order history",
-                message="Are you sure you want to clear the order history?\n\nThis will delete all inactive orders.",
+                message="Are you sure you want to clear the whole order history?\n\nThis will delete every order from the database and reset the order counter for the order nubmer.",
                 default='no'
             )
 
