@@ -261,7 +261,7 @@ class MealDetailsView(Frame):
 
     def _get_button_text(self, name_price_pair_array, show_zero: bool = False) -> []:
         content = []
-        separator = ' ' # '\n'
+        separator = '\n' # ' '
         
         for pair in name_price_pair_array:
             if not show_zero and pair.price == 0.0:
