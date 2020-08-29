@@ -1,10 +1,5 @@
 import math
 
-WIN_PATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk"
-MAC_PATH = r"/Users/mxrcel/Development/OrderingSystem/src/UI/CashDesk"
-
-BASEPATH = WIN_PATH
-
 MOBILE = False
 MAIN_STATION = True
 NEW_VERSION = True
