@@ -244,12 +244,12 @@ class ActiveOrdersView(ContentTemplate):
         if new_state != prev_state:
             clicked_order_tile.order.state = new_state
 
-            new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order))
+            new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order, new_state))
             new_thread.start()
             
             self.show_view()
             
-    def on_tile_clicked_async(self, order):
+    def on_tile_clicked_async(self, order, new_state):
         if REFS.MAIN_STATION:
             # If we are in CashDesk:
             OrdersService.update_order(order, active=True)
