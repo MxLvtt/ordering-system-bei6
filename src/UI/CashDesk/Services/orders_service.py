@@ -343,8 +343,10 @@ class OrderTimerPair():
     def _timer_callback(self):
         OrderTimerPair.ACTIVE_PAIRS.remove(self)
 
-        print(f"Setting order #{self._order.id} as inactive.")
-        OrdersService.update_order(order=self._order, active=False)
+        if REFS.MAIN_STATION:
+            print(f"Setting order #{self._order.id} as inactive.")
+            OrdersService.update_order(order=self._order, active=False)
+
         OrdersService.on_orders_changed()
     
     def start_timer(self):
