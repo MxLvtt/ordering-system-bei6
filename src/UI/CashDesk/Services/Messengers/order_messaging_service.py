@@ -98,6 +98,14 @@ class OrderMessagingService(Messenger):
                     text=toast_text,
                     keep_alive=False
                 )
+            else: # SILENT prefix
+                if message[2:].startswith(REFS.DELETING_NOT_CONFIRMED):
+                    messagebox.showwarning(
+                        title="Delete response",
+                        message="Deleting from table has been denied."
+                    )
+                elif message[2:].startswith(REFS.DELETING_CONFIRMED):
+                    print("Deleting worked")
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
@@ -146,19 +154,33 @@ class OrderMessagingService(Messenger):
             elif clear_type == REFS.DELETE_ALL_PREFIX:
                 result = OrdersService.truncate_table()
                 
+            addinfo = REFS.DELETING_NOT_CONFIRMED
+                
             if result:                
                 # Fire event to inform subscribed classes, like views
                 OrderMessagingService.on_database_changed_event()
-
+                addinfo = REFS.DELETING_CONFIRMED
+                
+            OrderMessagingService.notify_of_changed(
+                changed_order=None,
+                prefix=REFS.SILENT_PREFIX,
+                additional_info=addinfo
+            )
+            
     @staticmethod
-    def notify_of_changes(changed_order: Order, prefix: str) -> bool:
+    def notify_of_changes(changed_order: Order, prefix: str, additional_info: str = "") -> bool:
         if not NetworkHandler.CONNECTION_READY:
             return False
+        
+        order_id = additional_info
+        
+        if changed_order != None:
+            order_id = changed_order.id
             
         # CONSTRUCT MESSAGE BODY
         message_body = f"{REFS.DB_CHANGED_PREFIX}" \
             f"{prefix}" \
-            f"{changed_order.id}"
+            f"{order_id}"
 
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
