@@ -111,7 +111,7 @@ class OrderMessagingService(Messenger):
             elif message[1:].startswith(REFS.ORDER_TYPE_CHANGED_PREFIX):
                 old_order.form = change
 
-            print("# UPDATING DB")
+            print("# UPDATING DB, order state,id: ", old_order.state, old_order.id)
 
             OrdersService.update_order(old_order, active=True)
 

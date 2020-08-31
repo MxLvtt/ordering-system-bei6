@@ -214,7 +214,7 @@ class OrdersService():
             condition=f"{REFS.ORDERS_TABLE_ID}={order.id}"
         )
 
-        print("##### UPDATED DATABASE WITH ORDER CHANGE")
+        print("##### UPDATED DATABASE WITH ORDER CHANGE, order state, id = ", order.state, order.id)
 
         if active != False:
             if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
