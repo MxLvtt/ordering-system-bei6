@@ -90,8 +90,8 @@ class OrderMessagingService(Messenger):
             OrderMessagingService.on_database_changed_event()
         # Message says: Request to change given order in DB
         elif message.startswith(REFS.ORDER_CHANGE_REQUEST_PREFIX) and REFS.MAIN_STATION:
-            order_id = message[2:-2]
-            change = message[3:]
+            order_id = message[2:-1]
+            change = message[-1:]
 
             print("Order id:", order_id)
             print("Change to:", change)
