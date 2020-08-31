@@ -161,7 +161,7 @@ class OrderMessagingService(Messenger):
                 OrderMessagingService.on_database_changed_event()
                 addinfo = REFS.DELETING_CONFIRMED
                 
-            OrderMessagingService.notify_of_changed(
+            OrderMessagingService.notify_of_changes(
                 changed_order=None,
                 prefix=REFS.SILENT_PREFIX,
                 additional_info=addinfo
