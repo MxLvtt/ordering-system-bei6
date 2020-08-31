@@ -49,7 +49,7 @@ class OrderMessagingService(Messenger):
         # Message says: DB content has changed
         if message.startswith(REFS.DB_CHANGED_PREFIX):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
-                order_id = message[2:]
+                order_id = message[2:-1]
 
                 toast_title = "DB CHANGED"
                 toast_text = "<text>"
