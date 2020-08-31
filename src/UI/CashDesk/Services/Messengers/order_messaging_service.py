@@ -44,6 +44,8 @@ class OrderMessagingService(Messenger):
 
         message: contains only the main body; no service- and msg-id
         """
+        print("Message to process:", message)
+
         # Message says: DB content has changed
         if message.startswith(REFS.DB_CHANGED_PREFIX):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
@@ -91,6 +93,9 @@ class OrderMessagingService(Messenger):
             order_id = message[2:-2]
             change = message[3:]
 
+            print("Order id:", order_id)
+            print("Change to:", change)
+
             # First: get the order's current data
             result = OrdersService.get_orders(
                 row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}"
@@ -112,6 +117,9 @@ class OrderMessagingService(Messenger):
             # OrderMessagingService.notify_of_changes(
             #     changed_order=clicked_order_tile.order,
             #     prefix=REFS.ORDER_CHANGED_PREFIX)
+
+            # Fire event to inform subscribed classes, like views
+            OrderMessagingService.on_database_changed_event()
 
     @staticmethod
     def notify_of_changes(changed_order: Order, prefix: str) -> bool:
