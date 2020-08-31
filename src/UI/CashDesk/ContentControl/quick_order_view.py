@@ -212,7 +212,7 @@ class QuickOrderView(ContentTemplate):
     def _set_breadcrumb_text(self, text):
         self._breadcrumb.config(text=text)
         
-    def finish_current_order_async(meal, order_type):
+    def finish_current_order_async(self, meal, order_type):
         try:
             new_order = OrdersService.create_new_order([meal], order_type)
         except:
