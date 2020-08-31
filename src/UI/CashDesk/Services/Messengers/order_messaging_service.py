@@ -111,7 +111,11 @@ class OrderMessagingService(Messenger):
             elif message[1:].startswith(REFS.ORDER_TYPE_CHANGED_PREFIX):
                 old_order.form = change
 
+            print("# UPDATING DB")
+
             OrdersService.update_order(old_order, active=True)
+
+            print("# DONE")
 
             # Send Message to other station about order creation (fire and forget)
             OrderMessagingService.notify_of_changes(

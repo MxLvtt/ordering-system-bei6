@@ -214,10 +214,14 @@ class OrdersService():
             condition=f"{REFS.ORDERS_TABLE_ID}={order.id}"
         )
 
+        print("##### UPDATED DATABASE WITH ORDER CHANGE")
+
         if active != False:
             if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
+                print("## Creating timer")
                 OrdersService._create_timer(order)
             else:
+                print("## Stopping timer if existant")
                 OrdersService._stop_timer_if_existant(order)
 
     @staticmethod
