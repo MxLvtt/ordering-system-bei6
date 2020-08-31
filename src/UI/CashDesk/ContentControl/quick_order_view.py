@@ -224,12 +224,12 @@ class QuickOrderView(ContentTemplate):
 
         new_order._price = new_order.calculate_price()
 
-        self._set_breadcrumb_text(text=f"Preis letzter Bestellung: {new_order.price_str}€")
+        self._set_breadcrumb_text(text=f"Letzte Bestellung: #{new_order.id} {meal.name} - {OrdersService.convert_timestamp(new_order.timestamp)} - {new_order.price_str}€")
 
-        NotificationService.show_toast(
-            title=REFS.ORDER_SUMMARY_TOAST[0],
-            text=REFS.ORDER_SUMMARY_TOAST[1].format(new_order.id, new_order.meals[0].name, f"{new_order.price_str} {REFS.CURRENCY}")
-        )
+        #NotificationService.show_toast(
+        #    title=REFS.ORDER_SUMMARY_TOAST[0],
+        #    text=REFS.ORDER_SUMMARY_TOAST[1].format(new_order.id, new_order.meals[0].name, f"{new_order.price_str} {REFS.CURRENCY}")
+        #)
 
         # Send Message to other station about order creation
         OrderMessagingService.notify_of_changes(

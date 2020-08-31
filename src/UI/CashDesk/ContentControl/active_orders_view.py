@@ -244,21 +244,25 @@ class ActiveOrdersView(ContentTemplate):
         if new_state != prev_state:
             clicked_order_tile.order.state = new_state
 
-            if REFS.MAIN_STATION:
-                # If we are in CashDesk:
-                OrdersService.update_order(clicked_order_tile.order, active=True)
-
-                # Send Message to other station about order creation (fire and forget)
-                OrderMessagingService.notify_of_changes(
-                    changed_order=clicked_order_tile.order,
-                    prefix=REFS.ORDER_CHANGED_PREFIX)
-            else:
-                OrderMessagingService.request_order_update(
-                    order=clicked_order_tile.order,
-                    state=new_state
-                )
-
+            new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order))
+            new_thread.start()
+            
             self.show_view()
+            
+    def on_tile_clicked_async(self, order):
+        if REFS.MAIN_STATION:
+            # If we are in CashDesk:
+            OrdersService.update_order(clicked_order_tile.order, active=True)
+
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=clicked_order_tile.order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
+        else:
+            OrderMessagingService.request_order_update(
+                order=clicked_order_tile.order,
+                state=new_state
+            )
 
     def _update_mark_mode(self):
         if self._mark_done_button.state:
