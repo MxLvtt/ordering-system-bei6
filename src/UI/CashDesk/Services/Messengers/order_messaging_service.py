@@ -105,8 +105,7 @@ class OrderMessagingService(Messenger):
                 elif message[2:].startswith(REFS.DELETING_CONFIRMED):
                     print("Deleting worked")
                     
-            if message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):
-                OrdersService.handle_timer(changed_order)
+            OrdersService.handle_timer(changed_order)
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
