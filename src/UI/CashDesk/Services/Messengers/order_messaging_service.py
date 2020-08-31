@@ -113,10 +113,10 @@ class OrderMessagingService(Messenger):
 
             OrdersService.update_order(old_order, active=True)
 
-            # # Send Message to other station about order creation (fire and forget)
-            # OrderMessagingService.notify_of_changes(
-            #     changed_order=clicked_order_tile.order,
-            #     prefix=REFS.ORDER_CHANGED_PREFIX)
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=old_order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
