@@ -236,7 +236,6 @@ class OrderMessagingService(Messenger):
         message_body = f"{REFS.CLEAR_TABLE_REQUEST_PREFIX}" \
             f"{prefix}"
         
-        
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
