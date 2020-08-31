@@ -14,6 +14,7 @@ from Templates.cbutton import CButton
 from Templates.images import IMAGES
 from Templates.fonts import Fonts
 from Templates.custom_thread import CustomThread
+from Templates.radio_button import RadioButton, RadioButtonGroup
 
 
 class QuickOrderView(ContentTemplate):
@@ -30,7 +31,7 @@ class QuickOrderView(ContentTemplate):
         )
 
         self._root_category = None
-        self._order_form = REFS.EAT_IN
+        self._order_type = REFS.EAT_IN
 
         self._checkmark_img = IMAGES.create(IMAGES.CHECK_MARK)
         self._close_light_img = IMAGES.create(IMAGES.CLOSE_LIGHT)
@@ -38,10 +39,77 @@ class QuickOrderView(ContentTemplate):
         self._back_img = IMAGES.create(IMAGES.BACK)
         self._trashcan_img = IMAGES.create(IMAGES.TRASH_CAN)
         self._order_img = IMAGES.create(IMAGES.ORDER)
+        self._empty_img = IMAGES.create(IMAGES.EMPTY)
 
         self._background = background
 
         ######## Setting toolbar content ########
+
+        # #### Right Button Container
+        self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
+        self._button_container_right.grid(row=0, column=2, sticky='nsew')
+
+        self._radio_button_group = RadioButtonGroup()
+        
+        self._eat_in_button = RadioButton(
+            parent=self._button_container_right,
+            text=REFS.ORDER_FORMS[REFS.EAT_IN],
+            image=self._empty_img,
+            highlight_image=self._empty_img,
+            command=self._update_order_type,
+            initial_state=True,
+            group=self._radio_button_group,
+            fg="#000000",
+            bg=REFS.LIGHT_GRAY,
+            highlight=REFS.LIGHT_CYAN,
+            row=0, column=0
+            # width=1.5, height=0.6
+        )
+
+        # Button: Change order type to "eat in"
+        # self._eat_in_button = ToggleButton(
+        #     parent=self._button_container_right,
+        #     text=REFS.ORDER_FORMS[REFS.EAT_IN],
+        #     image=self._empty_img,
+        #     highlight_image=self._empty_img,
+        #     command=self._update_order_type,
+        #     initial_state=True,
+        #     group=self._toggle_button_group,
+        #     bg=REFS.LIGHT_GRAY,
+        #     highlight=REFS.LIGHT_CYAN,
+        #     row=0, column=0
+        # )
+
+        self._takeaway_button = RadioButton(
+            parent=self._button_container_right,
+            text=REFS.ORDER_FORMS[REFS.TAKEAWAY],
+            image=self._empty_img,
+            highlight_image=self._empty_img,
+            command=self._update_order_type,
+            initial_state=False,
+            group=self._radio_button_group,
+            fg="#000000",
+            bg=REFS.LIGHT_GRAY,
+            highlight=REFS.LIGHT_CYAN,
+            row=0, column=1
+            # width=1.5, height=0.6
+        )
+
+        # Button: Change order type to "takeaway"
+        # self._takeaway_button = ToggleButton(
+        #     parent=self._button_container_right,
+        #     text=REFS.ORDER_FORMS[REFS.TAKEAWAY],
+        #     image=self._empty_img,
+        #     highlight_image=self._empty_img,
+        #     command=self._update_order_type,
+        #     initial_state=False,
+        #     group=self._toggle_button_group,
+        #     bg=REFS.LIGHT_GRAY,
+        #     highlight=REFS.LIGHT_CYAN,
+        #     row=0, column=1
+        # )
+
+        self._update_order_type()
 
         # Middle Breadcrumb Container
         self._breadcrumb_container_middle = Frame(
@@ -50,7 +118,7 @@ class QuickOrderView(ContentTemplate):
 
         self._breadcrumb = Label(
             master=self._breadcrumb_container_middle,
-            text='<breadcrumb>',
+            text='Preis letzter Bestellung: -.--€',
             font=Fonts.small(),
             foreground='black',
             background='#EFEFEF'
@@ -77,6 +145,14 @@ class QuickOrderView(ContentTemplate):
 
         # Update the tiles on the view to match the category
         self._update_tiles(self._root_category)
+
+    def _update_order_type(self):
+        if self._eat_in_button.state:
+            self._order_type = REFS.EAT_IN
+            return
+        if self._takeaway_button.state:
+            self._order_type = REFS.TAKEAWAY
+            return
 
     def _update_tiles(self, root_category):
         self._clear_frame()
@@ -146,7 +222,7 @@ class QuickOrderView(ContentTemplate):
         meal.sizes.clear()
 
         try:
-            new_order = OrdersService.create_new_order([meal], self._order_form)
+            new_order = OrdersService.create_new_order([meal], self._order_type)
         except:
             print("Creating new order failed.")
             raise
@@ -155,6 +231,8 @@ class QuickOrderView(ContentTemplate):
             return
 
         new_order._price = new_order.calculate_price()
+
+        self._set_breadcrumb_text(text=f"Preis letzter Bestellung: {new_order.price_str}€")
 
         NotificationService.show_toast(
             title=REFS.ORDER_SUMMARY_TOAST[0],

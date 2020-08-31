@@ -4,6 +4,8 @@ import Templates.references as REFS
 import os
 
 class IMAGES():
+    EMPTY = f"empty.png"
+
     CHECK_MARK = f"checkmark.png"
     CHECK_MARK_DARK = f"checkmark_dark.png"
 

@@ -274,6 +274,7 @@ class HistoryItem(Scrollable):
         self._check_img = IMAGES.create(IMAGES.CHECK_MARK)
         self._down_img = IMAGES.create(IMAGES.DOWN)
         self._up_img = IMAGES.create(IMAGES.UP)
+        self._empty_img = IMAGES.create(IMAGES.EMPTY)
 
         ########## COLUMNS ##########
 
@@ -604,16 +605,27 @@ class HistoryItem(Scrollable):
             initial_state = (self._order.form == idx)
             command = partial(_form_button_pressed, idx)
 
-            form_radio_button = RadioButton(
-                master=form_container,
-                text=form,
-                group=form_radiobutton_group,
-                highlight=REFS.LIGHT_CYAN,
-                font=Fonts.xsmall(),
-                initial_state=initial_state,
-                command=command
+            radio_button_container = Frame(
+                master=form_container
             )
-            form_radio_button.pack(side=TOP, fill='x', pady=10)
+            radio_button_container.pack(side=TOP, fill='x', pady=10)
+
+            form_radio_button = RadioButton(
+                parent=radio_button_container,
+                text=form,
+                font=Fonts.xsmall(),
+                image=self._empty_img,
+                highlight_image=self._empty_img,
+                command=command,
+                initial_state=initial_state,
+                group=form_radiobutton_group,
+                fg="#000000",
+                bg=REFS.LIGHT_GRAY,
+                highlight=REFS.LIGHT_CYAN,
+                row=0, column=0,
+                width=1.5, height=0.6
+            )
+            # form_radio_button.pack(side=TOP, fill='x', pady=10)
 
         form_container.update()
 

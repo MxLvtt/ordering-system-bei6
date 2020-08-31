@@ -16,12 +16,14 @@ class ToggleButton(CButton):
         fg=CButton.DARK,
         row=0,
         column=0,
+        text="",
         spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
         spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
         super().__init__(
             parent=parent,
             image=image,
+            text="",
             command=self._button_command,
             width=width, height=height,
             fg=fg, bg=bg,

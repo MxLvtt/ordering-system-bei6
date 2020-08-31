@@ -1,38 +1,44 @@
 from tkinter import *
+from Templates.cbutton import CButton
 
-
-class RadioButton(Button):
+class RadioButton(CButton):
     def __init__(
         self,
-        master,
-        text,
-        group,
+        parent,
+        image,
+        highlight_image,
+        command,
+        bg,
         highlight,
-        background = None,
-        font = None,
-        command = None,
-        initial_state = False,
-        height=None,
-        width=None
+        initial_state: bool = False,
+        group = None,
+        width=2.0,
+        height=-1,
+        fg=CButton.DARK,
+        row=0,
+        column=0,
+        text="",
+        font=None,
+        spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
+        spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
         super().__init__(
-            master=master,
+            parent=parent,
+            image=image,
             text=text,
+            font=font,
             command=self._button_command,
             width=width, height=height,
-            cnf={}
+            fg=fg, bg=bg,
+            row=row, column=column,
+            spaceX=spaceX, spaceY=spaceY
         )
 
-        if font != None:
-            self.config(font=font)
-
-        self._unselect_background = self.cget('background')
-
-        if background != None:
-            self._unselect_background = background
-            self.config(background=background)
+        self._unselect_background = bg
+        self._unselect_image = image
 
         self._select_background = highlight
+        self._select_image = highlight_image
 
         self._state: bool = True
         self._update_colors()
@@ -61,8 +67,10 @@ class RadioButton(Button):
     def _update_colors(self):
         if self._state == True:
             self.config(background=self._select_background)
+            self.config(image=self._select_image)
         else:
             self.config(background=self._unselect_background)
+            self.config(image=self._unselect_image)
 
     def _button_command(self):
         # If button is already active/selected -> return
