@@ -111,13 +111,22 @@ class DatabaseHandler:
             DatabaseHandler.CONNECTION.close()
 
         if not DatabaseHandler.DEBUG:
-            _connection = MySQL.connect(
-                host=REFS.CASH_DESK_IP,
-                port=REFS.CASH_DESK_DB_PORT,
-                user=REFS.CASH_DESK_DB_USER,
-                passwd=REFS.CASH_DESK_DB_PW,
-                database=REFS.CASH_DESK_DB_NAME
-            )
+            if REFS.MAIN_STATION:
+                _connection = MySQL.connect(
+                    host=REFS.RW_USER_HOST,
+                    port=REFS.CASH_DESK_DB_PORT,
+                    user=REFS.RW_USER_NAME,
+                    passwd=REFS.RW_USER_PASSWORD,
+                    database=REFS.CASH_DESK_DB_NAME
+                )            
+            else:
+                _connection = MySQL.connect(
+                    host=REFS.CASH_DESK_IP,
+                    port=REFS.CASH_DESK_DB_PORT,
+                    user=REFS.CASH_DESK_DB_USER,
+                    passwd=REFS.CASH_DESK_DB_PW,
+                    database=REFS.CASH_DESK_DB_NAME
+                )
         else:
             _connection = MySQL.connect(
                 host=REFS.CASH_DESK_IP_DBG,

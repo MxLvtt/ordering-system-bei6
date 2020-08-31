@@ -30,28 +30,33 @@ class CashDeskGUI():
 
         # Initializing the main window
         root = Tk()
-        root.resizable(False, False)
+        ## root.resizable(False, False)
+        
+        root.resizable(True, True)
+        root.attributes('-fullscreen', True)
 
-        if not CashDeskGUI.DEBUG:
-            root.attributes('-fullscreen', True)
+        root.config(background='#696969')
+
+        #if not CashDeskGUI.DEBUG:
+        #    root.attributes('-fullscreen', True)
 
         # Window Size: approx. 7 in
         root_bg = "#696969"
         # root.config(width=866, height=487, background=root_bg)
-        root.config(width=800, height=480, background=root_bg)
+        #root.config(width=800, height=480, background=root_bg)
 
         station = 'Küche'
 
-        if main_station:
-            station = 'Kasse'
+        #if main_station:
+        #    station = 'Kasse'
 
         title_size = 'Mobile Ansicht (7")'
 
-        if not mobile_view:
-            title_size = 'Vollbild'
+        #if not mobile_view:
+        #    title_size = 'Vollbild'
 
-            if CashDeskGUI.DEBUG:
-                root.attributes('-fullscreen', True)
+        #    if CashDeskGUI.DEBUG:
+        #        root.attributes('-fullscreen', True)
 
 
         root.wm_title(f"Bestellsystem - {station} - {title_size}")

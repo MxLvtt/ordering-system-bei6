@@ -5,13 +5,17 @@ MAIN_STATION = True
 NEW_VERSION = True
 
 # NETWORK
-CASH_DESK_IP = "192.168.2.115"              # set as static ip of raspberry
+CASH_DESK_IP = "192.168.2.107"              # set as static ip of raspberry
 CASH_DESK_DB_PORT = "8457"                  # port on which to access the database remotely
 CASH_DESK_IP_DBG = "127.0.0.1"              # debugging endpoint
 CASH_DESK_DB_PORT_DBG = "3306"              # debugging port
 CASH_DESK_DB_USER = "ordsysRD"              # user with just read-access
 CASH_DESK_DB_PW = "he=h5bY&x#Lb/=$"         # password for above user
 CASH_DESK_DB_NAME = "ordsys"                # name of the database
+
+RW_USER_NAME = "ordsysRW"
+RW_USER_PASSWORD = "#4}Yjen$]nP"
+RW_USER_HOST = "localhost"
 
 PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
 
