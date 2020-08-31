@@ -217,12 +217,16 @@ class OrdersService():
         print("##### UPDATED DATABASE WITH ORDER CHANGE, order state, id = ", order.state, order.id)
 
         if active != False:
-            if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
-                print("## Creating timer")
-                OrdersService._create_timer(order)
-            else:
-                print("## Stopping timer if existant")
-                OrdersService._stop_timer_if_existant(order)
+            OrdersService.handle_timer(order)
+
+    @staticmethod
+    def handle_timer(order):
+        if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
+            print("## Creating timer")
+            OrdersService._create_timer(order)
+        else:
+            print("## Stopping timer if existant")
+            OrdersService._stop_timer_if_existant(order)
 
     @staticmethod
     def create_new_order(meals_list: [], order_form: int) -> Order:

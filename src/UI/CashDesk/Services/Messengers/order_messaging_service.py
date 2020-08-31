@@ -65,15 +65,28 @@ class OrderMessagingService(Messenger):
                     toast_title = REFS.ORDER_CREATED_TOAST[0]
                     toast_text = REFS.ORDER_CREATED_TOAST[1].format(order_id, order_timestamp)
                 # More precise: a new order has been changed
-                elif message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):
-                    order_details = OrdersService.get_orders(
-                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
-                        columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}", f"{REFS.ORDERS_TABLE_STATE}"]
-                    )[0]
-                    order_timestamp = OrdersService.convert_timestamp(order_details[0])
+                elif message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):                    
+                    # First: get the order's current data
+                    result = OrdersService.get_orders(
+                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}"
+                    )
 
-                    order_change = f"Status > {REFS.ORDER_STATES[int(order_details[1])]}"
-                    
+                    if result == None or len(result) == 0:
+                        raise RuntimeError("The given order can not be changed because it's not in the database.")
+
+                    changed_order = OrdersService.convert_to_order_object(result[0])
+
+                    # order_details = OrdersService.get_orders(
+                    #     row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
+                    #     columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}", f"{REFS.ORDERS_TABLE_STATE}"]
+                    # )[0]
+                    order_timestamp = OrdersService.convert_timestamp(changed_order.timestamp)
+
+                    # order_state = int(order_details[1])
+                    order_change = f"Status > {REFS.ORDER_STATES[changed_order.state]}"
+
+                    OrdersService.handle_timer(changed_order)
+
                     toast_title = REFS.ORDER_CHANGED_TOAST[0]
                     toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
                         order_id,
@@ -111,11 +124,7 @@ class OrderMessagingService(Messenger):
             elif message[1:].startswith(REFS.ORDER_TYPE_CHANGED_PREFIX):
                 old_order.form = int(change)
 
-            print("# UPDATING DB, order state,id: ", old_order.state, old_order.id)
-
             OrdersService.update_order(old_order, active=True)
-
-            print("# DONE")
 
             # Send Message to other station about order creation (fire and forget)
             OrderMessagingService.notify_of_changes(
