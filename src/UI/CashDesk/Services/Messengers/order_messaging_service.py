@@ -161,11 +161,15 @@ class OrderMessagingService(Messenger):
             f"{order.id}" \
             f"{change}"
 
+        print("Message to send:", message_body)
+
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
         )
         
+        print("Message to send:", message_body)
+
         new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
         new_thread.start()
 

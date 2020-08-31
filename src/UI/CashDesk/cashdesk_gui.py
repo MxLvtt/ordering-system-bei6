@@ -22,7 +22,7 @@ class CashDeskGUI():
     ):
         CashDeskGUI.DEBUG = debug
 
-        if not debug or suppress_logs:
+        if suppress_logs:
             sys.stdout = open(os.devnull, 'w')
 
         REFS.MOBILE = mobile_view
