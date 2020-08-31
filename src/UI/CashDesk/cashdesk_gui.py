@@ -140,6 +140,7 @@ class CashDeskGUI():
         self._footer_clock = Label(
             master=footerContainer,
             text="<CURRENT_TIME>",
+            background="#EFEFEF",
             font=def_font,
             padx=10
         )
@@ -150,6 +151,7 @@ class CashDeskGUI():
 
         self._connection_symbol = Label(
             master=footerContainer,
+            background="#EFEFEF",
             image=self.connection_image,
             padx=5, pady=5
         )
@@ -166,6 +168,7 @@ class CashDeskGUI():
             self._footer_title = Label(
                 master=footerContainer,
                 text="<Current Content View>",
+                background="#EFEFEF",
                 font=def_font,
                 padx=10
             )
