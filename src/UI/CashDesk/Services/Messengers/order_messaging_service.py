@@ -133,6 +133,22 @@ class OrderMessagingService(Messenger):
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
+        # Message says: Request to delete rows in orders table
+        elif message.startswith(REFS.CLEAR_TABLE_REQUEST_PREFIX) and REFS.MAIN_STATION:
+            clear_type = message[1:]
+            result = False
+            
+            if clear_type == REFS.DELETE_INACTIVE_PREFIX:
+                result = OrdersService.delete_from_table(
+                    condition=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_FALSE}'",
+                    confirm=True
+                )
+            elif clear_type == REFS.DELETE_ALL_PREFIX:
+                result = OrdersService.truncate_table()
+                
+            if result:                
+                # Fire event to inform subscribed classes, like views
+                OrderMessagingService.on_database_changed_event()
 
     @staticmethod
     def notify_of_changes(changed_order: Order, prefix: str) -> bool:
@@ -174,20 +190,40 @@ class OrderMessagingService(Messenger):
             f"{order.id}" \
             f"{change}"
 
-        print("Message to send:", message_body)
-
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
         )
         
-        print("Message to send:", message_body)
-
         new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
         new_thread.start()
 
         return True
 
+    @staticmethod
+    def request_table_deletion(only_inactive: bool = True) -> bool:
+        if not NetworkHandler.CONNECTION_READY:
+            return False
+        
+        if only_inactive:
+            prefix = REFS.DELETE_INACTIVE_PREFIX
+        else:
+            prefix = REFS.DELETE_ALL_PREFIX
+
+        # CONSTRUCT MESSAGE BODY
+        message_body = f"{REFS.CLEAR_TABLE_REQUEST_PREFIX}" \
+            f"{prefix}"
+        
+        
+        message_body = Messenger.attach_service_id(
+            service_id = OrderMessagingService.IDENTIFIER,
+            message = message_body
+        )
+        
+        new_thread = CustomThread(4, "MessangerThread-4", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
 
     @staticmethod
     def _send(message):

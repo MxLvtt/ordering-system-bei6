@@ -48,6 +48,7 @@ class HistoryView(ContentTemplate):
             HistoryItem.HEIGHT=80 - 40 * REFS.MOBILE
             HistoryItem.EXPAND_HEIGHT=600 - 300 * REFS.MOBILE
 
+        OrderMessagingService.on_database_changed_event.add(self.update_view_and_database_content)
         OrdersService.on_orders_changed.add(self.update_view_and_database_content)
 
         self.order_items = []
@@ -205,15 +206,10 @@ class HistoryView(ContentTemplate):
         self.scrolllist = ScrollList(parent=self.table, spacing=HistoryView.SPACING, background='#696969')
 
     def reset_order_counter(self):
-        if OrdersService.truncate_table():
-            self.show_view()
+        OrderMessagingService.request_table_deletion(only_inactive=False)
 
     def clear_history(self):
-        if OrdersService.delete_from_table(
-            condition=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_FALSE}'",
-            confirm=True
-        ):
-            self.show_view()
+        OrderMessagingService.request_table_deletion(only_inactive=True)
 
     def show_view(self):
         """ Is called everytime this view is opened
