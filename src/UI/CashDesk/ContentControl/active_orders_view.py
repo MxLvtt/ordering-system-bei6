@@ -252,15 +252,15 @@ class ActiveOrdersView(ContentTemplate):
     def on_tile_clicked_async(self, order):
         if REFS.MAIN_STATION:
             # If we are in CashDesk:
-            OrdersService.update_order(clicked_order_tile.order, active=True)
+            OrdersService.update_order(order, active=True)
 
             # Send Message to other station about order creation (fire and forget)
             OrderMessagingService.notify_of_changes(
-                changed_order=clicked_order_tile.order,
+                changed_order=order,
                 prefix=REFS.ORDER_CHANGED_PREFIX)
         else:
             OrderMessagingService.request_order_update(
-                order=clicked_order_tile.order,
+                order=order,
                 state=new_state
             )
 
