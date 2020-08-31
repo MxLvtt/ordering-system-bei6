@@ -211,18 +211,10 @@ class QuickOrderView(ContentTemplate):
 
     def _set_breadcrumb_text(self, text):
         self._breadcrumb.config(text=text)
-
-    def finish_current_order(self, meal):
-        """ Finished the current order
-        """
-        new_order = None
-
-        meal.ingredients.clear()
-        meal.addons.clear()
-        meal.sizes.clear()
-
+        
+    def finish_current_order_async(meal, order_type):
         try:
-            new_order = OrdersService.create_new_order([meal], self._order_type)
+            new_order = OrdersService.create_new_order([meal], order_type)
         except:
             print("Creating new order failed.")
             raise
@@ -243,3 +235,16 @@ class QuickOrderView(ContentTemplate):
         OrderMessagingService.notify_of_changes(
             changed_order=new_order,
             prefix=REFS.ORDER_CREATED_PREFIX)
+
+    def finish_current_order(self, meal):
+        """ Finished the current order
+        """
+        new_order = None
+
+        meal.ingredients.clear()
+        meal.addons.clear()
+        meal.sizes.clear()
+
+        new_thread = CustomThread(6, "QuickOrderViewThread-1", partial(self.finish_current_order_async, meal, self._order_type))
+        new_thread.start()
+        
