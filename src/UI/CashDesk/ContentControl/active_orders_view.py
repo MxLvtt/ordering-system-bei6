@@ -247,8 +247,6 @@ class ActiveOrdersView(ContentTemplate):
             new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order, new_state))
             new_thread.start()
             
-            self.show_view()
-            
     def on_tile_clicked_async(self, order, new_state):
         if REFS.MAIN_STATION:
             # If we are in CashDesk:
@@ -263,6 +261,8 @@ class ActiveOrdersView(ContentTemplate):
                 order=order,
                 state=new_state
             )
+            
+        self.show_view()
 
     def _update_mark_mode(self):
         if self._mark_done_button.state:
