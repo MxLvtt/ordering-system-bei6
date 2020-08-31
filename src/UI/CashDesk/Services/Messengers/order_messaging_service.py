@@ -85,8 +85,6 @@ class OrderMessagingService(Messenger):
                     # order_state = int(order_details[1])
                     order_change = f"Status > {REFS.ORDER_STATES[changed_order.state]}"
 
-                    OrdersService.handle_timer(changed_order)
-
                     toast_title = REFS.ORDER_CHANGED_TOAST[0]
                     toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
                         order_id,
@@ -106,6 +104,9 @@ class OrderMessagingService(Messenger):
                     )
                 elif message[2:].startswith(REFS.DELETING_CONFIRMED):
                     print("Deleting worked")
+                    
+            if message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):
+                OrdersService.handle_timer(changed_order)
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
