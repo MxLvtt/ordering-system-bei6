@@ -86,6 +86,32 @@ class OrderMessagingService(Messenger):
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
+        # Message says: Request to change given order in DB
+        elif message.startswith(REFS.ORDER_CHANGE_REQUEST_PREFIX) and REFS.MAIN_STATION:
+            order_id = message[2:-2]
+            change = message[3:]
+
+            # First: get the order's current data
+            result = OrdersService.get_orders(
+                row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}"
+            )
+
+            if result == None or len(result) == 0:
+                raise RuntimeError("The given order can not be changed because it's not in the database.")
+
+            old_order = OrdersService.convert_to_order_object(result[0])
+
+            if message[1:].startswith(REFS.ORDER_STATUS_CHANGED_PREFIX):
+                old_order.state = change
+            elif message[1:].startswith(REFS.ORDER_TYPE_CHANGED_PREFIX):
+                old_order.form = change
+
+            OrdersService.update_order(old_order, active=True)
+
+            # # Send Message to other station about order creation (fire and forget)
+            # OrderMessagingService.notify_of_changes(
+            #     changed_order=clicked_order_tile.order,
+            #     prefix=REFS.ORDER_CHANGED_PREFIX)
 
     @staticmethod
     def notify_of_changes(changed_order: Order, prefix: str) -> bool:
@@ -106,6 +132,37 @@ class OrderMessagingService(Messenger):
         new_thread.start()
 
         return True
+
+    @staticmethod
+    def request_order_update(order: Order, state: int = -1, form: int = -1):
+        if not NetworkHandler.CONNECTION_READY:
+            return False
+
+        if state != -1:
+            prefix = REFS.ORDER_STATUS_CHANGED_PREFIX
+            change = state
+        elif form != -1:
+            prefix = REFS.ORDER_TYPE_CHANGED_PREFIX
+            change = form
+        else:
+            return False
+
+        # CONSTRUCT MESSAGE BODY
+        message_body = f"{REFS.ORDER_CHANGE_REQUEST_PREFIX}" \
+            f"{prefix}" \
+            f"{order.id}" \
+            f"{change}"
+
+        message_body = Messenger.attach_service_id(
+            service_id = OrderMessagingService.IDENTIFIER,
+            message = message_body
+        )
+        
+        new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
+
 
     @staticmethod
     def _send(message):

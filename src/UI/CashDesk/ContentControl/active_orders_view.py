@@ -244,13 +244,19 @@ class ActiveOrdersView(ContentTemplate):
         if new_state != prev_state:
             clicked_order_tile.order.state = new_state
 
-            # If we are in CashDesk:
-            OrdersService.update_order(clicked_order_tile.order, active=True)
+            if REFS.MAIN_STATION:
+                # If we are in CashDesk:
+                OrdersService.update_order(clicked_order_tile.order, active=True)
 
-            # Send Message to other station about order creation (fire and forget)
-            OrderMessagingService.notify_of_changes(
-                changed_order=clicked_order_tile.order,
-                prefix=REFS.ORDER_CHANGED_PREFIX)
+                # Send Message to other station about order creation (fire and forget)
+                OrderMessagingService.notify_of_changes(
+                    changed_order=clicked_order_tile.order,
+                    prefix=REFS.ORDER_CHANGED_PREFIX)
+            else:
+                OrderMessagingService.request_order_update(
+                    order=clicked_order_tile.order,
+                    state=new_state
+                )
 
             self.show_view()
 
