@@ -18,6 +18,7 @@ from Templates.scrollable import Scrollable
 from Templates.fonts import Fonts
 from Templates.page_system import PageSystem
 from Templates.radio_button import RadioButton, RadioButtonGroup
+from Services.Messengers.order_messaging_service import OrderMessagingService
 
 
 class HistoryView(ContentTemplate):
@@ -410,7 +411,18 @@ class HistoryItem(Scrollable):
         self.state.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
     def _save_order(self):
-        OrdersService.update_order(self._changed_order)
+        if REFS.MAIN_STATION:
+            OrdersService.update_order(self._changed_order)
+
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=self._changed_order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
+        else:
+            OrderMessagingService.request_order_update(
+                order=self._changed_order,
+                form=self._changed_order.form
+            )
 
         self._order = self._changed_order.copy()
 
