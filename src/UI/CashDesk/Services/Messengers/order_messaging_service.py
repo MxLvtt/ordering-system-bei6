@@ -30,6 +30,8 @@ class OrderMessagingService(Messenger):
 
     initialized = False
 
+    AUTO_REFRESH_ENABLED = True
+
     on_database_changed_event: Event = Event()
 
     def __init__(self):
@@ -56,7 +58,8 @@ class OrderMessagingService(Messenger):
                 order_id = message[2:]
 
                 if order_id == "0":
-                    OrderMessagingService.on_database_changed_event()
+                    if OrderMessagingService.AUTO_REFRESH_ENABLED:
+                        OrderMessagingService.on_database_changed_event()
                     return
 
                 toast_title = "DB CHANGED"
