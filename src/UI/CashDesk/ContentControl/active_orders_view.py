@@ -41,10 +41,10 @@ class ActiveOrdersView(ContentTemplate):
         self._background = background
 
         # OrdersService.on_order_created_event.add(self._order_created_event)
-        OrdersService.on_orders_changed.add(
-            self.update_view_and_database_content
-        )
-        self.auto_refresh_enabled = True
+        #OrdersService.on_orders_changed.add(
+        #    self.update_view_and_database_content
+        #)
+        self.auto_refresh_enabled = False
 
         OrderMessagingService.on_database_changed_event.add(
             self.update_view_and_database_content
@@ -80,6 +80,7 @@ class ActiveOrdersView(ContentTemplate):
         self._undo_img = IMAGES.create(IMAGES.UNDO_LIGHT)
         self._undo_dark_img = IMAGES.create(IMAGES.UNDO)
         self._automatic_refresh_img = IMAGES.create(IMAGES.AUTO_REFRESH)
+        self._refresh_img = IMAGES.create(IMAGES.UNDO)
 
         #### Right Button Container
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
@@ -143,13 +144,13 @@ class ActiveOrdersView(ContentTemplate):
 
         self._toggle_button_group_2 = ToggleButtonGroup()
         
-        # Button: Mark orders as done
+        # Button: Toggle auto refresh
         self.auto_refresh_button = ToggleButton(
             parent=self._button_container_left_middle,
             image=self._automatic_refresh_img,
             highlight_image=self._automatic_refresh_img,
             command=self._toggle_automatic_refresh,
-            initial_state=True,
+            initial_state=self.auto_refresh_enabled,
             group=self._toggle_button_group_2,
             # bg=REFS.LIGHT_GREEN,
             bg=REFS.LIGHT_GRAY,
@@ -158,6 +159,16 @@ class ActiveOrdersView(ContentTemplate):
             row=0, column=0,
             width=1.0,
             spaceX=(1.0,0.0)
+        )
+        
+        # Button: Refresh page
+        self.refresh_button = CButton(
+            parent=self._button_container_left_middle,
+            image=self._refresh_img,
+            command=self.update_view_and_database_content,
+            bg=REFS.LIGHT_GRAY,
+            row=0, column=1,
+            width=1.0
         )
 
         #### Left Button Container

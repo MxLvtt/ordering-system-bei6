@@ -30,7 +30,7 @@ class OrderMessagingService(Messenger):
 
     initialized = False
 
-    AUTO_REFRESH_ENABLED = True
+    AUTO_REFRESH_ENABLED = False
 
     on_database_changed_event: Event = Event()
 
