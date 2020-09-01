@@ -1,3 +1,8 @@
+# Presettings for root user
+USE mysql;
+UPDATE user SET plugin = '' WHERE user = 'root' AND host = 'localhost';
+FLUSH PRIVILEGES;
+
 # Create Database 'ordsys'
 CREATE DATABASE IF NOT EXISTS `ordsys`;
 USE `ordsys`;
