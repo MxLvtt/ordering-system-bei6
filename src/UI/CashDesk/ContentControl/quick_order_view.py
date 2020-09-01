@@ -211,6 +211,30 @@ class QuickOrderView(ContentTemplate):
 
     def _set_breadcrumb_text(self, text):
         self._breadcrumb.config(text=text)
+        
+    def finish_current_order_async(self, meal, order_type):
+        try:
+            new_order = OrdersService.create_new_order([meal], order_type)
+        except:
+            print("Creating new order failed.")
+            raise
+
+        if new_order == None:
+            return
+
+        new_order._price = new_order.calculate_price()
+
+        self._set_breadcrumb_text(text=f"Letzte Bestellung: #{new_order.id} {meal.name} - {OrdersService.convert_timestamp(new_order.timestamp)} - {new_order.price_str}€")
+
+        #NotificationService.show_toast(
+        #    title=REFS.ORDER_SUMMARY_TOAST[0],
+        #    text=REFS.ORDER_SUMMARY_TOAST[1].format(new_order.id, new_order.meals[0].name, f"{new_order.price_str} {REFS.CURRENCY}")
+        #)
+
+        # Send Message to other station about order creation
+        OrderMessagingService.notify_of_changes(
+            changed_order=new_order,
+            prefix=REFS.ORDER_CREATED_PREFIX)
 
     def finish_current_order(self, meal):
         """ Finished the current order
@@ -221,25 +245,6 @@ class QuickOrderView(ContentTemplate):
         meal.addons.clear()
         meal.sizes.clear()
 
-        try:
-            new_order = OrdersService.create_new_order([meal], self._order_type)
-        except:
-            print("Creating new order failed.")
-            raise
-
-        if new_order == None:
-            return
-
-        new_order._price = new_order.calculate_price()
-
-        self._set_breadcrumb_text(text=f"Preis letzter Bestellung: {new_order.price_str}€")
-
-        NotificationService.show_toast(
-            title=REFS.ORDER_SUMMARY_TOAST[0],
-            text=REFS.ORDER_SUMMARY_TOAST[1].format(new_order.id, new_order.meals[0].name, f"{new_order.price_str} {REFS.CURRENCY}")
-        )
-
-        # Send Message to other station about order creation
-        OrderMessagingService.notify_of_changes(
-            changed_order=new_order,
-            prefix=REFS.ORDER_CREATED_PREFIX)
+        new_thread = CustomThread(6, "QuickOrderViewThread-1", partial(self.finish_current_order_async, meal, self._order_type))
+        new_thread.start()
+        

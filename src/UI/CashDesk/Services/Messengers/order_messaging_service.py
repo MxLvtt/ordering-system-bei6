@@ -30,6 +30,8 @@ class OrderMessagingService(Messenger):
 
     initialized = False
 
+    AUTO_REFRESH_ENABLED = False
+
     on_database_changed_event: Event = Event()
 
     def __init__(self):
@@ -37,6 +39,10 @@ class OrderMessagingService(Messenger):
     
         OrderMessagingService.IDENTIFIER = self.identifier
         OrderMessagingService.initialized = True
+
+        timer_callback = partial(OrderMessagingService.notify_of_changes, None, REFS.ORDER_CHANGED_PREFIX)
+
+        OrdersService.on_orders_changed.add(timer_callback)
 
     def process_message(self, message: str):
         """ Gets called, whenever the network handler receives a message,
@@ -50,6 +56,11 @@ class OrderMessagingService(Messenger):
         if message.startswith(REFS.DB_CHANGED_PREFIX):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
                 order_id = message[2:]
+
+                if order_id == "0":
+                    if OrderMessagingService.AUTO_REFRESH_ENABLED:
+                        OrderMessagingService.on_database_changed_event()
+                    return
 
                 toast_title = "DB CHANGED"
                 toast_text = "<text>"
@@ -84,8 +95,8 @@ class OrderMessagingService(Messenger):
 
                     # order_state = int(order_details[1])
                     order_change = f"Status > {REFS.ORDER_STATES[changed_order.state]}"
-
-                    OrdersService.handle_timer(changed_order)
+   
+                    # OrdersService.handle_timer(changed_order)
 
                     toast_title = REFS.ORDER_CHANGED_TOAST[0]
                     toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
@@ -93,11 +104,11 @@ class OrderMessagingService(Messenger):
                         order_timestamp,
                         order_change)
 
-                NotificationService.show_toast(
-                    title=toast_title,
-                    text=toast_text,
-                    keep_alive=False
-                )
+                #NotificationService.show_toast(
+                #    title=toast_title,
+                #    text=toast_text,
+                #    keep_alive=False
+                #)
             else: # SILENT prefix
                 if message[2:].startswith(REFS.DELETING_NOT_CONFIRMED):
                     messagebox.showwarning(
@@ -106,7 +117,7 @@ class OrderMessagingService(Messenger):
                     )
                 elif message[2:].startswith(REFS.DELETING_CONFIRMED):
                     print("Deleting worked")
-
+                 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
         # Message says: Request to change given order in DB
@@ -134,10 +145,11 @@ class OrderMessagingService(Messenger):
 
             OrdersService.update_order(old_order, active=True)
 
-            # Send Message to other station about order creation (fire and forget)
-            OrderMessagingService.notify_of_changes(
-                changed_order=old_order,
-                prefix=REFS.ORDER_CHANGED_PREFIX)
+            ## Send Message to other station about order creation
+            #OrderMessagingService.notify_of_changes(
+            #    changed_order=old_order,
+            #    prefix=REFS.ORDER_CHANGED_PREFIX
+            #)
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
@@ -164,15 +176,15 @@ class OrderMessagingService(Messenger):
             OrderMessagingService.notify_of_changes(
                 changed_order=None,
                 prefix=REFS.SILENT_PREFIX,
-                additional_info=addinfo
+                additional_prefix=addinfo
             )
             
     @staticmethod
-    def notify_of_changes(changed_order: Order, prefix: str, additional_info: str = "") -> bool:
+    def notify_of_changes(changed_order: Order, prefix: str, additional_prefix: str = "") -> bool:
         if not NetworkHandler.CONNECTION_READY:
             return False
         
-        order_id = additional_info
+        order_id = "0"
         
         if changed_order != None:
             order_id = changed_order.id
@@ -180,7 +192,8 @@ class OrderMessagingService(Messenger):
         # CONSTRUCT MESSAGE BODY
         message_body = f"{REFS.DB_CHANGED_PREFIX}" \
             f"{prefix}" \
-            f"{order_id}"
+            f"{order_id}" \
+            f"{additional_prefix}"
 
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
@@ -216,6 +229,8 @@ class OrderMessagingService(Messenger):
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
         )
+
+        print("Message body to send:", message_body)
         
         new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
         new_thread.start()

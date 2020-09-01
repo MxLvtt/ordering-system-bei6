@@ -6,6 +6,8 @@ import os
 class IMAGES():
     EMPTY = f"empty.png"
 
+    AUTO_REFRESH = f"auto_refresh.png"
+
     CHECK_MARK = f"checkmark.png"
     CHECK_MARK_DARK = f"checkmark_dark.png"
 

@@ -41,9 +41,11 @@ class ActiveOrdersView(ContentTemplate):
         self._background = background
 
         # OrdersService.on_order_created_event.add(self._order_created_event)
-        OrdersService.on_orders_changed.add(
-            self.update_view_and_database_content
-        )
+        #OrdersService.on_orders_changed.add(
+        #    self.update_view_and_database_content
+        #)
+        self.auto_refresh_enabled = False
+
         OrderMessagingService.on_database_changed_event.add(
             self.update_view_and_database_content
         )
@@ -77,10 +79,12 @@ class ActiveOrdersView(ContentTemplate):
         self._close_dark_img = IMAGES.create(IMAGES.CLOSE_DARK)
         self._undo_img = IMAGES.create(IMAGES.UNDO_LIGHT)
         self._undo_dark_img = IMAGES.create(IMAGES.UNDO)
+        self._automatic_refresh_img = IMAGES.create(IMAGES.AUTO_REFRESH)
+        self._refresh_img = IMAGES.create(IMAGES.UNDO)
 
         #### Right Button Container
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
-        self._button_container_right.grid(row=0, column=2, sticky='nsew')
+        self._button_container_right.grid(row=0, column=3, sticky='nsew')
 
         self._toggle_button_group = ToggleButtonGroup()
         
@@ -132,7 +136,40 @@ class ActiveOrdersView(ContentTemplate):
 
         ### Middle Breadcrumb Container
         self._container_middle = Frame(self.toolbar, background="#EFEFEF")
-        self._container_middle.grid(row=0, column=1, sticky='nsew')
+        self._container_middle.grid(row=0, column=2, sticky='nsew')
+
+        #### Left Middle Button Container
+        self._button_container_left_middle = Frame(self.toolbar, background="#EFEFEF")
+        self._button_container_left_middle.grid(row=0, column=1, sticky='nsew')
+
+        self._toggle_button_group_2 = ToggleButtonGroup()
+        
+        # Button: Toggle auto refresh
+        self.auto_refresh_button = ToggleButton(
+            parent=self._button_container_left_middle,
+            image=self._automatic_refresh_img,
+            highlight_image=self._automatic_refresh_img,
+            command=self._toggle_automatic_refresh,
+            initial_state=self.auto_refresh_enabled,
+            group=self._toggle_button_group_2,
+            # bg=REFS.LIGHT_GREEN,
+            bg=REFS.LIGHT_GRAY,
+            # highlight=CButton.GREEN,
+            highlight=REFS.LIGHT_YELLOW,
+            row=0, column=0,
+            width=1.0,
+            spaceX=(1.0,0.0)
+        )
+        
+        # Button: Refresh page
+        self.refresh_button = CButton(
+            parent=self._button_container_left_middle,
+            image=self._refresh_img,
+            command=self.update_view_and_database_content,
+            bg=REFS.LIGHT_GRAY,
+            row=0, column=1,
+            width=1.0
+        )
 
         #### Left Button Container
         self._button_container_left = Frame(self.toolbar, background="#EFEFEF")
@@ -144,9 +181,10 @@ class ActiveOrdersView(ContentTemplate):
         )
 
         self.toolbar.grid_rowconfigure(0, weight=1)
-        self.toolbar.grid_columnconfigure(0, weight=0) # Left Container     -> fit
-        self.toolbar.grid_columnconfigure(1, weight=1) # Middle Container   -> expand
-        self.toolbar.grid_columnconfigure(2, weight=0) # Right Container    -> fit
+        self.toolbar.grid_columnconfigure(0, weight=0) # Left Container         -> fit
+        self.toolbar.grid_columnconfigure(1, weight=0) # Left Middle Container  -> fit
+        self.toolbar.grid_columnconfigure(2, weight=1) # Middle Container       -> expand
+        self.toolbar.grid_columnconfigure(3, weight=0) # Right Container        -> fit
         
         ######## END setting toolbar content ########
 
@@ -244,21 +282,42 @@ class ActiveOrdersView(ContentTemplate):
         if new_state != prev_state:
             clicked_order_tile.order.state = new_state
 
-            if REFS.MAIN_STATION:
-                # If we are in CashDesk:
-                OrdersService.update_order(clicked_order_tile.order, active=True)
+            ord_idx = self._order_tiles.index(clicked_order_tile)
+            self._order_tiles[ord_idx].order = clicked_order_tile.order
 
-                # Send Message to other station about order creation (fire and forget)
-                OrderMessagingService.notify_of_changes(
-                    changed_order=clicked_order_tile.order,
-                    prefix=REFS.ORDER_CHANGED_PREFIX)
-            else:
-                OrderMessagingService.request_order_update(
-                    order=clicked_order_tile.order,
-                    state=new_state
-                )
+            new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order, new_state))
+            new_thread.start()
+            
+    def on_tile_clicked_async(self, order, new_state):
+        if REFS.MAIN_STATION:
+            # If we are in CashDesk:
+            OrdersService.update_order(order, active=True)
 
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
+                
             self.show_view()
+        else:
+            OrderMessagingService.request_order_update(
+                order=order,
+                state=new_state
+            )
+
+    def _toggle_automatic_refresh(self):
+        if self.auto_refresh_button.state and not self.auto_refresh_enabled:
+            OrdersService.on_orders_changed.add(
+                self.update_view_and_database_content
+            )
+            self.auto_refresh_enabled = True
+            OrderMessagingService.AUTO_REFRESH_ENABLED = True
+        elif not self.auto_refresh_button.state and self.auto_refresh_enabled:
+            OrdersService.on_orders_changed.remove(
+                self.update_view_and_database_content
+            )
+            self.auto_refresh_enabled = False
+            OrderMessagingService.AUTO_REFRESH_ENABLED = False
 
     def _update_mark_mode(self):
         if self._mark_done_button.state:
