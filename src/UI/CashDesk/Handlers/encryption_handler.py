@@ -1,3 +1,4 @@
+import os
 import base64
 import hashlib
 from Crypto import Random
@@ -20,6 +21,7 @@ class EncryptionHandler(object):
         message_raw = EncryptionHandler._pad(message_raw)
 
         iv = Random.new().read(AES.block_size)
+
         cipher = AES.new(EncryptionHandler.KEY, AES.MODE_CBC, iv)
 
         return base64.b64encode(iv + cipher.encrypt(message_raw.encode()))

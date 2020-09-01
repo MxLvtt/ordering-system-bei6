@@ -111,7 +111,7 @@ class OrderMessagingService(Messenger):
             OrderMessagingService.on_database_changed_event()
         # Message says: Request to change given order in DB
         elif message.startswith(REFS.ORDER_CHANGE_REQUEST_PREFIX) and REFS.MAIN_STATION:
-            order_id = message[2:]
+            order_id = message[2:-1]
             change = message[-1:]
 
             print("Order id:", order_id)
@@ -218,6 +218,8 @@ class OrderMessagingService(Messenger):
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
         )
+
+        print("Message body to send:", message_body)
         
         new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
         new_thread.start()
