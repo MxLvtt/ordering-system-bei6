@@ -1,4 +1,4 @@
-USE `ordsys2`;
+USE `ordsys`;
 
 # Fill 'meals' Table
 INSERT INTO `meals` (kategorie,name,price) VALUES ('Essen',			'Currywurst mit Pommes',		5.5);
