@@ -244,6 +244,9 @@ class ActiveOrdersView(ContentTemplate):
         if new_state != prev_state:
             clicked_order_tile.order.state = new_state
 
+            ord_idx = self._order_tiles.index(clicked_order_tile)
+            self._order_tiles[ord_idx].order = clicked_order_tile.order
+
             new_thread = CustomThread(7, "ActiveOrdersView-2", partial(self.on_tile_clicked_async, clicked_order_tile.order, new_state))
             new_thread.start()
             
@@ -256,13 +259,13 @@ class ActiveOrdersView(ContentTemplate):
             OrderMessagingService.notify_of_changes(
                 changed_order=order,
                 prefix=REFS.ORDER_CHANGED_PREFIX)
+                
+            self.show_view()
         else:
             OrderMessagingService.request_order_update(
                 order=order,
                 state=new_state
             )
-            
-        self.show_view()
 
     def _update_mark_mode(self):
         if self._mark_done_button.state:

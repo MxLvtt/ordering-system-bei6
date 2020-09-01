@@ -38,6 +38,10 @@ class OrderMessagingService(Messenger):
         OrderMessagingService.IDENTIFIER = self.identifier
         OrderMessagingService.initialized = True
 
+        timer_callback = partial(OrderMessagingService.notify_of_changes, None, REFS.ORDER_CHANGED_PREFIX)
+
+        OrdersService.on_orders_changed.add(timer_callback)
+
     def process_message(self, message: str):
         """ Gets called, whenever the network handler receives a message,
         that is for this specific service.
@@ -85,7 +89,7 @@ class OrderMessagingService(Messenger):
                     # order_state = int(order_details[1])
                     order_change = f"Status > {REFS.ORDER_STATES[changed_order.state]}"
    
-                    OrdersService.handle_timer(changed_order)
+                    # OrdersService.handle_timer(changed_order)
 
                     toast_title = REFS.ORDER_CHANGED_TOAST[0]
                     toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
@@ -134,7 +138,7 @@ class OrderMessagingService(Messenger):
 
             OrdersService.update_order(old_order, active=True)
 
-            # Send Message to other station about order creation (fire and forget)
+            # Send Message to other station about order creation
             OrderMessagingService.notify_of_changes(
                 changed_order=old_order,
                 prefix=REFS.ORDER_CHANGED_PREFIX
@@ -173,7 +177,7 @@ class OrderMessagingService(Messenger):
         if not NetworkHandler.CONNECTION_READY:
             return False
         
-        order_id = ""
+        order_id = "0"
         
         if changed_order != None:
             order_id = changed_order.id
