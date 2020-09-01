@@ -1,5 +1,7 @@
 USE `ordsys`;
 
+TRUNCATE TABLE `meals`;
+
 # Fill 'meals' Table
 INSERT INTO `meals` (kategorie,name,price) VALUES ('Essen',			'Currywurst mit Pommes',		5.5);
 INSERT INTO `meals` (kategorie,name,price) VALUES ('Essen',			'Döner Box',					4);
