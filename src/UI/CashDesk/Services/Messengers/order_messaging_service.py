@@ -55,6 +55,10 @@ class OrderMessagingService(Messenger):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
                 order_id = message[2:]
 
+                if order_id == 0:
+                    OrderMessagingService.on_database_changed_event()
+                    return
+
                 toast_title = "DB CHANGED"
                 toast_text = "<text>"
 
