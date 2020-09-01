@@ -1,5 +1,6 @@
 # Presettings for root user
 USE mysql;
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'M9KN;2j.@T7e#E';
 UPDATE user SET plugin = '' WHERE user = 'root' AND host = 'localhost';
 FLUSH PRIVILEGES;
 
