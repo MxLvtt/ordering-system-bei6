@@ -49,7 +49,7 @@ class OrderMessagingService(Messenger):
         # Message says: DB content has changed
         if message.startswith(REFS.DB_CHANGED_PREFIX):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
-                order_id = message[2:-1]
+                order_id = message[2:]
 
                 toast_title = "DB CHANGED"
                 toast_text = "<text>"
@@ -93,12 +93,11 @@ class OrderMessagingService(Messenger):
                         order_timestamp,
                         order_change)
 
-                if not message[-1:].startswith(REFS.SILENT_PREFIX):
-                    NotificationService.show_toast(
-                        title=toast_title,
-                        text=toast_text,
-                        keep_alive=False
-                    )
+                #NotificationService.show_toast(
+                #    title=toast_title,
+                #    text=toast_text,
+                #    keep_alive=False
+                #)
             else: # SILENT prefix
                 if message[2:].startswith(REFS.DELETING_NOT_CONFIRMED):
                     messagebox.showwarning(
@@ -112,7 +111,7 @@ class OrderMessagingService(Messenger):
             OrderMessagingService.on_database_changed_event()
         # Message says: Request to change given order in DB
         elif message.startswith(REFS.ORDER_CHANGE_REQUEST_PREFIX) and REFS.MAIN_STATION:
-            order_id = message[2:-1]
+            order_id = message[2:]
             change = message[-1:]
 
             print("Order id:", order_id)
@@ -138,8 +137,7 @@ class OrderMessagingService(Messenger):
             # Send Message to other station about order creation (fire and forget)
             OrderMessagingService.notify_of_changes(
                 changed_order=old_order,
-                prefix=REFS.ORDER_CHANGED_PREFIX,
-                additional_prefix=REFS.SILENT_PREFIX
+                prefix=REFS.ORDER_CHANGED_PREFIX
             )
 
             # Fire event to inform subscribed classes, like views
