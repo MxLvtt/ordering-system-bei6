@@ -4,6 +4,10 @@ Group project for the sixth semester of the BEI course of studies.
 
 # Dependencies
 * pyautogui [pip install pyautogui]
+* numpy
+* mysql-connector-python
+* pycryptodome
+* tkinter
 
 # Specifications
 
