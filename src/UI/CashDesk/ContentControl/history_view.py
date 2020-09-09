@@ -18,6 +18,7 @@ from Templates.scrollable import Scrollable
 from Templates.fonts import Fonts
 from Templates.page_system import PageSystem
 from Templates.radio_button import RadioButton, RadioButtonGroup
+from Services.Messengers.order_messaging_service import OrderMessagingService
 
 
 class HistoryView(ContentTemplate):
@@ -47,6 +48,7 @@ class HistoryView(ContentTemplate):
             HistoryItem.HEIGHT=80 - 40 * REFS.MOBILE
             HistoryItem.EXPAND_HEIGHT=600 - 300 * REFS.MOBILE
 
+        OrderMessagingService.on_database_changed_event.add(self.update_view_and_database_content)
         OrdersService.on_orders_changed.add(self.update_view_and_database_content)
 
         self.order_items = []
@@ -59,6 +61,7 @@ class HistoryView(ContentTemplate):
         
         self._back_img = IMAGES.create(IMAGES.BACK)
         self._next_img = IMAGES.create(IMAGES.NEXT)
+        self._reset_i_img = IMAGES.create(IMAGES.RESET_I)
         self._trashcan_img = IMAGES.create(IMAGES.TRASH_CAN)
 
         ######## Setting toolbar content ########
@@ -67,6 +70,16 @@ class HistoryView(ContentTemplate):
         self._button_container_right = Frame(self.toolbar, background="#EFEFEF")
         self._button_container_right.grid(row=0, column=2, sticky='nsew')
 
+        # Button: Reset history
+        self._reset_i_button = CButton(
+            parent=self._button_container_right,
+            image=self._reset_i_img,
+            command=self.reset_order_counter,
+            fg=CButton.DARK, bg=CButton.LIGHT,
+            width=1.0,
+            row=0, column=0
+        )
+
         # Button: Clear history
         self._clear_button = CButton(
             parent=self._button_container_right,
@@ -74,7 +87,7 @@ class HistoryView(ContentTemplate):
             command=self.clear_history,
             fg=CButton.DARK, bg=CButton.LIGHT,
             width=1.0,
-            row=0, column=0
+            row=0, column=1
         )
 
         #### Page System
@@ -192,12 +205,22 @@ class HistoryView(ContentTemplate):
 
         self.scrolllist = ScrollList(parent=self.table, spacing=HistoryView.SPACING, background='#696969')
 
+    def reset_order_counter(self):
+        if REFS.MAIN_STATION:
+            if OrdersService.truncate_table():
+                self.update_view_and_database_content()
+        else:
+            OrderMessagingService.request_table_deletion(only_inactive=False)
+
     def clear_history(self):
-        if OrdersService.delete_from_table(
-            condition=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_FALSE}'",
-            confirm=True
-        ):
-            self.show_view()
+        if REFS.MAIN_STATION:
+            if OrdersService.delete_from_table(
+                condition=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_FALSE}'",
+                confirm=True
+            ):
+                self.update_view_and_database_content()
+        else:
+            OrderMessagingService.request_table_deletion(only_inactive=True)
 
     def show_view(self):
         """ Is called everytime this view is opened
@@ -259,6 +282,7 @@ class HistoryItem(Scrollable):
         self._check_img = IMAGES.create(IMAGES.CHECK_MARK)
         self._down_img = IMAGES.create(IMAGES.DOWN)
         self._up_img = IMAGES.create(IMAGES.UP)
+        self._empty_img = IMAGES.create(IMAGES.EMPTY)
 
         ########## COLUMNS ##########
 
@@ -394,7 +418,18 @@ class HistoryItem(Scrollable):
         self.state.pack(side=RIGHT, padx=HistoryView.PADX_COL)
 
     def _save_order(self):
-        OrdersService.update_order(self._changed_order)
+        if REFS.MAIN_STATION:
+            OrdersService.update_order(self._changed_order)
+
+            # Send Message to other station about order creation (fire and forget)
+            OrderMessagingService.notify_of_changes(
+                changed_order=self._changed_order,
+                prefix=REFS.ORDER_CHANGED_PREFIX)
+        else:
+            OrderMessagingService.request_order_update(
+                order=self._changed_order,
+                form=self._changed_order.form
+            )
 
         self._order = self._changed_order.copy()
 
@@ -589,16 +624,27 @@ class HistoryItem(Scrollable):
             initial_state = (self._order.form == idx)
             command = partial(_form_button_pressed, idx)
 
-            form_radio_button = RadioButton(
-                master=form_container,
-                text=form,
-                group=form_radiobutton_group,
-                highlight=REFS.LIGHT_CYAN,
-                font=Fonts.xsmall(),
-                initial_state=initial_state,
-                command=command
+            radio_button_container = Frame(
+                master=form_container
             )
-            form_radio_button.pack(side=TOP, fill='x', pady=10)
+            radio_button_container.pack(side=TOP, fill='x', pady=10)
+
+            form_radio_button = RadioButton(
+                parent=radio_button_container,
+                text=form,
+                font=Fonts.xsmall(),
+                image=self._empty_img,
+                highlight_image=self._empty_img,
+                command=command,
+                initial_state=initial_state,
+                group=form_radiobutton_group,
+                fg="#000000",
+                bg=REFS.LIGHT_GRAY,
+                highlight=REFS.LIGHT_CYAN,
+                row=0, column=0,
+                width=1.5, height=0.6
+            )
+            # form_radio_button.pack(side=TOP, fill='x', pady=10)
 
         form_container.update()
 

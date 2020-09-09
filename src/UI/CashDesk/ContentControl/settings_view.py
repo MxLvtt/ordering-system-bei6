@@ -43,16 +43,16 @@ class SettingsView(ContentTemplate):
 
         ### ORDERS CATEGORY
 
-        self.orders_cat_view = MealsSettingsView(self, background)
+        # self.orders_cat_view = MealsSettingsView(self, background)
         
-        self._cat_orders : SettingsCategory = SettingsCategory(
-            parent=self._top_row_frame,
-            image=self._order_img,
-            title="Orders",
-            show_view_command=self.switch_to_view,
-            view=self.orders_cat_view
-        )
-        self._cat_orders.pack(side=LEFT, padx=10, pady=10, fill='both', expand=1)
+        # self._cat_orders : SettingsCategory = SettingsCategory(
+        #     parent=self._top_row_frame,
+        #     image=self._order_img,
+        #     title="Orders",
+        #     show_view_command=self.switch_to_view,
+        #     view=self.orders_cat_view
+        # )
+        # self._cat_orders.pack(side=LEFT, padx=10, pady=10, fill='both', expand=1)
 
         ### MEALS CATEGORY
 

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Ordering system
+Comment=Launch OS
+Exec=/home/pi/order-sys.sh
+Icon=input-tablet
+Type=Application
+Name[en_US]=Ordersys

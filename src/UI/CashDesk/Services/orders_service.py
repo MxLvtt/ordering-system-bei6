@@ -115,7 +115,7 @@ class OrdersService():
         if confirm:
             confirmed = messagebox.askyesno(
                 title="Clear order history",
-                message="Are you sure you want to clear the order history?\n\nThis will delete all inactive orders.",
+                message="Are you sure you want to clear the order history? This will delete all inactive orders.\n\nNOTE: This will not reset the counter for the order number!",
                 default='no'
             )
 
@@ -139,7 +139,7 @@ class OrdersService():
         if confirm:
             confirmed = messagebox.askyesno(
                 title="Clear order history",
-                message="Are you sure you want to clear the order history?\n\nThis will delete all inactive orders.",
+                message="Are you sure you want to clear the whole order history?\n\nThis will delete every order from the database and reset the order counter for the order nubmer.",
                 default='no'
             )
 
@@ -214,11 +214,19 @@ class OrdersService():
             condition=f"{REFS.ORDERS_TABLE_ID}={order.id}"
         )
 
+        print("##### UPDATED DATABASE WITH ORDER CHANGE, order state, id = ", order.state, order.id)
+
         if active != False:
-            if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
-                OrdersService._create_timer(order)
-            else:
-                OrdersService._stop_timer_if_existant(order)
+            OrdersService.handle_timer(order)
+
+    @staticmethod
+    def handle_timer(order):
+        if order.state == REFS.PREPARED or order.state == REFS.CANCELED:
+            print("## Creating timer")
+            OrdersService._create_timer(order)
+        else:
+            print("## Stopping timer if existant")
+            OrdersService._stop_timer_if_existant(order)
 
     @staticmethod
     def create_new_order(meals_list: [], order_form: int) -> Order:
@@ -337,6 +345,7 @@ class OrderTimerPair():
 
         print(f"Setting order #{self._order.id} as inactive.")
         OrdersService.update_order(order=self._order, active=False)
+        
         OrdersService.on_orders_changed()
     
     def start_timer(self):

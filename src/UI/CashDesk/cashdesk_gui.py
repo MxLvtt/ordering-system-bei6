@@ -22,7 +22,7 @@ class CashDeskGUI():
     ):
         CashDeskGUI.DEBUG = debug
 
-        if not debug or suppress_logs:
+        if suppress_logs:
             sys.stdout = open(os.devnull, 'w')
 
         REFS.MOBILE = mobile_view
@@ -30,28 +30,33 @@ class CashDeskGUI():
 
         # Initializing the main window
         root = Tk()
-        root.resizable(False, False)
+        ## root.resizable(False, False)
+        
+        root.resizable(True, True)
+        root.attributes('-fullscreen', True)
 
-        if not CashDeskGUI.DEBUG:
-            root.attributes('-fullscreen', True)
+        root.config(background='#696969')
+
+        #if not CashDeskGUI.DEBUG:
+        #    root.attributes('-fullscreen', True)
 
         # Window Size: approx. 7 in
         root_bg = "#696969"
         # root.config(width=866, height=487, background=root_bg)
-        root.config(width=800, height=480, background=root_bg)
+        #root.config(width=800, height=480, background=root_bg)
 
         station = 'Küche'
 
-        if main_station:
-            station = 'Kasse'
+        #if main_station:
+        #    station = 'Kasse'
 
         title_size = 'Mobile Ansicht (7")'
 
-        if not mobile_view:
-            title_size = 'Vollbild'
+        #if not mobile_view:
+        #    title_size = 'Vollbild'
 
-            if CashDeskGUI.DEBUG:
-                root.attributes('-fullscreen', True)
+        #    if CashDeskGUI.DEBUG:
+        #        root.attributes('-fullscreen', True)
 
 
         root.wm_title(f"Bestellsystem - {station} - {title_size}")
@@ -135,6 +140,7 @@ class CashDeskGUI():
         self._footer_clock = Label(
             master=footerContainer,
             text="<CURRENT_TIME>",
+            background="#EFEFEF",
             font=def_font,
             padx=10
         )
@@ -145,6 +151,7 @@ class CashDeskGUI():
 
         self._connection_symbol = Label(
             master=footerContainer,
+            background="#EFEFEF",
             image=self.connection_image,
             padx=5, pady=5
         )
@@ -161,6 +168,7 @@ class CashDeskGUI():
             self._footer_title = Label(
                 master=footerContainer,
                 text="<Current Content View>",
+                background="#EFEFEF",
                 font=def_font,
                 padx=10
             )

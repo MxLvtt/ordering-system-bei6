@@ -20,8 +20,8 @@ class NotificationService():
         window_height = root.winfo_height()
         window_width = root.winfo_width()
 
-        Toast.HEIGHT = int(window_height / 4)
-        Toast.WIDTH = int(window_width / 3)
+        Toast.HEIGHT = int(window_height / 4.5)
+        Toast.WIDTH = int(window_width / 4)
 
         NotificationService.ROOT = root
         NotificationService.initialized = True

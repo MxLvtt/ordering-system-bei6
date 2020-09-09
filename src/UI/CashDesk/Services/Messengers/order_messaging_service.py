@@ -1,9 +1,11 @@
 from tkinter import messagebox
 import threading
 import Templates.references as REFS
+from functools import partial
 from EventHandler.Event import Event
 from Templates.order import Order
 from Templates.meals import Meal
+from Templates.custom_thread import CustomThread
 from Handlers.database_handler import DatabaseHandler
 from Handlers.network_handler import NetworkHandler
 from Handlers.timer_handler import TimerHandler
@@ -28,6 +30,8 @@ class OrderMessagingService(Messenger):
 
     initialized = False
 
+    AUTO_REFRESH_ENABLED = False
+
     on_database_changed_event: Event = Event()
 
     def __init__(self):
@@ -36,16 +40,27 @@ class OrderMessagingService(Messenger):
         OrderMessagingService.IDENTIFIER = self.identifier
         OrderMessagingService.initialized = True
 
+        timer_callback = partial(OrderMessagingService.notify_of_changes, None, REFS.ORDER_CHANGED_PREFIX)
+
+        OrdersService.on_orders_changed.add(timer_callback)
+
     def process_message(self, message: str):
         """ Gets called, whenever the network handler receives a message,
         that is for this specific service.
 
         message: contains only the main body; no service- and msg-id
         """
+        print("Message to process:", message)
+
         # Message says: DB content has changed
         if message.startswith(REFS.DB_CHANGED_PREFIX):
             if not message[1:].startswith(REFS.SILENT_PREFIX):
                 order_id = message[2:]
+
+                if order_id == "0":
+                    if OrderMessagingService.AUTO_REFRESH_ENABLED:
+                        OrderMessagingService.on_database_changed_event()
+                    return
 
                 toast_title = "DB CHANGED"
                 toast_text = "<text>"
@@ -61,46 +76,194 @@ class OrderMessagingService(Messenger):
                     toast_title = REFS.ORDER_CREATED_TOAST[0]
                     toast_text = REFS.ORDER_CREATED_TOAST[1].format(order_id, order_timestamp)
                 # More precise: a new order has been changed
-                elif message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):
-                    order_details = OrdersService.get_orders(
-                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
-                        columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}", f"{REFS.ORDERS_TABLE_STATE}"]
-                    )[0]
-                    order_timestamp = OrdersService.convert_timestamp(order_details[0])
+                elif message[1:].startswith(REFS.ORDER_CHANGED_PREFIX):                    
+                    # First: get the order's current data
+                    result = OrdersService.get_orders(
+                        row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}"
+                    )
 
-                    order_change = f"Status > {REFS.ORDER_STATES[int(order_details[1])]}"
-                    
+                    if result == None or len(result) == 0:
+                        raise RuntimeError("The given order can not be changed because it's not in the database.")
+
+                    changed_order = OrdersService.convert_to_order_object(result[0])
+
+                    # order_details = OrdersService.get_orders(
+                    #     row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}",
+                    #     columns=[f"{REFS.ORDERS_TABLE_TIMESTAMP}", f"{REFS.ORDERS_TABLE_STATE}"]
+                    # )[0]
+                    order_timestamp = OrdersService.convert_timestamp(changed_order.timestamp)
+
+                    # order_state = int(order_details[1])
+                    order_change = f"Status > {REFS.ORDER_STATES[changed_order.state]}"
+   
+                    # OrdersService.handle_timer(changed_order)
+
                     toast_title = REFS.ORDER_CHANGED_TOAST[0]
                     toast_text = REFS.ORDER_CHANGED_TOAST[1].format(
                         order_id,
                         order_timestamp,
                         order_change)
 
-                NotificationService.show_toast(
-                    title=toast_title,
-                    text=toast_text,
-                    keep_alive=False
-                )
+                #NotificationService.show_toast(
+                #    title=toast_title,
+                #    text=toast_text,
+                #    keep_alive=False
+                #)
+            else: # SILENT prefix
+                if message[2:].startswith(REFS.DELETING_NOT_CONFIRMED):
+                    messagebox.showwarning(
+                        title="Delete response",
+                        message="Deleting from table has been denied."
+                    )
+                elif message[2:].startswith(REFS.DELETING_CONFIRMED):
+                    print("Deleting worked")
+                 
+            # Fire event to inform subscribed classes, like views
+            OrderMessagingService.on_database_changed_event()
+        # Message says: Request to change given order in DB
+        elif message.startswith(REFS.ORDER_CHANGE_REQUEST_PREFIX) and REFS.MAIN_STATION:
+            order_id = message[2:-1]
+            change = message[-1:]
+
+            print("Order id:", order_id)
+            print("Change to:", change)
+
+            # First: get the order's current data
+            result = OrdersService.get_orders(
+                row_filter=f"{REFS.ORDERS_TABLE_ID}={order_id}"
+            )
+
+            if result == None or len(result) == 0:
+                raise RuntimeError("The given order can not be changed because it's not in the database.")
+
+            old_order = OrdersService.convert_to_order_object(result[0])
+
+            if message[1:].startswith(REFS.ORDER_STATUS_CHANGED_PREFIX):
+                old_order.state = int(change)
+            elif message[1:].startswith(REFS.ORDER_TYPE_CHANGED_PREFIX):
+                old_order.form = int(change)
+
+            OrdersService.update_order(old_order, active=True)
+
+            ## Send Message to other station about order creation
+            #OrderMessagingService.notify_of_changes(
+            #    changed_order=old_order,
+            #    prefix=REFS.ORDER_CHANGED_PREFIX
+            #)
 
             # Fire event to inform subscribed classes, like views
             OrderMessagingService.on_database_changed_event()
-
+        # Message says: Request to delete rows in orders table
+        elif message.startswith(REFS.CLEAR_TABLE_REQUEST_PREFIX) and REFS.MAIN_STATION:
+            clear_type = message[1:]
+            result = False
+            
+            if clear_type == REFS.DELETE_INACTIVE_PREFIX:
+                result = OrdersService.delete_from_table(
+                    condition=f"{REFS.ORDERS_TABLE_ACTIVE}='{REFS.ORDERS_TABLE_ACTIVE_FALSE}'",
+                    confirm=True
+                )
+            elif clear_type == REFS.DELETE_ALL_PREFIX:
+                result = OrdersService.truncate_table()
+                
+            addinfo = REFS.DELETING_NOT_CONFIRMED
+                
+            if result:                
+                # Fire event to inform subscribed classes, like views
+                OrderMessagingService.on_database_changed_event()
+                addinfo = REFS.DELETING_CONFIRMED
+                
+            OrderMessagingService.notify_of_changes(
+                changed_order=None,
+                prefix=REFS.SILENT_PREFIX,
+                additional_prefix=addinfo
+            )
+            
     @staticmethod
-    def notify_of_changes(changed_order: Order, prefix: str) -> bool:
+    def notify_of_changes(changed_order: Order, prefix: str, additional_prefix: str = "") -> bool:
         if not NetworkHandler.CONNECTION_READY:
             return False
         
+        order_id = "0"
+        
+        if changed_order != None:
+            order_id = changed_order.id
+            
         # CONSTRUCT MESSAGE BODY
         message_body = f"{REFS.DB_CHANGED_PREFIX}" \
             f"{prefix}" \
-            f"{changed_order.id}"
+            f"{order_id}" \
+            f"{additional_prefix}"
 
         message_body = Messenger.attach_service_id(
             service_id = OrderMessagingService.IDENTIFIER,
             message = message_body
         )
 
-        return NetworkHandler.send_with_handshake(message_body)
+        new_thread = CustomThread(2, "MessangerThread-2", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
+
+    @staticmethod
+    def request_order_update(order: Order, state: int = -1, form: int = -1):
+        if not NetworkHandler.CONNECTION_READY:
+            return False
+
+        if state != -1:
+            prefix = REFS.ORDER_STATUS_CHANGED_PREFIX
+            change = state
+        elif form != -1:
+            prefix = REFS.ORDER_TYPE_CHANGED_PREFIX
+            change = form
+        else:
+            return False
+
+        # CONSTRUCT MESSAGE BODY
+        message_body = f"{REFS.ORDER_CHANGE_REQUEST_PREFIX}" \
+            f"{prefix}" \
+            f"{order.id}" \
+            f"{change}"
+
+        message_body = Messenger.attach_service_id(
+            service_id = OrderMessagingService.IDENTIFIER,
+            message = message_body
+        )
+
+        print("Message body to send:", message_body)
+        
+        new_thread = CustomThread(3, "MessangerThread-3", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
+
+    @staticmethod
+    def request_table_deletion(only_inactive: bool = True) -> bool:
+        if not NetworkHandler.CONNECTION_READY:
+            return False
+        
+        if only_inactive:
+            prefix = REFS.DELETE_INACTIVE_PREFIX
+        else:
+            prefix = REFS.DELETE_ALL_PREFIX
+
+        # CONSTRUCT MESSAGE BODY
+        message_body = f"{REFS.CLEAR_TABLE_REQUEST_PREFIX}" \
+            f"{prefix}"
+        
+        message_body = Messenger.attach_service_id(
+            service_id = OrderMessagingService.IDENTIFIER,
+            message = message_body
+        )
+        
+        new_thread = CustomThread(4, "MessangerThread-4", partial(OrderMessagingService._send, message_body))
+        new_thread.start()
+
+        return True
+
+    @staticmethod
+    def _send(message):
+        NetworkHandler.send_with_handshake(message)
 
 
 

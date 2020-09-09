@@ -1,5 +1,6 @@
 from tkinter import Button, LEFT
 import Templates.references as REFS
+from Templates.fonts import Fonts
 
 class CButton(Button):
     SIZE = 72
@@ -24,6 +25,8 @@ class CButton(Button):
         row=0,
         column=0,
         flip_row_and_col=False,
+        text="",
+        font=None,
         spaceX=(0.0,0.0), # As a multiple of the buttons standard SIZE
         spaceY=(0.0,0.0)  # As a multiple of the buttons stamdard SIZE
     ):
@@ -39,14 +42,22 @@ class CButton(Button):
             else:
                 height = 1.0
 
+        textFont = Fonts.medium()
+
+        if font != None:
+            textFont = font
+
         super().__init__(
             master=parent,
             command=command,
             image=image,
+            text=text,
+            font=textFont,
             width=width*self.SIZE,
             height=height*self.SIZE,
             fg=fg,
-            bg=bg
+            bg=bg,
+            compound='c'
         )
 
         # helv36 = tkFont.Font(family='Helvetica', size=26, weight=tkFont.BOLD)

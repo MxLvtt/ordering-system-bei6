@@ -1,15 +1,11 @@
 import math
 
-WIN_PATH = r"D:\dev\ordering-system-bei5\src\UI\CashDesk"
-MAC_PATH = r"/Users/mxrcel/Development/OrderingSystem/src/UI/CashDesk"
-
-BASEPATH = WIN_PATH
-
 MOBILE = False
 MAIN_STATION = True
+NEW_VERSION = True
 
 # NETWORK
-CASH_DESK_IP = "192.168.2.115"              # set as static ip of raspberry
+CASH_DESK_IP = "192.168.2.107"              # set as static ip of raspberry
 CASH_DESK_DB_PORT = "8457"                  # port on which to access the database remotely
 CASH_DESK_IP_DBG = "127.0.0.1"              # debugging endpoint
 CASH_DESK_DB_PORT_DBG = "3306"              # debugging port
@@ -17,12 +13,16 @@ CASH_DESK_DB_USER = "ordsysRD"              # user with just read-access
 CASH_DESK_DB_PW = "he=h5bY&x#Lb/=$"         # password for above user
 CASH_DESK_DB_NAME = "ordsys"                # name of the database
 
+RW_USER_NAME = "ordsysRW"
+RW_USER_PASSWORD = "#4}Yjen$]nP"
+RW_USER_HOST = "localhost"
+
 PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
 
-CASHDESK_SERVER_IP = "127.0.0.1" # CASH_DESK_IP
+CASHDESK_SERVER_IP = CASH_DESK_IP # CASH_DESK_IP
 CASHDESK_SERVER_PORT = 1489
 
-KITCHEN_SERVER_IP = "127.0.0.1"
+KITCHEN_SERVER_IP = "192.168.2.121"
 KITCHEN_SERVER_PORT = 1487
 
 MESSAGE_LENGTH = 200                        # Length of a message in bytes
@@ -148,8 +148,8 @@ ORDER_STATE_COLORS_BGD=[
 ]
 
 ORDER_FORMS=[                                       # names of the different forms of orders
-    "Hier essen",
-    "Mitnehmen"
+    "Im Haus", # "Hier essen",
+    "To Go"    # "Mitnehmen"
 ]
 EAT_IN=0                                            # indices for the order forms array
 TAKEAWAY=1
@@ -157,8 +157,8 @@ TAKEAWAY=1
 DEFAULT_FORM = EAT_IN
 
 # RECEIPT
-RESTAURANT_NAME = "RestaurantXYZ"
-EMPLOYEE_NAME = "MitarbeiterABC"
+RESTAURANT_NAME = "BackPoint"
+EMPLOYEE_NAME = "Mitarbeiter"
 
 # MESSAGE PREFIXES
 
@@ -166,6 +166,16 @@ DB_CHANGED_PREFIX = "C"
 SILENT_PREFIX = "S"
 ORDER_CREATED_PREFIX = "N"
 ORDER_CHANGED_PREFIX = "M"
+
+ORDER_CHANGE_REQUEST_PREFIX = "R"
+ORDER_STATUS_CHANGED_PREFIX = "T"
+ORDER_TYPE_CHANGED_PREFIX = "F"
+
+CLEAR_TABLE_REQUEST_PREFIX = "D"
+DELETE_ALL_PREFIX = "A"
+DELETE_INACTIVE_PREFIX = "I"
+DELETING_NOT_CONFIRMED = "B"
+DELETING_CONFIRMED = "W"
 
 # TOAST NOTIFICATIONS
 
@@ -177,4 +187,9 @@ ORDER_CREATED_TOAST = (
 ORDER_CHANGED_TOAST = (
     "Bestellung geändert",
     "Bestellnummer: {0}\nZeitstempel: {1}\nÄnderung: {2}"
+)
+
+ORDER_SUMMARY_TOAST = (
+    "Bestellung erstellt",
+    "Bestellnummer: {0}\nMahlzeit: {1}\nPreis: {2}"
 )
