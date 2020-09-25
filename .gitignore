@@ -3,3 +3,4 @@
 */**/*.tempfile.py
 */**/Temp
 */**/__receipts
+*/**/test-log-*.txt

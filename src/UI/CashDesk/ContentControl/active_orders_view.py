@@ -290,7 +290,7 @@ class ActiveOrdersView(ContentTemplate):
         if self.LAST_FINISHED_ID != -1:
             if self._order_tiles[self.LAST_FINISHED_ID].order.state != REFS.PREPARED:
                 now = datetime.now()
-                f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] Last order is not marked done anymore but it should be.")
+                f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] Last order is not marked done anymore but it should be.\r\n")
 
         self._testbench_timer = Timer(7.0, self.finish_random_order)
         self._testbench_timer.start()
@@ -305,7 +305,7 @@ class ActiveOrdersView(ContentTemplate):
                     self.LAST_FINISHED_ID = rnd_id
                     
                     now = datetime.now()
-                    f.write(f"[{now.hour}:{now.minute}:{now.second}] [INF] Finishing order #{self._order_tiles[rnd_id].order.id}")
+                    f.write(f"[{now.hour}:{now.minute}:{now.second}] [INF] Finishing order #{self._order_tiles[rnd_id].order.id}\r\n")
                     
                     self.on_tile_clicked(self._order_tiles[rnd_id])
                     done = True
