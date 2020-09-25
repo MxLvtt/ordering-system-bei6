@@ -47,7 +47,7 @@ class ActiveOrdersView(ContentTemplate):
         self._testbench_timer: Timer
 
         if not REFS.MAIN_STATION:
-            self._testbench_timer = Timer(5.0, self.finish_random_order)
+            self._testbench_timer = Timer(9.0, self.finish_random_order)
             self._testbench_timer.start()
 
         self._background = background
@@ -292,7 +292,7 @@ class ActiveOrdersView(ContentTemplate):
                 now = datetime.now()
                 f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] Last order is not marked done anymore but it should be.\r\n")
 
-        self._testbench_timer = Timer(7.0, self.finish_random_order)
+        self._testbench_timer = Timer(9.0, self.finish_random_order)
         self._testbench_timer.start()
 
         if len(self.page_system.current_items) > 0:
@@ -301,7 +301,7 @@ class ActiveOrdersView(ContentTemplate):
             while not done:
                 rnd_id = randint(0, len(self.page_system.current_items) - 1)
 
-                if self._order_tiles[rnd_id].order.state == REFS.OPEN:
+                if self._order_tiles[rnd_id].order != None and self._order_tiles[rnd_id].order.state == REFS.OPEN:
                     self.LAST_FINISHED_ID = rnd_id
                     
                     now = datetime.now()

@@ -1,4 +1,6 @@
 import Templates.references as REFS
+from random import *
+from threading import Timer
 from tkinter import *
 from functools import partial
 from cashdesk_model import CashDeskModel
@@ -29,6 +31,12 @@ class QuickOrderView(ContentTemplate):
             background=background,
             shown=shown
         )
+
+        self._testbench_timer: Timer
+
+        if REFS.MAIN_STATION:
+            self._testbench_timer = Timer(7.0, self.add_random_order)
+            self._testbench_timer.start()
 
         self._root_category = None
         self._order_type = REFS.EAT_IN
@@ -136,6 +144,13 @@ class QuickOrderView(ContentTemplate):
     @property
     def root_category(self):
         return self._root_category
+     
+    def add_random_order(self):
+        self._testbench_timer = Timer(7.0, self.add_random_order)
+        self._testbench_timer.start()
+
+        rnd_id = randint(0, len(self._root_category.subcategories) - 1)
+        self.finish_current_order(self._root_category.subcategories[rnd_id].meal)
 
     def initialize(self):
         meals_db = MealsService.get_raw_meals()
