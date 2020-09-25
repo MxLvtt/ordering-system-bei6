@@ -5,7 +5,7 @@ MAIN_STATION = True
 NEW_VERSION = True
 
 # NETWORK
-CASH_DESK_IP = "192.168.2.107"              # set as static ip of raspberry
+CASH_DESK_IP = "192.168.2.123"              # set as static ip of raspberry
 CASH_DESK_DB_PORT = "8457"                  # port on which to access the database remotely
 CASH_DESK_IP_DBG = "127.0.0.1"              # debugging endpoint
 CASH_DESK_DB_PORT_DBG = "3306"              # debugging port
@@ -22,7 +22,7 @@ PUBLIC_KEY_16BIT = "(YHJ{5PcL/s-+e6}"
 CASHDESK_SERVER_IP = CASH_DESK_IP # CASH_DESK_IP
 CASHDESK_SERVER_PORT = 1489
 
-KITCHEN_SERVER_IP = "192.168.2.121"
+KITCHEN_SERVER_IP = "192.168.2.122"
 KITCHEN_SERVER_PORT = 1487
 
 MESSAGE_LENGTH = 200                        # Length of a message in bytes

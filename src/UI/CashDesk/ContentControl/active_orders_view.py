@@ -46,10 +46,6 @@ class ActiveOrdersView(ContentTemplate):
         #)
         self.auto_refresh_enabled = False
 
-        OrderMessagingService.on_database_changed_event.add(
-            self.update_view_and_database_content
-        )
-
         self._mark_mode = ActiveOrdersView.MARK_OFF
         
         self.page_system = PageSystem(
@@ -195,6 +191,17 @@ class ActiveOrdersView(ContentTemplate):
         """ Is called everytime this view is opened
         """
         super().show_view()
+
+        try:
+            OrderMessagingService.on_database_changed_event.remove(
+                self.update_view_and_database_content
+            )
+        except:
+            pass
+
+        OrderMessagingService.on_database_changed_event.add(
+            self.update_view_and_database_content
+        )
 
         self.update_view_and_database_content()
 

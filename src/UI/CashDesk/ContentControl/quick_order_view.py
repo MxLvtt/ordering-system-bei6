@@ -118,7 +118,7 @@ class QuickOrderView(ContentTemplate):
 
         self._breadcrumb = Label(
             master=self._breadcrumb_container_middle,
-            text='Preis letzter Bestellung: -.--€',
+            text='Preis aktueller Bestellung: -.--€',
             font=Fonts.small(),
             foreground='black',
             background='#EFEFEF'
@@ -224,7 +224,7 @@ class QuickOrderView(ContentTemplate):
 
         new_order._price = new_order.calculate_price()
 
-        self._set_breadcrumb_text(text=f"Letzte Bestellung: #{new_order.id} {meal.name} - {OrdersService.convert_timestamp(new_order.timestamp)} - {new_order.price_str}€")
+        self._set_breadcrumb_text(text=f"Aktuelle Bestellung: #{new_order.id} {meal.name} - {OrdersService.convert_timestamp(new_order.timestamp)} - {new_order.price_str}€")
 
         #NotificationService.show_toast(
         #    title=REFS.ORDER_SUMMARY_TOAST[0],
