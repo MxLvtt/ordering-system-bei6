@@ -1,8 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Ordering system
+Name=Ordering System CashDesk
 Comment=Launch OS
-Exec=/home/pi/order-sys.sh
+Exec=/home/pi/Dev/ordering-system-bei6/src/scripts/startup/order-sys-cashdesk.sh
 Icon=input-tablet
 Type=Application
-Name[en_US]=Ordersys
+Name[en_US]=Ordersys.CashDesk
+Name[de_DE]=Ordersys.CashDesk.desktop
