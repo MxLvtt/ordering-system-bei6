@@ -1,6 +1,7 @@
 import Templates.references as REFS
 from tkinter import *
 from random import *
+from threading import Timer
 from functools import partial
 from ContentControl.content_template import ContentTemplate
 from ContentControl.ActiveOrders.order_tile_gui import OrderTileGUI
@@ -37,6 +38,12 @@ class ActiveOrdersView(ContentTemplate):
         if REFS.MOBILE:
             ActiveOrdersView.NUM_COLUMNS = 3
             ActiveOrdersView.NUM_ROWS = 1
+            
+        self._testbench_timer: Timer
+
+        if REFS.MAIN_STATION:
+            self._testbench_timer = Timer(5.0, self.finish_random_order)
+            self._testbench_timer.start()
 
         self._background = background
 
@@ -271,6 +278,15 @@ class ActiveOrdersView(ContentTemplate):
 
         #         empty_tile = Frame(self.body_container, background=self.background)
         #         empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
+
+    def finish_random_order(self):
+        if len(self.page_system.current_items) > 0:
+            rnd_id = randint(0, len(self.page_system.current_items) - 1)
+
+            print("Finishing order", rnd_id)
+
+        self._testbench_timer = Timer(5.0, self.finish_random_order)
+        self._testbench_timer.start()
 
     def on_tile_clicked(self, clicked_order_tile, event = None):
         if self._mark_mode == ActiveOrdersView.MARK_OFF or clicked_order_tile.order == None:
