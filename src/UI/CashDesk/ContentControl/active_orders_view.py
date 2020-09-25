@@ -1,6 +1,7 @@
 import Templates.references as REFS
 from tkinter import *
 from random import *
+from datetime import datetime
 from threading import Timer
 from functools import partial
 from ContentControl.content_template import ContentTemplate
@@ -26,6 +27,8 @@ class ActiveOrdersView(ContentTemplate):
 
     ACTIVE_ORDERS = []
 
+    LAST_FINISHED_ID = -1
+
     def __init__(self, parent, toolbar_container: Frame, background="white", shown: bool = False):
         super().__init__(
             parent=parent,
@@ -34,6 +37,8 @@ class ActiveOrdersView(ContentTemplate):
             background=background,
             shown=False
         )
+        now = datetime.now()
+        ActiveOrdersView.TODAY = f"{now.year}-{now.month}-{now.day}"
 
         if REFS.MOBILE:
             ActiveOrdersView.NUM_COLUMNS = 3
@@ -280,6 +285,16 @@ class ActiveOrdersView(ContentTemplate):
         #         empty_tile.grid(row=y_pos, column=(x_pos + i + 1), padx=padx, pady=pady, sticky='news')
 
     def finish_random_order(self):
+        f = open(f"test-log-{ActiveOrdersView.TODAY}.txt", "a")
+
+        if self.LAST_FINISHED_ID != -1:
+            if self._order_tiles[self.LAST_FINISHED_ID].order.state != REFS.PREPARED:
+                now = datetime.now()
+                f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] Last order is not marked done anymore but it should be.")
+
+        self._testbench_timer = Timer(7.0, self.finish_random_order)
+        self._testbench_timer.start()
+
         if len(self.page_system.current_items) > 0:
             done = False
 
@@ -287,12 +302,15 @@ class ActiveOrdersView(ContentTemplate):
                 rnd_id = randint(0, len(self.page_system.current_items) - 1)
 
                 if self._order_tiles[rnd_id].order.state == REFS.OPEN:
-                    print("Finishing order", rnd_id)
+                    self.LAST_FINISHED_ID = rnd_id
+                    
+                    now = datetime.now()
+                    f.write(f"[{now.hour}:{now.minute}:{now.second}] [INF] Finishing order #{self._order_tiles[rnd_id].order.id}")
+                    
                     self.on_tile_clicked(self._order_tiles[rnd_id])
                     done = True
-
-        self._testbench_timer = Timer(5.0, self.finish_random_order)
-        self._testbench_timer.start()
+                    
+        f.close()
 
     def on_tile_clicked(self, clicked_order_tile, event = None):
         if self._mark_mode == ActiveOrdersView.MARK_OFF or clicked_order_tile.order == None:
