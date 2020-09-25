@@ -41,7 +41,7 @@ class ActiveOrdersView(ContentTemplate):
             
         self._testbench_timer: Timer
 
-        if REFS.MAIN_STATION:
+        if not REFS.MAIN_STATION:
             self._testbench_timer = Timer(5.0, self.finish_random_order)
             self._testbench_timer.start()
 
@@ -281,9 +281,15 @@ class ActiveOrdersView(ContentTemplate):
 
     def finish_random_order(self):
         if len(self.page_system.current_items) > 0:
-            rnd_id = randint(0, len(self.page_system.current_items) - 1)
+            done = False
 
-            print("Finishing order", rnd_id)
+            while not done:
+                rnd_id = randint(0, len(self.page_system.current_items) - 1)
+
+                if self._order_tiles[rnd_id].order.state == REFS.OPEN:
+                    print("Finishing order", rnd_id)
+                    self.on_tile_clicked(self._order_tiles[rnd_id])
+                    done = True
 
         self._testbench_timer = Timer(5.0, self.finish_random_order)
         self._testbench_timer.start()
