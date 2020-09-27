@@ -95,9 +95,10 @@ class DatabaseHandler:
                 print(err)
 
             # messagebox.showerror("Database Connection Error", str(err))
-            # RETRY!
+            
+            # IGNORE!
 
-            return DatabaseHandler._surround_by_try_catch(func)
+            # return DatabaseHandler._surround_by_try_catch(func)
 
         raise RuntimeError("Reached the end of the function.")
 
