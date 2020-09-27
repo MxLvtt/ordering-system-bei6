@@ -100,6 +100,8 @@ class DatabaseHandler:
 
             # return DatabaseHandler._surround_by_try_catch(func)
 
+            return
+
         raise RuntimeError("Reached the end of the function.")
 
 
