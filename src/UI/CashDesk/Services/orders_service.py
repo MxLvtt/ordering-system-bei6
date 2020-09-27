@@ -24,6 +24,9 @@ class OrdersService():
 
     def __init__(self):
         # TODO: ?
+        now = datetime.now()
+        OrdersService.TODAY = f"{now.year}-{now.month}-{now.day}"
+
         OrdersService.initialized = True
 
     @staticmethod
@@ -267,6 +270,17 @@ class OrdersService():
             f"'{meals_code}'"
         ]
 
+        # Get the highest id value of database
+        highest_id_prev = DatabaseHandler.select_from_table(
+            table_name=REFS.ORDERS_TABLE_NAME,
+            columns=[f"MAX({REFS.ORDERS_TABLE_ID})"]
+        )
+
+        f = open(f"test-log-{OrdersService.TODAY}.txt", "a")
+
+        now = datetime.now()
+        f.write(f"[{now.hour}:{now.minute}:{now.second}] [INF] Inserting new order into the database.\r\n")
+
         # Insert new order into the database table
         DatabaseHandler.insert_into_table(REFS.ORDERS_TABLE_NAME, columns, values)
 
@@ -275,6 +289,12 @@ class OrdersService():
             table_name=REFS.ORDERS_TABLE_NAME,
             columns=[f"MAX({REFS.ORDERS_TABLE_ID})"]
         )
+
+        if highest_id_prev == highest_id:
+            now = datetime.now()
+            f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] New order does not seem to be added to the database.\r\n")
+        
+        f.close()
 
         # Set the order's internal id property to the id value of the database
         new_order.id = int(highest_id[0][0])

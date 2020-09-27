@@ -288,7 +288,12 @@ class ActiveOrdersView(ContentTemplate):
         f = open(f"test-log-{ActiveOrdersView.TODAY}.txt", "a")
 
         if self.LAST_FINISHED_ID != -1:
-            if self._order_tiles[self.LAST_FINISHED_ID].order.state != REFS.PREPARED:
+            oid = -1
+            for idx, order_tile in enumerate(self._order_tiles):
+                if order_tile.order != None and order_tile.order.id == self.LAST_FINISHED_ID:
+                    oid = idx
+
+            if oid != -1 and self._order_tiles[oid].order.state != REFS.PREPARED:
                 now = datetime.now()
                 f.write(f"[{now.hour}:{now.minute}:{now.second}] [ERR] Last order is not marked done anymore but it should be.\r\n")
 
@@ -302,7 +307,7 @@ class ActiveOrdersView(ContentTemplate):
                 rnd_id = randint(0, len(self.page_system.current_items) - 1)
 
                 if self._order_tiles[rnd_id].order != None and self._order_tiles[rnd_id].order.state == REFS.OPEN:
-                    self.LAST_FINISHED_ID = rnd_id
+                    self.LAST_FINISHED_ID = self._order_tiles[rnd_id].order.id
                     
                     now = datetime.now()
                     f.write(f"[{now.hour}:{now.minute}:{now.second}] [INF] Finishing order #{self._order_tiles[rnd_id].order.id}\r\n")
