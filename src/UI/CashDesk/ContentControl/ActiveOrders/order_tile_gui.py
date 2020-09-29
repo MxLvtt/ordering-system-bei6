@@ -166,7 +166,8 @@ class OrderTileGUI(Frame):
     def bind_on_click(self, callback):
         func = partial(callback, self)
 
-        self.scrolllist.set_additional_pressed_event(func)
+        if not REFS.NEW_VERSION:
+            self.scrolllist.set_additional_pressed_event(func)
 
         self.bind("<ButtonPress-1>", func)
 
