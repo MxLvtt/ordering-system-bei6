@@ -71,11 +71,12 @@ class OrderTileGUI(Frame):
 
         ## Scrollable List
 
-        self.scrolllist = ScrollList(
-            parent=self._meal_labels_frame,
-            background=REFS.DARK_GRAY,
-            spacing=1
-        )
+        if not REFS.NEW_VERSION:
+            self.scrolllist = ScrollList(
+                parent=self._meal_labels_frame,
+                background=REFS.DARK_GRAY,
+                spacing=1
+            )
 
         ### Footer
 
@@ -120,7 +121,12 @@ class OrderTileGUI(Frame):
         self._timestamp_label.config(text="")
         self._form_label.config(text="")
         self._state_label.config(text="")
-        self.scrolllist.remove_all()
+
+        if not REFS.NEW_VERSION:
+            self.scrolllist.remove_all()
+        else:
+            for child in self._meal_labels_frame.winfo_children():
+                child.destroy()
 
         self._meal_labels_frame.pack_forget()
 
@@ -174,8 +180,12 @@ class OrderTileGUI(Frame):
         self._body_container.config(background=background_dark)
         self._meal_labels_frame.config(background=background_dark)
 
-        for element in self.scrolllist.Elements:
-            element.change_background(background=background_dark)
+        if not REFS.NEW_VERSION:
+            for element in self.scrolllist.Elements:
+                element.change_background(background=background_dark)
+        else:
+            for meal_label in self._meal_labels_frame.winfo_children():
+                meal_label.config(background=background_dark)
 
         self._footer_container.config(background=background_light)
         self._form_label.config(background=background_light)
@@ -186,7 +196,11 @@ class OrderTileGUI(Frame):
     def _set_meals_list_text(self):
         self._meal_labels_frame.pack(side=TOP, fill='both', expand=1, padx=10, pady=10)
 
-        self.scrolllist.remove_all()
+        if not REFS.NEW_VERSION:
+            self.scrolllist.remove_all()
+        else:
+            for child in self._meal_labels_frame.winfo_children():
+                child.destroy()
 
         meals : [] = self._order.meals
         
@@ -194,18 +208,25 @@ class OrderTileGUI(Frame):
             # Create additional text for the ingredients and addons for the meal
             (meal_name_text, meal_text) = MealsService.meal_content_to_text(meal)
             
-            meal_list_item = MealListItem(
-                parent=self.scrolllist,
-                title=meal_name_text,
-                text=meal_text,
-                font_title=self._font_bold,
-                font_text=self._font_S,
-                background=self.LIGHT_GRAY
-            )
+            if not REFS.NEW_VERSION:
+                meal_list_item = MealListItem(
+                    parent=self.scrolllist,
+                    title=meal_name_text,
+                    text=meal_text,
+                    font_title=self._font_bold,
+                    font_text=self._font_S,
+                    background=self.LIGHT_GRAY
+                )
 
-            self.scrolllist.add_row(meal_list_item, update=False)
+                self.scrolllist.add_row(meal_list_item, update=False)
+            else:
+                meal_label = Label(
+                    master=self._meal_labels_frame,
+                    text=meal_name_text
+                )
 
-        self.scrolllist.update_view()
+        if not REFS.NEW_VERSION:
+            self.scrolllist.update_view()
         
 
 class MealListItem(Scrollable):
